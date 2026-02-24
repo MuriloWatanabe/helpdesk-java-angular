@@ -50,29 +50,50 @@ Desenvolver um sistema web para:
 
 ---
 
-## 🛠️ 5. Tecnologias Utilizadas
+# 🛠️ Principais Tecnologias Utilizadas e Justificativas de Escolha
 
-### 🔹 Backend
+## 🔹 Backend
 
-- **Java 17**
-- **Spring Boot**
-- **Spring Data JPA**
-- **Spring Security**
-- **PostgreSQL**
-- **Maven**
+### Java 17
+A linguagem Java foi escolhida por sua robustez, ampla utilização no mercado corporativo e forte adoção em sistemas empresariais. Sua orientação a objetos e maturidade no ecossistema tornam a tecnologia adequada para o desenvolvimento de aplicações escaláveis e seguras.
 
-### 🔹 Frontend
+### Spring Boot
+Framework utilizado para simplificar a criação de APIs REST. O Spring Boot reduz configurações manuais, permite injeção de dependências e favorece a aplicação de boas práticas arquiteturais, aumentando a produtividade no desenvolvimento backend.
 
-- **Angular**
-- **TypeScript**
-- **HTML + CSS**
+### Spring Data JPA
+Responsável pela camada de persistência de dados, utilizando o padrão ORM (Object Relational Mapping). Permite o mapeamento entre objetos Java e tabelas do banco de dados, reduzindo a necessidade de consultas SQL manuais e aumentando a produtividade.
 
-### 🔹 Versionamento
+### Spring Security
+Framework utilizado para implementação de autenticação e controle de acesso. Garante maior segurança na aplicação, protegendo endpoints e permitindo a definição de regras de autorização.
 
-- Git
-- GitHub
+### PostgreSQL
+Banco de dados relacional escolhido por sua confiabilidade, robustez e ampla utilização no mercado. Oferece suporte a transações, integridade referencial e alto desempenho para aplicações corporativas.
+
+### Maven
+Ferramenta de gerenciamento de dependências e automação de build. Facilita a organização das bibliotecas utilizadas no projeto e padroniza o processo de compilação e execução.
 
 ---
+
+## 🔹 Frontend
+
+### Angular
+Framework estruturado para desenvolvimento de aplicações do tipo SPA (Single Page Application). Foi escolhido por sua arquitetura modular, organização clara de componentes e forte adoção em sistemas corporativos.
+
+### TypeScript
+Superset do JavaScript que adiciona tipagem estática à linguagem. Sua utilização aumenta a previsibilidade do código, reduz erros e melhora a manutenção do projeto.
+
+### HTML e CSS
+Tecnologias base para estruturação e estilização da interface do usuário, responsáveis pela construção da experiência visual da aplicação.
+
+---
+
+## 🔹 Versionamento
+
+### Git
+Sistema de controle de versão distribuído que permite rastrear alterações no código, facilitando a organização e evolução do projeto.
+
+### GitHub
+Plataforma de hospedagem de repositórios Git utilizada para armazenamento do código, controle de versões e colaboração entre os desenvolvedores.
 
 ## 📂 6. Estrutura do Projeto
 helpdesk-java-angular/
