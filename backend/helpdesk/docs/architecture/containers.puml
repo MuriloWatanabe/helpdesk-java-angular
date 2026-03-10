@@ -1,0 +1,26 @@
+@startuml Containers
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Sistema de Gestão de Chamados - Containers
+
+Person(user, "Usuário")
+Person(admin, "Administrador")
+
+System_Boundary(helpdeskSystem, "Sistema Helpdesk") {
+
+    Container(frontend, "Frontend Web", "Angular, TypeScript", "SPA responsável pela interface do usuário")
+
+    Container(backend, "API Backend", "Java 17, Spring Boot", "API REST com regras de negócio")
+
+    ContainerDb(database, "PostgreSQL", "Banco relacional", "Armazena usuários e chamados")
+
+}
+
+Rel(user, frontend, "Usa", "HTTPS")
+Rel(admin, frontend, "Usa", "HTTPS")
+
+Rel(frontend, backend, "Consome API REST", "JSON / HTTP")
+
+Rel(backend, database, "Lê/Escreve", "JPA / JDBC")
+
+@enduml

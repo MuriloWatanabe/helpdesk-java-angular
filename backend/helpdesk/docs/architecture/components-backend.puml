@@ -1,0 +1,34 @@
+@startuml BackendComponents
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Backend - Componentes
+
+Container_Boundary(api, "Backend API - Spring Boot") {
+
+    Component(authController, "AuthController", "Spring REST Controller", "Responsável pela autenticação")
+    Component(userController, "UserController", "Spring REST Controller", "Gerencia usuários")
+    Component(ticketController, "TicketController", "Spring REST Controller", "Gerencia chamados")
+
+    Component(authService, "AuthService", "Service", "Lógica de autenticação")
+    Component(userService, "UserService", "Service", "Regras de usuários")
+    Component(ticketService, "TicketService", "Service", "Regras de chamados")
+
+    Component(userRepository, "UserRepository", "Spring Data JPA", "Persistência de usuários")
+    Component(ticketRepository, "TicketRepository", "Spring Data JPA", "Persistência de chamados")
+
+}
+
+ContainerDb(database, "PostgreSQL", "Banco relacional")
+
+Rel(authController, authService, "Usa")
+Rel(userController, userService, "Usa")
+Rel(ticketController, ticketService, "Usa")
+
+Rel(authService, userRepository, "Usa")
+Rel(userService, userRepository, "Usa")
+Rel(ticketService, ticketRepository, "Usa")
+
+Rel(userRepository, database, "Lê/Escreve")
+Rel(ticketRepository, database, "Lê/Escreve")
+
+@enduml

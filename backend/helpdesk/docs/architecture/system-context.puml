@@ -1,0 +1,18 @@
+@startuml SystemContext
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title Sistema de Gestão de Chamados - Contexto
+
+Person(user, "Usuário", "Funcionário que abre chamados técnicos")
+Person(admin, "Administrador / Suporte TI", "Responsável por gerenciar chamados")
+
+System(helpdesk, "Sistema de Gestão de Chamados", "Sistema web para controle de chamados internos")
+
+SystemDb(db, "PostgreSQL", "Banco de dados relacional")
+
+Rel(user, helpdesk, "Abre e acompanha chamados")
+Rel(admin, helpdesk, "Gerencia chamados")
+
+Rel(helpdesk, db, "Armazena dados", "JDBC")
+
+@enduml
