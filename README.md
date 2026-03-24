@@ -32,92 +32,15 @@ Desenvolver um sistema web para:
 
 ### 🔹 Visão de Contexto
 
-```plantuml
-@startuml SystemContext
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
-
-title Sistema de Gestão de Chamados - Contexto
-
-Person(user, "Usuário", "Funcionário que abre chamados técnicos")
-Person(admin, "Administrador / Suporte TI", "Responsável por gerenciar chamados")
-
-System(helpdesk, "Sistema de Gestão de Chamados", "Sistema web para controle de chamados internos")
-
-SystemDb(db, "PostgreSQL", "Banco de dados relacional (em desenvolvimento)")
-
-Rel(user, helpdesk, "Abre e acompanha chamados")
-Rel(admin, helpdesk, "Gerencia chamados")
-
-Rel(helpdesk, db, "Armazena dados", "JDBC")
-
-@enduml
-```
+![Diagrama de Contexto](backend/helpdesk/docs/architecture/SystemContext-Sistema_de_Gestão_de_Chamados___Contexto.png)
 
 ### 🔹 Visão de Containers
 
-```plantuml
-@startuml Containers
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
-
-title Sistema de Gestão de Chamados - Containers
-
-Person(user, "Usuário")
-Person(admin, "Administrador")
-
-System_Boundary(helpdeskSystem, "Sistema Helpdesk") {
-
-    Container(frontend, "Frontend Web", "Angular, TypeScript", "SPA responsável pela interface do usuário")
-
-    Container(backend, "API Backend", "Java 17, Spring Boot", "API REST com regras de negócio")
-
-    ContainerDb(database, "PostgreSQL", "Banco relacional", "Armazena usuários e chamados (em desenvolvimento)")
-
-}
-
-Rel(user, frontend, "Usa", "HTTPS")
-Rel(admin, frontend, "Usa", "HTTPS")
-
-Rel(frontend, backend, "Consome API REST", "JSON / HTTP")
-
-Rel(backend, database, "Lê/Escreve", "JPA / JDBC")
-
-@enduml
-```
+![Diagrama de Containers](backend/helpdesk/docs/architecture/Containers-Sistema_de_Gestão_de_Chamados___Containers.png)
 
 ### 🔹 Visão de Componentes (Backend)
 
-```plantuml
-@startuml BackendComponents
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
-
-title Backend - Componentes
-
-Container_Boundary(api, "Backend API - Spring Boot") {
-
-    Component(userController, "UsuarioController", "Spring REST Controller", "Gerencia usuários")
-    Component(ticketController, "ChamadoController", "Spring REST Controller", "Gerencia chamados")
-
-    Component(userService, "UsuarioService", "Service", "Regras de usuários")
-    Component(ticketService, "ChamadoService", "Service", "Regras de chamados")
-
-    Component(userRepository, "UsuarioRepository", "Spring Data JPA", "Persistência de usuários")
-    Component(ticketRepository, "ChamadoRepository", "Spring Data JPA", "Persistência de chamados")
-
-}
-
-ContainerDb(database, "PostgreSQL", "Banco relacional")
-
-Rel(userController, userService, "Usa")
-Rel(ticketController, ticketService, "Usa")
-
-Rel(userService, userRepository, "Usa")
-Rel(ticketService, ticketRepository, "Usa")
-
-Rel(userRepository, database, "Lê/Escreve")
-Rel(ticketRepository, database, "Lê/Escreve")
-
-@enduml
-```
+![Diagrama de Componentes (Backend)](backend/helpdesk/docs/architecture/BackendComponents-Backend___Componentes.png)
 
 ---
 
@@ -207,45 +130,45 @@ helpdesk-java-angular/
 ├── QUICKSTART.md (guia rápido para rodar o projeto)
 │
 ├── 📁 backend/
-│   └── 📁 helpdesk/
-│       │
-│       ├── 📁 src/
-│       │   ├── 📁 main/java/com/murilo/helpdesk/
-│       │   │   ├── HelpdeskApplication.java
-│       │   │   ├── 📁 controller/
-│       │   │   │   ├── UsuarioController.java
-│       │   │   │   └── ChamadoController.java
-│       │   │   ├── 📁 service/
-│       │   │   │   ├── UsuarioService.java
-│       │   │   │   └── ChamadoService.java
-│       │   │   ├── 📁 repository/
-│       │   │   │   ├── UsuarioRepository.java
-│       │   │   │   └── ChamadoRepository.java
-│       │   │   ├── 📁 model/
-│       │   │   │   ├── Usuario.java
-│       │   │   │   ├── Chamado.java
-│       │   │   │   └── 📁 enums/
-│       │   │   │       ├── Perfil.java
-│       │   │   │       ├── Status.java
-│       │   │   │       └── Prioridade.java
-│       │   │   └── 📁 config/
-│       │   │       └── (configurações do projeto)
-│       │   │
-│       │   └── 📁 resources/
-│       │       └── application.properties
-│       │
-│       ├── 📁 docs/
-│       │   └── 📁 architecture/
-│       │       ├── system-context.puml
-│       │       ├── containers.puml
-│       │       └── components-backend.puml
-│       │
-│       ├── build.gradle
-│       ├── settings.gradle
-│       └── gradlew
+│   └── 📁 helpdesk/
+│       │
+│       ├── 📁 src/
+│       │   ├── 📁 main/java/com/murilo/helpdesk/
+│       │   │   ├── HelpdeskApplication.java
+│       │   │   ├── 📁 controller/
+│       │   │   │   ├── UsuarioController.java
+│       │   │   │   └── ChamadoController.java
+│       │   │   ├── 📁 service/
+│       │   │   │   ├── UsuarioService.java
+│       │   │   │   └── ChamadoService.java
+│       │   │   ├── 📁 repository/
+│       │   │   │   ├── UsuarioRepository.java
+│       │   │   │   └── ChamadoRepository.java
+│       │   │   ├── 📁 model/
+│       │   │   │   ├── Usuario.java
+│       │   │   │   ├── Chamado.java
+│       │   │   │   └── 📁 enums/
+│       │   │   │       ├── Perfil.java
+│       │   │   │       ├── Status.java
+│       │   │   │       └── Prioridade.java
+│       │   │   └── 📁 config/
+│       │   │       └── (configurações do projeto)
+│       │   │
+│       │   └── 📁 resources/
+│       │       └── application.properties
+│       │
+│       ├── 📁 docs/
+│       │   └── 📁 architecture/
+│       │       ├── system-context.puml
+│       │       ├── containers.puml
+│       │       └── components-backend.puml
+│       │
+│       ├── build.gradle
+│       ├── settings.gradle
+│       └── gradlew
 │
 ├── 📁 frontend/
-│   └── (A ser desenvolvido)
+│   └── (A ser desenvolvido)
 │
 ```
 
