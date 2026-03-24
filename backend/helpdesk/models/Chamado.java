@@ -3,51 +3,97 @@ package com.murilo.helpdesk.model;
 import com.murilo.helpdesk.model.enums.Prioridade;
 import com.murilo.helpdesk.model.enums.Status;
 import jakarta.persistence.*;
-import java.time.LocalDate;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.*;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
+/**
+ * Entidade que representa um chamado técnico do sistema.
+ * Contém informações sobre o ticket, responsáveis e status.
+ */
 @Entity
-@Table(name = "chamados")
-public class Chamado {
+@Table(name = "chamados", indexes = {
+    @Index(name = "idx_cliente", columnList = "cliente_id"),
+    @Index(name = "idx_tecnico", columnList = "tecnico_id"),
+    @Index(name = "idx_status", columnList = "status")
+})
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Chamado implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Título é obrigatório")
+    @Size(min = 5, max = 200, message = "Título deve ter entre 5 e 200 caracteres")
+    @Column(nullable = false, length = 200)
     private String titulo;
+
+    @NotBlank(message = "Observações são obrigatórias")
+    @Size(min = 10, max = 2000, message = "Observações devem ter entre 10 e 2000 caracteres")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String observacoes;
 
+    @NotNull(message = "Status é obrigatório")
+    @Column(nullable = false)
     private Integer status;
+
+    @NotNull(message = "Prioridade é obrigatória")
+    @Column(nullable = false)
     private Integer prioridade;
 
-    @ManyToOne
-    @JoinColumn(name = "tecnico_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tecnico_id", nullable = true)
     private Usuario tecnico;
 
-    @ManyToOne
-    @JoinColumn(name = "cliente_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id", nullable = false)
     private Usuario cliente;
 
-    private LocalDate dataAbertura = LocalDate.now();
-    private LocalDate dataFechamento;
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime dataAbertura;
 
-    public Chamado() {}
+    @Column(nullable = true)
+    private LocalDateTime dataFechamento;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getTitulo() { return titulo; }
-    public void setTitulo(String titulo) { this.titulo = titulo; }
-    public String getObservacoes() { return observacoes; }
-    public void setObservacoes(String observacoes) { this.observacoes = observacoes; }
+    @Column(nullable = true)
+    private LocalDateTime dataAtualizacao;
 
-    public Status getStatus() { return Status.values()[this.status]; }
-    public void setStatus(Status status) { this.status = status.getCodigo(); }
+    @PrePersist
+    protected void onCreate() {
+        dataAbertura = LocalDateTime.now();
+        dataAtualizacao = LocalDateTime.now();
+    }
 
-    public Prioridade getPrioridade() { return Prioridade.values()[this.prioridade]; }
-    public void setPrioridade(Prioridade prioridade) { this.prioridade = prioridade.getCodigo(); }
+    @PreUpdate
+    protected void onUpdate() {
+        dataAtualizacao = LocalDateTime.now();
+    }
 
-    public Usuario getTecnico() { return tecnico; }
-    public void setTecnico(Usuario tecnico) { this.tecnico = tecnico; }
-    public Usuario getCliente() { return cliente; }
+    // Métodos auxiliares para trabalhar com enums
+    public Status getStatusEnum() {
+        return Status.values()[this.status];
+    }
+
+    public void setStatusEnum(Status status) {
+        this.status = status.getCodigo();
+    }
+
+    public Prioridade getPrioridadeEnum() {
+        return Prioridade.values()[this.prioridade];
+    }
+
+    public void setPrioridadeEnum(Prioridade prioridade) {
+        this.prioridade = prioridade.getCodigo();
+    }
     public void setCliente(Usuario cliente) { this.cliente = cliente; }
     public LocalDate getDataAbertura() { return dataAbertura; }
     public void setDataAbertura(LocalDate dataAbertura) { this.dataAbertura = dataAbertura; }
