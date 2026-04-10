@@ -59,7 +59,7 @@ Desenvolver um sistema web para:
 
 - **RNF01** – O sistema deve utilizar arquitetura REST.
 - **RNF02** – O sistema deve utilizar autenticação JWT.
-- **RNF03** – O sistema deve utilizar banco de dados relacional (PostgreSQL) *(em desenvolvimento)*.
+- **RNF03** – O sistema deve utilizar banco de dados relacional PostgreSQL.
 - **RNF04** – O frontend deve ser SPA (Single Page Application).
 - **RNF05** – O sistema deve possuir responsividade básica.
 - **RNF06** – O código deve seguir padrão MVC.
@@ -93,7 +93,14 @@ Ferramenta que gera automaticamente documentação da API através do Swagger UI
 ### 🔹 Banco de Dados
 
 #### PostgreSQL
-Banco de dados relacional escolhido *(em desenvolvimento)* por sua confiabilidade, robustez e ampla utilização no mercado. Oferece suporte a transações ACID, integridade referencial e alto desempenho para aplicações corporativas.
+Banco de dados relacional escolhido por sua confiabilidade, robustez e ampla utilização no mercado. Oferece suporte a transações ACID, integridade referencial e alto desempenho para aplicações corporativas.
+
+O backend inclui scripts SQL de banco em `backend/helpdesk/database/`:
+
+- `schema.sql` — cria as tabelas `usuario`, `status_chamado`, `prioridade`, `chamado` e `comentario` com chaves estrangeiras.
+- `data.sql` — insere valores iniciais para `status_chamado` (`ABERTO`, `EM ANDAMENTO`, `FECHADO`), `prioridade` (`BAIXA`, `MEDIA`, `ALTA`) e um usuário administrativo padrão.
+
+A configuração de conexão está em `backend/helpdesk/src/main/resources/application.properties`, apontando para PostgreSQL local.
 
 ---
 
@@ -126,11 +133,13 @@ Plataforma de hospedagem de repositórios Git utilizada para armazenamento do c�
 helpdesk-java-angular/
 │
 ├── README.md (este arquivo)
-├── CONTRIBUICOES.md (resumo de melhorias implementadas)
-├── QUICKSTART.md (guia rápido para rodar o projeto)
 │
 ├── 📁 backend/
 │   └── 📁 helpdesk/
+│       │
+│       ├── 📁 database/
+│       │   ├── schema.sql
+│       │   └── data.sql
 │       │
 │       ├── 📁 src/
 │       │   ├── 📁 main/java/com/murilo/helpdesk/
@@ -167,11 +176,14 @@ helpdesk-java-angular/
 │       ├── settings.gradle
 │       └── gradlew
 │
-├── 📁 frontend/
-│   └── (A ser desenvolvido)
+├── 📁 frontend/ (não presente no repositório atual)
 │
 ```
 
 ## 📌 8. Status do Projeto
 
-🚧 Em desenvolvimento.
+✅ Backend com scripts de banco de dados disponíveis em `backend/helpdesk/database/`.
+
+⚠️ O frontend ainda não está presente no repositório atual.
+
+🔧 O backend usa PostgreSQL e a configuração principal está em `backend/helpdesk/src/main/resources/application.properties`.
