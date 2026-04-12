@@ -8,8 +8,15 @@ INSERT INTO status_chamado (nome) VALUES
 INSERT INTO prioridade (nome) VALUES
 ('BAIXA'),
 ('MEDIA'),
-('ALTA');
+('ALTA'),
+('URGENTE');
 
--- USUÁRIO PADRÃO
+-- USUÁRIO PADRÃO ADMIN
+-- Senha: 123456 (hash BCrypt gerado pelo Spring Security)
 INSERT INTO usuario (nome, email, senha, tipo)
-VALUES ('Admin', 'admin@helpdesk.com', '123456', 'ADMIN');
+VALUES (
+    'Admin',
+    'admin@helpdesk.com',
+    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+    'ADMIN'
+);
