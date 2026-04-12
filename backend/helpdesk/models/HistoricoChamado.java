@@ -1,139 +1,152 @@
 package com.murilo.helpdesk.model;
-
+ 
 import jakarta.persistence.*;
 import lombok.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-
+ 
 /**
  * Entidade que registra o histórico de mudanças em um chamado.
- * Fornece auditoria completa de todas as alterações.
+ * Fornece auditoria completa de todas as alterações realizadas.
  */
 @Entity
 @Table(name = "historico_chamados", indexes = {
-    @Index(name = "idx_chamado", columnList = "chamado_id"),
-    @Index(name = "idx_usuario", columnList = "usuario_id"),
-    @Index(name = "idx_data", columnList = "data_alteracao")
+    @Index(name = "idx_historico_chamado", columnList = "chamado_id"),
+    @Index(name = "idx_historico_usuario", columnList = "usuario_id"),
+    @Index(name = "idx_historico_data", columnList = "data_alteracao"),
+    @Index(name = "idx_historico_tipo", columnList = "tipo_alteracao")
 })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class HistoricoChamado implements Serializable {
-
+ 
     private static final long serialVersionUID = 1L;
-
+ 
+    /**
+     * Enum para garantir type-safety nos tipos de alteração
+     */
+    public enum TipoAlteracao {
+        STATUS,
+        PRIORIDADE,
+        TECNICO,
+        TITULO,
+        COMENTARIO,
+        FECHAMENTO,
+        REABERTURA,
+        CRIACAO
+    }
+ 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+ 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chamado_id", nullable = false)
     private Chamado chamado;
-
+ 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id")
     private Usuario usuarioAlteracao;
-
-    /**
-     * Tipo de alteração: STATUS, PRIORIDADE, TECNICO, TITULO, etc
-     */
-    @Column(nullable = false, length = 50)
-    private String tipoAlteracao;
-
-    /**
-     * Descrição legível da alteração
-     */
+ 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_alteracao", nullable = false, length = 50)
+    private TipoAlteracao tipoAlteracao;
+ 
     @Column(length = 200)
     private String descricao;
-
-    /**
-     * Valor anterior (como string)
-     */
-    @Column(columnDefinition = "TEXT")
+ 
+    @Column(name = "valor_anterior", columnDefinition = "TEXT")
     private String valorAnterior;
-
-    /**
-     * Valor novo (como string)
-     */
-    @Column(columnDefinition = "TEXT")
+ 
+    @Column(name = "valor_novo", columnDefinition = "TEXT")
     private String valorNovo;
-
-    @Column(nullable = false, updatable = false)
+ 
+    @Column(name = "data_alteracao", nullable = false, updatable = false)
     private LocalDateTime dataAlteracao;
-
+ 
     @PrePersist
     protected void onCreate() {
         dataAlteracao = LocalDateTime.now();
     }
-
-    /**
-     * Factory method para criar histórico de mudança de status
-     */
+ 
+    // -------------------------------------------------------------------------
+    // Factory methods
+    // -------------------------------------------------------------------------
+ 
     public static HistoricoChamado criarMudancaStatus(
             Chamado chamado, Usuario usuario, String statusAnterior, String statusNovo) {
-        return HistoricoChamado.builder()
+        return builder()
                 .chamado(chamado)
                 .usuarioAlteracao(usuario)
-                .tipoAlteracao("STATUS")
-                .descricao("Status alterado de " + statusAnterior + " para " + statusNovo)
+                .tipoAlteracao(TipoAlteracao.STATUS)
+                .descricao(String.format("Status alterado de '%s' para '%s'", statusAnterior, statusNovo))
                 .valorAnterior(statusAnterior)
                 .valorNovo(statusNovo)
                 .build();
     }
-
-    /**
-     * Factory method para criar histórico de mudança de prioridade
-     */
+ 
     public static HistoricoChamado criarMudancaPrioridade(
             Chamado chamado, Usuario usuario, String prioridadeAnterior, String prioridadeNova) {
-        return HistoricoChamado.builder()
+        return builder()
                 .chamado(chamado)
                 .usuarioAlteracao(usuario)
-                .tipoAlteracao("PRIORIDADE")
-                .descricao("Prioridade alterada de " + prioridadeAnterior + " para " + prioridadeNova)
+                .tipoAlteracao(TipoAlteracao.PRIORIDADE)
+                .descricao(String.format("Prioridade alterada de '%s' para '%s'", prioridadeAnterior, prioridadeNova))
                 .valorAnterior(prioridadeAnterior)
                 .valorNovo(prioridadeNova)
                 .build();
     }
-
-    /**
-     * Factory method para criar histórico de atribuição de técnico
-     */
+ 
     public static HistoricoChamado criarAtribuicaoTecnico(
             Chamado chamado, Usuario usuario, String tecnicoAnterior, String tecnicoNovo) {
-        return HistoricoChamado.builder()
+        return builder()
                 .chamado(chamado)
                 .usuarioAlteracao(usuario)
-                .tipoAlteracao("TECNICO")
-                .descricao("Técnico alterado de " + tecnicoAnterior + " para " + tecnicoNovo)
+                .tipoAlteracao(TipoAlteracao.TECNICO)
+                .descricao(String.format("Técnico alterado de '%s' para '%s'", tecnicoAnterior, tecnicoNovo))
                 .valorAnterior(tecnicoAnterior)
                 .valorNovo(tecnicoNovo)
                 .build();
     }
-
-    /**
-     * Factory method para criar histórico de comentário adicionado
-     */
+ 
     public static HistoricoChamado criarComentarioAdicionado(Chamado chamado, Usuario usuario) {
-        return HistoricoChamado.builder()
+        return builder()
                 .chamado(chamado)
                 .usuarioAlteracao(usuario)
-                .tipoAlteracao("COMENTARIO")
+                .tipoAlteracao(TipoAlteracao.COMENTARIO)
                 .descricao("Novo comentário adicionado")
                 .build();
     }
-
-    /**
-     * Factory method para criar histórico de fechamento
-     */
+ 
     public static HistoricoChamado criarFechamento(Chamado chamado, Usuario usuario) {
-        return HistoricoChamado.builder()
+        return builder()
                 .chamado(chamado)
                 .usuarioAlteracao(usuario)
-                .tipoAlteracao("FECHAMENTO")
-                .descricao("Chamado foi finalizado")
+                .tipoAlteracao(TipoAlteracao.FECHAMENTO)
+                .descricao("Chamado finalizado")
                 .valorNovo("ENCERRADO")
                 .build();
     }
+ 
+    public static HistoricoChamado criarReabertura(Chamado chamado, Usuario usuario) {
+        return builder()
+                .chamado(chamado)
+                .usuarioAlteracao(usuario)
+                .tipoAlteracao(TipoAlteracao.REABERTURA)
+                .descricao("Chamado reaberto")
+                .valorNovo("ABERTO")
+                .build();
+    }
+ 
+    public static HistoricoChamado criarCriacao(Chamado chamado, Usuario usuario) {
+        return builder()
+                .chamado(chamado)
+                .usuarioAlteracao(usuario)
+                .tipoAlteracao(TipoAlteracao.CRIACAO)
+                .descricao("Chamado criado")
+                .build();
+    }
 }
+ 
