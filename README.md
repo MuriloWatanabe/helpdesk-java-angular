@@ -6,12 +6,12 @@ Empresas frequentemente enfrentam dificuldades no gerenciamento de chamados téc
 
 Quando não há um sistema estruturado, podem ocorrer:
 
-- Perda de solicitações
-- Falta de priorização adequada
-- Atraso no atendimento
-- Ausência de histórico de ocorrências
+- Perda de solicitações  
+- Falta de priorização adequada  
+- Atraso no atendimento  
+- Ausência de histórico de ocorrências  
 
-O sistema proposto tem como objetivo centralizar e organizar os chamados técnicos internos, proporcionando controle, rastreabilidade e melhor gestão do suporte.
+O sistema proposto tem como objetivo centralizar e organizar os chamados técnicos internos, proporcionando controle, rastreabilidade e melhor gestão do suporte, incluindo acompanhamento completo do ciclo de vida do chamado.
 
 ---
 
@@ -19,12 +19,13 @@ O sistema proposto tem como objetivo centralizar e organizar os chamados técnic
 
 Desenvolver um sistema web para:
 
-- Cadastro de usuários
-- Abertura de chamados técnicos
-- Definição de prioridade
-- Acompanhamento de status
-- Histórico de atendimentos
-- Controle administrativo
+- Cadastro de usuários com diferentes perfis de acesso  
+- Abertura de chamados técnicos  
+- Definição de prioridade e categorização  
+- Acompanhamento de status do chamado  
+- Registro de responsável pelo atendimento  
+- Histórico de atendimentos com interações (comentários)  
+- Controle administrativo  
 
 ---
 
@@ -46,23 +47,24 @@ Desenvolver um sistema web para:
 
 ## ✅ 4. Requisitos Funcionais (RF)
 
-- **RF01** – O sistema deve permitir cadastro de usuários.
-- **RF02** – O sistema deve permitir autenticação de usuários.
-- **RF03** – O usuário deve poder abrir um chamado.
-- **RF04** – O administrador deve poder alterar o status do chamado.
-- **RF05** – O sistema deve listar chamados por prioridade.
-- **RF06** – O sistema deve registrar data e responsável pelo atendimento.
+- **RF01** – O sistema deve permitir cadastro de usuários.  
+- **RF02** – O sistema deve permitir autenticação de usuários.  
+- **RF03** – O usuário deve poder abrir um chamado.  
+- **RF04** – O administrador deve poder alterar o status do chamado.  
+- **RF05** – O sistema deve listar chamados por prioridade.  
+- **RF06** – O sistema deve registrar data e responsável pelo atendimento.  
+- **RF07** – O sistema deve permitir registrar comentários em chamados.  
 
 ---
 
 ## ⚙️ 5. Requisitos Não Funcionais (RNF)
 
-- **RNF01** – O sistema deve utilizar arquitetura REST.
-- **RNF02** – O sistema deve utilizar autenticação JWT.
-- **RNF03** – O sistema deve utilizar banco de dados relacional PostgreSQL.
-- **RNF04** – O frontend deve ser SPA (Single Page Application).
-- **RNF05** – O sistema deve possuir responsividade básica.
-- **RNF06** – O código deve seguir padrão MVC.
+- **RNF01** – O sistema deve utilizar arquitetura REST.  
+- **RNF02** – O sistema deve utilizar autenticação JWT.  
+- **RNF03** – O sistema deve utilizar banco de dados relacional PostgreSQL com integridade referencial.  
+- **RNF04** – O frontend deve ser SPA (Single Page Application).  
+- **RNF05** – O sistema deve possuir responsividade básica.  
+- **RNF06** – O código deve seguir padrão MVC.  
 
 ---
 
@@ -77,10 +79,10 @@ A linguagem Java foi escolhida por sua robustez, ampla utilização no mercado c
 Framework utilizado para simplificar a criação de APIs REST. O Spring Boot reduz configurações manuais, permite injeção de dependências e favorece a aplicação de boas práticas arquiteturais, aumentando a produtividade no desenvolvimento backend.
 
 #### Spring Data JPA
-Responsável pela camada de persistência de dados, utilizando o padrão ORM (Object Relational Mapping). Permite o mapeamento entre objetos Java e tabelas do banco de dados, reduzindo a necessidade de consultas SQL manuais e aumentando a produtividade.
+Responsável pela camada de persistência de dados, utilizando o padrão ORM (Object Relational Mapping). Permite o mapeamento entre entidades como usuários, chamados e comentários, reduzindo a necessidade de consultas SQL manuais e aumentando a produtividade.
 
 #### Spring Security + JWT
-Framework utilizado para implementação de autenticação segura e controle de acesso. Garante maior segurança na aplicação, protegendo endpoints e permitindo a definição de regras de autorização.
+Framework utilizado para implementação de autenticação segura e controle de acesso. Garante maior segurança na aplicação, protegendo endpoints e permitindo a definição de regras de autorização conforme o perfil do usuário.
 
 #### Lombok
 Biblioteca que reduz significativamente o código boilerplate (getters, setters, construtores) através de annotations simples. Mantém o código limpo, legível e mais fácil de manter.
@@ -95,10 +97,13 @@ Ferramenta que gera automaticamente documentação da API através do Swagger UI
 #### PostgreSQL
 Banco de dados relacional escolhido por sua confiabilidade, robustez e ampla utilização no mercado. Oferece suporte a transações ACID, integridade referencial e alto desempenho para aplicações corporativas.
 
-O backend inclui scripts SQL de banco em `backend/helpdesk/database/`:
+A modelagem do banco foi estruturada para garantir:
 
-- `schema.sql` — cria as tabelas `usuario`, `status_chamado`, `prioridade`, `chamado` e `comentario` com chaves estrangeiras.
-- `data.sql` — insere valores iniciais para `status_chamado` (`ABERTO`, `EM ANDAMENTO`, `FECHADO`), `prioridade` (`BAIXA`, `MEDIA`, `ALTA`) e um usuário administrativo padrão.
+- Separação de entidades como usuários, chamados, status e prioridade  
+- Controle de responsáveis por atendimento  
+- Registro de interações através de comentários vinculados aos chamados  
+- Integridade referencial entre as entidades  
+- Otimização de consultas por meio de índices  
 
 A configuração de conexão está em `backend/helpdesk/src/main/resources/application.properties`, apontando para PostgreSQL local.
 
@@ -128,62 +133,63 @@ Plataforma de hospedagem de repositórios Git utilizada para armazenamento do c�
 ---
 
 ## 📂 7. Estrutura do Projeto
-
 ```
 helpdesk-java-angular/
 │
 ├── README.md (este arquivo)
 │
 ├── 📁 backend/
-│   └── 📁 helpdesk/
-│       │
-│       ├── 📁 database/
-│       │   ├── schema.sql
-│       │   └── data.sql
-│       │
-│       ├── 📁 src/
-│       │   ├── 📁 main/java/com/murilo/helpdesk/
-│       │   │   ├── HelpdeskApplication.java
-│       │   │   ├── 📁 controller/
-│       │   │   │   ├── UsuarioController.java
-│       │   │   │   └── ChamadoController.java
-│       │   │   ├── 📁 service/
-│       │   │   │   ├── UsuarioService.java
-│       │   │   │   └── ChamadoService.java
-│       │   │   ├── 📁 repository/
-│       │   │   │   ├── UsuarioRepository.java
-│       │   │   │   └── ChamadoRepository.java
-│       │   │   ├── 📁 model/
-│       │   │   │   ├── Usuario.java
-│       │   │   │   ├── Chamado.java
-│       │   │   │   └── 📁 enums/
-│       │   │   │       ├── Perfil.java
-│       │   │   │       ├── Status.java
-│       │   │   │       └── Prioridade.java
-│       │   │   └── 📁 config/
-│       │   │       └── (configurações do projeto)
-│       │   │
-│       │   └── 📁 resources/
-│       │       └── application.properties
-│       │
-│       ├── 📁 docs/
-│       │   └── 📁 architecture/
-│       │       ├── system-context.puml
-│       │       ├── containers.puml
-│       │       └── components-backend.puml
-│       │
-│       ├── build.gradle
-│       ├── settings.gradle
-│       └── gradlew
+│ └── 📁 helpdesk/
+│ │
+│ ├── 📁 database/
+│ │ ├── schema.sql
+│ │ └── data.sql
+│ │
+│ ├── 📁 src/
+│ │ ├── 📁 main/java/com/murilo/helpdesk/
+│ │ │ ├── HelpdeskApplication.java
+│ │ │ ├── 📁 controller/
+│ │ │ │ ├── UsuarioController.java
+│ │ │ │ └── ChamadoController.java
+│ │ │ ├── 📁 service/
+│ │ │ │ ├── UsuarioService.java
+│ │ │ │ └── ChamadoService.java
+│ │ │ ├── 📁 repository/
+│ │ │ │ ├── UsuarioRepository.java
+│ │ │ │ └── ChamadoRepository.java
+│ │ │ ├── 📁 model/
+│ │ │ │ ├── Usuario.java
+│ │ │ │ ├── Chamado.java
+│ │ │ │ └── 📁 enums/
+│ │ │ │ ├── Perfil.java
+│ │ │ │ ├── Status.java
+│ │ │ │ └── Prioridade.java
+│ │ │ └── 📁 config/
+│ │ │ └── (configurações do projeto)
+│ │ │
+│ │ └── 📁 resources/
+│ │ └── application.properties
+│ │
+│ ├── 📁 docs/
+│ │ └── 📁 architecture/
+│ │ ├── system-context.puml
+│ │ ├── containers.puml
+│ │ └── components-backend.puml
+│ │
+│ ├── build.gradle
+│ ├── settings.gradle
+│ └── gradlew
 │
 ├── 📁 frontend/ (não presente no repositório atual)
 │
+---
+
 ```
 
 ## 📌 8. Status do Projeto
 
-✅ Backend com scripts de banco de dados disponíveis em `backend/helpdesk/database/`.
+✅ Backend estruturado com persistência relacional e suporte a gerenciamento completo de chamados.
 
 ⚠️ O frontend ainda não está presente no repositório atual.
 
-🔧 O backend usa PostgreSQL e a configuração principal está em `backend/helpdesk/src/main/resources/application.properties`.
+🔧 O backend utiliza PostgreSQL e a configuração principal está em `backend/helpdesk/src/main/resources/application.properties`.
