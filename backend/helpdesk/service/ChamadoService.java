@@ -5,6 +5,8 @@ import com.murilo.helpdesk.model.enums.Status;
 import com.murilo.helpdesk.repository.ChamadoRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -43,6 +45,16 @@ public class ChamadoService {
     public List<Chamado> findAll() {
         log.info("Listando todos os chamados");
         return chamadoRepository.findAll();
+    }
+
+    /**
+     * Lista todos os chamados do sistema com paginação.
+     * @param pageable Parâmetros de paginação
+     * @return Página de chamados
+     */
+    public Page<Chamado> findAll(Pageable pageable) {
+        log.info("Listando todos os chamados com paginação: {}", pageable);
+        return chamadoRepository.findAll(pageable);
     }
 
     /**
