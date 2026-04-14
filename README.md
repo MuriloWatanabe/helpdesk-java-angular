@@ -1,195 +1,263 @@
-# 🖥️ Sistema de Gestão de Chamados (Help Desk)
+# Sistema de Gestão de Chamados (Help Desk)
 
-## 📌 1. Domínio do Problema
+## 1. Domínio do Problema
 
 Empresas frequentemente enfrentam dificuldades no gerenciamento de chamados técnicos internos, como problemas de rede, computadores, sistemas e acessos.
 
 Quando não há um sistema estruturado, podem ocorrer:
 
-- Perda de solicitações  
-- Falta de priorização adequada  
-- Atraso no atendimento  
-- Ausência de histórico de ocorrências  
+- Perda de solicitações
+- Falta de priorização adequada
+- Atraso no atendimento
+- Ausência de histórico de ocorrências
 
-O sistema proposto tem como objetivo centralizar e organizar os chamados técnicos internos, proporcionando controle, rastreabilidade e melhor gestão do suporte, incluindo acompanhamento completo do ciclo de vida do chamado.
-
----
-
-## 🎯 2. Objetivo do Sistema
-
-Desenvolver um sistema web para:
-
-- Cadastro de usuários com diferentes perfis de acesso  
-- Abertura de chamados técnicos  
-- Definição de prioridade e categorização  
-- Acompanhamento de status do chamado  
-- Registro de responsável pelo atendimento  
-- Histórico de atendimentos com interações (comentários)  
-- Controle administrativo  
+O sistema proposto centraliza e organiza os chamados técnicos internos, proporcionando controle, rastreabilidade e melhor gestão do suporte, incluindo acompanhamento completo do ciclo de vida do chamado.
 
 ---
 
-## 📐 3. Arquitetura do Sistema
+## 2. Objetivo do Sistema
 
-### 🔹 Visão de Contexto
+- Cadastro de usuários com diferentes perfis de acesso
+- Abertura de chamados técnicos
+- Definição de prioridade e categorização
+- Acompanhamento de status do chamado
+- Registro de responsável pelo atendimento
+- Histórico de atendimentos com interações (comentários)
+- Controle administrativo
+
+---
+
+## 3. Arquitetura do Sistema
+
+### Visão de Contexto
 
 ![Diagrama de Contexto](backend/helpdesk/docs/architecture/SystemContext-Sistema_de_Gestão_de_Chamados___Contexto.png)
 
-### 🔹 Visão de Containers
+### Visão de Containers
 
 ![Diagrama de Containers](backend/helpdesk/docs/architecture/Containers-Sistema_de_Gestão_de_Chamados___Containers.png)
 
-### 🔹 Visão de Componentes (Backend)
+### Visão de Componentes (Backend)
 
 ![Diagrama de Componentes (Backend)](backend/helpdesk/docs/architecture/BackendComponents-Backend___Componentes.png)
 
 ---
 
-## ✅ 4. Requisitos Funcionais (RF)
+## 4. Requisitos Funcionais (RF)
 
-- **RF01** – O sistema deve permitir cadastro de usuários.  
-- **RF02** – O sistema deve permitir autenticação de usuários.  
-- **RF03** – O usuário deve poder abrir um chamado.  
-- **RF04** – O administrador deve poder alterar o status do chamado.  
-- **RF05** – O sistema deve listar chamados por prioridade.  
-- **RF06** – O sistema deve registrar data e responsável pelo atendimento.  
-- **RF07** – O sistema deve permitir registrar comentários em chamados.  
-
----
-
-## ⚙️ 5. Requisitos Não Funcionais (RNF)
-
-- **RNF01** – O sistema deve utilizar arquitetura REST.  
-- **RNF02** – O sistema deve utilizar autenticação JWT.  
-- **RNF03** – O sistema deve utilizar banco de dados relacional PostgreSQL com integridade referencial.  
-- **RNF04** – O frontend deve ser SPA (Single Page Application).  
-- **RNF05** – O sistema deve possuir responsividade básica.  
-- **RNF06** – O código deve seguir padrão MVC.  
+- **RF01** – O sistema deve permitir cadastro de usuários.
+- **RF02** – O sistema deve permitir autenticação de usuários.
+- **RF03** – O usuário deve poder abrir um chamado.
+- **RF04** – O administrador deve poder alterar o status do chamado.
+- **RF05** – O sistema deve listar chamados por prioridade.
+- **RF06** – O sistema deve registrar data e responsável pelo atendimento.
+- **RF07** – O sistema deve permitir registrar comentários em chamados.
 
 ---
 
-## 🛠️ 6. Principais Tecnologias Utilizadas e Justificativas de Escolha
+## 5. Requisitos Não Funcionais (RNF)
 
-### 🔹 Backend
-
-#### Java 17
-A linguagem Java foi escolhida por sua robustez, ampla utilização no mercado corporativo e forte adoção em sistemas empresariais. Sua orientação a objetos e maturidade no ecossistema tornam a tecnologia adequada para o desenvolvimento de aplicações escaláveis e seguras.
-
-#### Spring Boot 4.0
-Framework utilizado para simplificar a criação de APIs REST. O Spring Boot reduz configurações manuais, permite injeção de dependências e favorece a aplicação de boas práticas arquiteturais, aumentando a produtividade no desenvolvimento backend.
-
-#### Spring Data JPA
-Responsável pela camada de persistência de dados, utilizando o padrão ORM (Object Relational Mapping). Permite o mapeamento entre entidades como usuários, chamados e comentários, reduzindo a necessidade de consultas SQL manuais e aumentando a produtividade.
-
-#### Spring Security + JWT
-Framework utilizado para implementação de autenticação segura e controle de acesso. Garante maior segurança na aplicação, protegendo endpoints e permitindo a definição de regras de autorização conforme o perfil do usuário.
-
-#### Lombok
-Biblioteca que reduz significativamente o código boilerplate (getters, setters, construtores) através de annotations simples. Mantém o código limpo, legível e mais fácil de manter.
-
-#### Springdoc OpenAPI
-Ferramenta que gera automaticamente documentação da API através do Swagger UI. Facilita testes, integração frontend/backend e compreensão dos endpoints disponíveis.
+- **RNF01** – O sistema deve utilizar arquitetura REST.
+- **RNF02** – O sistema deve utilizar autenticação JWT.
+- **RNF03** – O sistema deve utilizar banco de dados relacional PostgreSQL com integridade referencial.
+- **RNF04** – O frontend deve ser SPA (Single Page Application).
+- **RNF05** – O sistema deve possuir responsividade básica.
+- **RNF06** – O código deve seguir padrão MVC.
 
 ---
 
-### 🔹 Banco de Dados
+## 6. Principais Tecnologias
 
-#### PostgreSQL
-Banco de dados relacional escolhido por sua confiabilidade, robustez e ampla utilização no mercado. Oferece suporte a transações ACID, integridade referencial e alto desempenho para aplicações corporativas.
+### Backend
 
-A modelagem do banco foi estruturada para garantir:
+| Tecnologia | Versão | Função |
+|---|---|---|
+| Java | 17 | Linguagem principal |
+| Spring Boot | 4.0.3 | Framework base / REST |
+| Spring Data JPA | — | Persistência / ORM |
+| Spring Security | — | Autenticação e autorização |
+| JJWT | 0.12.6 | Geração e validação de tokens JWT |
+| Hibernate | — | Mapeamento objeto-relacional |
+| Lombok | — | Redução de boilerplate |
+| Springdoc OpenAPI | 2.8.8 | Documentação automática (Swagger UI) |
+| PostgreSQL | — | Banco de dados relacional |
+| Gradle | — | Build e gerenciamento de dependências |
 
-- Separação de entidades como usuários, chamados, status e prioridade  
-- Controle de responsáveis por atendimento  
-- Registro de interações através de comentários vinculados aos chamados  
-- Integridade referencial entre as entidades  
-- Otimização de consultas por meio de índices  
+### Frontend
 
-A configuração de conexão está em `backend/helpdesk/src/main/resources/application.properties`, apontando para PostgreSQL local.
-
----
-
-### 🔹 Frontend
-
-#### Angular 18+
-Framework estruturado para desenvolvimento de aplicações do tipo SPA (Single Page Application). Foi escolhido por sua arquitetura modular, organização clara de componentes e forte adoção em sistemas corporativos.
-
-#### TypeScript
-Superset do JavaScript que adiciona tipagem estática à linguagem. Sua utilização aumenta a previsibilidade do código, reduz erros e melhora a manutenção do projeto.
-
-#### Bootstrap / Material Design
-Frameworks de UI que fornecem componentes profissionais, responsividade automática e facilitam a criação de interfaces modernas e intuitivas.
+| Tecnologia | Função |
+|---|---|
+| Angular 18+ | Framework SPA |
+| TypeScript | Tipagem estática |
+| Bootstrap / Material | Componentes de UI |
 
 ---
 
-### 🔹 Versionamento
+## 7. Estrutura do Projeto
 
-#### Git
-Sistema de controle de versão distribuído que permite rastrear alterações no código, facilitando a organização e evolução do projeto.
-
-#### GitHub
-Plataforma de hospedagem de repositórios Git utilizada para armazenamento do código, controle de versões e colaboração entre os desenvolvedores.
-
----
-
-## 📂 7. Estrutura do Projeto
 ```
 helpdesk-java-angular/
 │
-├── README.md (este arquivo)
+├── README.md
 │
-├── 📁 backend/
-│ └── 📁 helpdesk/
-│ │
-│ ├── 📁 database/
-│ │ ├── schema.sql
-│ │ └── data.sql
-│ │
-│ ├── 📁 src/
-│ │ ├── 📁 main/java/com/murilo/helpdesk/
-│ │ │ ├── HelpdeskApplication.java
-│ │ │ ├── 📁 controller/
-│ │ │ │ ├── UsuarioController.java
-│ │ │ │ └── ChamadoController.java
-│ │ │ ├── 📁 service/
-│ │ │ │ ├── UsuarioService.java
-│ │ │ │ └── ChamadoService.java
-│ │ │ ├── 📁 repository/
-│ │ │ │ ├── UsuarioRepository.java
-│ │ │ │ └── ChamadoRepository.java
-│ │ │ ├── 📁 model/
-│ │ │ │ ├── Usuario.java
-│ │ │ │ ├── Chamado.java
-│ │ │ │ └── 📁 enums/
-│ │ │ │ ├── Perfil.java
-│ │ │ │ ├── Status.java
-│ │ │ │ └── Prioridade.java
-│ │ │ └── 📁 config/
-│ │ │ └── (configurações do projeto)
-│ │ │
-│ │ └── 📁 resources/
-│ │ └── application.properties
-│ │
-│ ├── 📁 docs/
-│ │ └── 📁 architecture/
-│ │ ├── system-context.puml
-│ │ ├── containers.puml
-│ │ └── components-backend.puml
-│ │
-│ ├── build.gradle
-│ ├── settings.gradle
-│ └── gradlew
+├── backend/
+│   └── helpdesk/
+│       │
+│       ├── src/
+│       │   ├── main/
+│       │   │   ├── java/com/murilo/helpdesk/
+│       │   │   │   ├── HelpdeskApplication.java
+│       │   │   │   │
+│       │   │   │   ├── model/
+│       │   │   │   │   ├── Usuario.java
+│       │   │   │   │   ├── Chamado.java
+│       │   │   │   │   ├── Comentario.java
+│       │   │   │   │   ├── Anexo.java
+│       │   │   │   │   ├── Avaliacao.java
+│       │   │   │   │   ├── HistoricoChamado.java
+│       │   │   │   │   ├── DepartamentoEntity.java
+│       │   │   │   │   └── enums/
+│       │   │   │   │       ├── Perfil.java
+│       │   │   │   │       ├── Status.java
+│       │   │   │   │       ├── Prioridade.java
+│       │   │   │   │       ├── Categoria.java
+│       │   │   │   │       ├── Severidade.java
+│       │   │   │   │       └── Departamento.java
+│       │   │   │   │
+│       │   │   │   ├── repository/
+│       │   │   │   │   ├── UsuarioRepository.java
+│       │   │   │   │   ├── ChamadoRepository.java
+│       │   │   │   │   ├── ComentarioRepository.java
+│       │   │   │   │   ├── AnexoRepository.java
+│       │   │   │   │   ├── AvaliacaoRepository.java
+│       │   │   │   │   ├── DepartamentoRepository.java
+│       │   │   │   │   └── HistoricoChamadoRepository.java
+│       │   │   │   │
+│       │   │   │   ├── service/
+│       │   │   │   │   ├── UsuarioService.java
+│       │   │   │   │   └── ChamadoService.java
+│       │   │   │   │
+│       │   │   │   └── controller/
+│       │   │   │       ├── UsuarioController.java
+│       │   │   │       └── ChamadoController.java
+│       │   │   │
+│       │   │   └── resources/
+│       │   │       └── application.properties
+│       │   │
+│       │   └── test/
+│       │       └── java/com/murilo/helpdesk/
+│       │           └── HelpdeskApplicationTests.java
+│       │
+│       ├── database/
+│       │   ├── schema.sql
+│       │   └── data.sql
+│       │
+│       ├── docs/architecture/
+│       ├── build.gradle
+│       ├── settings.gradle
+│       └── gradlew
 │
-├── 📁 frontend/ (não presente no repositório atual)
-│
----
-
+└── frontend/  (em desenvolvimento)
 ```
 
-## 📌 8. Status do Projeto
+---
 
-✅ Backend estruturado com persistência relacional e suporte a gerenciamento completo de chamados.
+## 8. Endpoints da API
 
-⚠️ O frontend ainda não está presente no repositório atual.
+> Base URL: `http://localhost:8080/api`
 
-🔧 O backend utiliza PostgreSQL e a configuração principal está em `backend/helpdesk/src/main/resources/application.properties`.
+| Método | Endpoint | Descrição |
+|---|---|---|
+| GET | `/v1/usuarios` | Lista todos os usuários |
+| GET | `/v1/usuarios/{id}` | Busca usuário por ID |
+| POST | `/v1/usuarios` | Cria novo usuário |
+| PUT | `/v1/usuarios/{id}` | Atualiza usuário |
+| DELETE | `/v1/usuarios/{id}` | Remove usuário |
+| GET | `/v1/chamados` | Lista chamados (paginado) |
+| GET | `/v1/chamados/{id}` | Busca chamado por ID |
+| POST | `/v1/chamados` | Abre novo chamado |
+| PUT | `/v1/chamados/{id}` | Atualiza chamado |
+| PATCH | `/v1/chamados/{id}/status/{status}` | Altera status do chamado |
+| DELETE | `/v1/chamados/{id}` | Remove chamado |
+
+Documentação interativa disponível em: `http://localhost:8080/api/swagger-ui.html`
+
+---
+
+## 9. Como executar o backend
+
+**Pré-requisitos:** Java 17+, PostgreSQL rodando localmente
+
+1. Crie o banco de dados:
+   ```sql
+   CREATE DATABASE helpdesk;
+   ```
+
+2. Execute o schema e dados iniciais:
+   ```
+   backend/helpdesk/database/schema.sql
+   backend/helpdesk/database/data.sql
+   ```
+
+3. Configure as credenciais em `src/main/resources/application.properties`
+
+4. Execute:
+   ```bash
+   cd backend/helpdesk
+   ./gradlew bootRun
+   ```
+
+---
+
+## 10. Histórico de Melhorias
+
+### build.gradle — Dependências adicionadas
+
+O arquivo original continha apenas o `spring-boot-starter` básico, o que impedia o projeto de compilar e executar. Foram adicionados:
+
+| Dependência | Motivo |
+|---|---|
+| `spring-boot-starter-web` | Habilita endpoints REST (`@RestController`, etc.) |
+| `spring-boot-starter-data-jpa` | Habilita repositórios JPA e Hibernate |
+| `spring-boot-starter-validation` | Habilita `@NotNull`, `@Size`, `@Email`, `@Valid` |
+| `spring-boot-starter-security` | Base para autenticação e JWT |
+| `jjwt-api/impl/jackson 0.12.6` | Geração e validação de tokens JWT |
+| `postgresql` (runtimeOnly) | Driver JDBC para PostgreSQL |
+| `lombok` (compileOnly + annotationProcessor) | Anotações como `@Data` e `@Builder` requerem o annotation processor |
+| `springdoc-openapi-starter-webmvc-ui 2.8.8` | Swagger UI — as anotações `@Operation` já existiam nos controllers |
+| `spring-security-test` | Suporte a testes com Spring Security |
+
+### Estrutura de pacotes — Migração para o classpath
+
+Todos os arquivos Java estavam em `backend/helpdesk/models/`, `repository/`, `service/` e `controller/` — fora da árvore de fontes do Gradle. O IDE não conseguia resolver imports e o projeto não compilava.
+
+Todos os arquivos foram movidos para o caminho correto:
+`backend/helpdesk/src/main/java/com/murilo/helpdesk/`
+
+### Correções de bugs
+
+| Arquivo | Bug | Correção |
+|---|---|---|
+| `Chamado.java` | Getters/setters com tipo `LocalDate` incorreto (campo é `LocalDateTime`) | Removidos — Lombok já os gera corretamente |
+| `Usuario.java` | Faltava campo `departamento` exigido pelo `mappedBy` de `DepartamentoEntity` | Adicionado `@ManyToOne DepartamentoEntity departamento` |
+| `HistoricoChamadoRepository.java` | Parâmetro `tipoAlteracao` era `String` em vez do enum `TipoAlteracao` | Corrigido para o tipo correto |
+| `UsuarioService.java` | `@Autowired(required=false)` no `PasswordEncoder` — com Spring Security no classpath o bean sempre existe | Substituído por `@RequiredArgsConstructor` com injeção obrigatória |
+| `UsuarioController.java` / `ChamadoController.java` | Path `/api/v1/...` + `context-path=/api` gerava `/api/api/v1/...` | Paths corrigidos para `/v1/...` |
+| Todos os models | `@Data` sem customização em entidades JPA causa problemas de `equals`/`hashCode` com lazy loading | Adicionados `@EqualsAndHashCode(onlyExplicitlyIncluded=true)` e `@ToString(exclude={...})` em todas as entidades |
+
+---
+
+## 11. Status do Projeto
+
+| Componente | Status |
+|---|---|
+| Estrutura de pacotes | Corrigida |
+| Dependências (build.gradle) | Corrigidas |
+| Models e Enums | Completos |
+| Repositories | Completos |
+| Services (Usuario, Chamado) | Completos |
+| Controllers (Usuario, Chamado) | Completos |
+| application.properties | Pendente de limpeza |
+| Spring Security + JWT | Pendente |
+| DTOs | Pendente |
+| Frontend | Em desenvolvimento |

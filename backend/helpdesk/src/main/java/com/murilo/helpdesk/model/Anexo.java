@@ -8,22 +8,18 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-/**
- * Entidade que representa um anexo/arquivo em um chamado.
- * Permite compartilhar screenshots, logs, arquivos de diagnóstico, etc.
- */
 @Entity
 @Table(name = "anexos", indexes = {
-    @Index(name = "idx_chamado", columnList = "chamado_id"),
-    @Index(name = "idx_usuario", columnList = "usuario_id")
+    @Index(name = "idx_anexo_chamado",  columnList = "chamado_id"),
+    @Index(name = "idx_anexo_usuario",  columnList = "usuario_id")
 })
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(exclude = {"chamado", "uploadPor"})
-@EqualsAndHashCode(of = "id")
 public class Anexo implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -37,6 +33,7 @@ public class Anexo implements Serializable {
         "text/plain", "text/csv"
     );
 
+    @EqualsAndHashCode.Include
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -59,7 +56,7 @@ public class Anexo implements Serializable {
 
     @NotNull(message = "Tamanho do arquivo é obrigatório")
     @Column(nullable = false)
-    private Long tamanho; // em bytes
+    private Long tamanho;
 
     @NotBlank(message = "Tipo MIME é obrigatório")
     @Column(nullable = false, length = 100)
@@ -82,15 +79,12 @@ public class Anexo implements Serializable {
 
     public String getTamanhoFormatado() {
         if (tamanho == null) return "0 B";
-
         double valor = tamanho;
         int unidade = 0;
-
         while (valor >= 1024 && unidade < UNIDADES.length - 1) {
             valor /= 1024;
             unidade++;
         }
-
         return String.format("%.2f %s", valor, UNIDADES[unidade]);
     }
 
