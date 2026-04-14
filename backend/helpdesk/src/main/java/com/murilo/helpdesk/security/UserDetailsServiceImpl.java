@@ -1,0 +1,32 @@
+package com.murilo.helpdesk.security;
+
+import com.murilo.helpdesk.repository.UsuarioRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class UserDetailsServiceImpl implements UserDetailsService {
+
+    private final UsuarioRepository usuarioRepository;
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        var usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + email));
+
+        Set<SimpleGrantedAuthority> authorities = usuario.getPerfis().stream()
+                .map(perfil -> new SimpleGrantedAuthority(perfil.getDescricao()))
+                .collect(Collectors.toSet());
+
+        return new User(usuario.getEmail(), usuario.getSenha(), authorities);
+    }
+}
