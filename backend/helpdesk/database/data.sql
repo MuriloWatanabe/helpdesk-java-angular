@@ -11,7 +11,7 @@ INSERT INTO usuarios (nome, email, senha)
 VALUES (
     'Admin',
     'admin@helpdesk.com',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy'
+    '$2b$10$oJoU2XK9Uh.ghqVex/p78umK48wDDMoDMMjo0.2QhJUhXSkkrF9XW'
 );
 
 -- Perfil ADMIN (código 0) para o usuário recém-criado
