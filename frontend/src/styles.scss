@@ -1,0 +1,68 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --color-sidebar-bg: #1e3a5f;
+  --color-sidebar-active: rgba(255, 255, 255, 0.1);
+  --color-sidebar-active-border: #4a90d9;
+  --color-primary: #1D4ED8;
+  --color-primary-hover: #1e40af;
+  --color-background: #f0f4f8;
+  --color-card: #ffffff;
+  --color-text-primary: #1e293b;
+  --color-text-secondary: #64748b;
+  --color-text-muted: #94a3b8;
+  --color-border: #e2e8f0;
+
+  --badge-alta-bg: #fee2e2;
+  --badge-alta-color: #dc2626;
+  --badge-media-bg: #fef3c7;
+  --badge-media-color: #d97706;
+  --badge-baixa-bg: #d1fae5;
+  --badge-baixa-color: #059669;
+
+  --badge-aberto-bg: #dbeafe;
+  --badge-aberto-color: #2563eb;
+  --badge-andamento-bg: #fef3c7;
+  --badge-andamento-color: #d97706;
+  --badge-resolvido-bg: #d1fae5;
+  --badge-resolvido-color: #059669;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: inherit;
+}
+
+input {
+  font-family: inherit;
+  outline: none;
+}
+
+ul {
+  list-style: none;
+}

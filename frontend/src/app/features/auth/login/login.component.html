@@ -1,0 +1,70 @@
+<div class="login-container">
+  <div class="circles">
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+  </div>
+
+  <div class="login-card">
+    <div class="logo">
+      <span class="logo-icon">&#9830;</span>
+      <span class="logo-text">HelpDesk</span>
+    </div>
+    <p class="subtitle">Sistema de Chamados Internos</p>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="email">E-mail corporativo</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="seu@empresa.com.br"
+          [class.input-error]="emailControl?.invalid && emailControl?.touched"
+        />
+        @if (emailControl?.invalid && emailControl?.touched) {
+          <span class="field-error">
+            @if (emailControl?.errors?.['required']) { E-mail é obrigatório. }
+            @else if (emailControl?.errors?.['email']) { Informe um e-mail válido. }
+          </span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="senha">Senha</label>
+        <input
+          id="senha"
+          type="password"
+          formControlName="senha"
+          placeholder="••••••••"
+          [class.input-error]="senhaControl?.invalid && senhaControl?.touched"
+        />
+        @if (senhaControl?.invalid && senhaControl?.touched) {
+          <span class="field-error">
+            @if (senhaControl?.errors?.['required']) { Senha é obrigatória. }
+            @else if (senhaControl?.errors?.['minlength']) { Mínimo de 4 caracteres. }
+          </span>
+        }
+      </div>
+
+      <div class="forgot">
+        <a href="#">Esqueci minha senha</a>
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="isLoading">
+        @if (isLoading) { Entrando... } @else { Entrar }
+      </button>
+
+      @if (errorMessage) {
+        <div class="error-msg">{{ errorMessage }}</div>
+      }
+
+      <div class="divider">
+        <span>ou</span>
+      </div>
+
+      <button type="button" class="btn-secondary">
+        Entrar com SSO corporativo
+      </button>
+    </form>
+  </div>
+</div>
