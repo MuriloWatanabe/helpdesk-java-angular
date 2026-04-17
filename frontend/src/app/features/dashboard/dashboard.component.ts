@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Chart } from 'chart.js/auto';
 import { SidebarComponent } from '../../layout/sidebar/sidebar.component';
+import { AuthService } from '../../core/services/auth.service';
 
 interface StatCard {
   title: string;
@@ -37,6 +38,13 @@ interface Chamado {
 })
 export class DashboardComponent implements AfterViewInit {
   @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>;
+
+  userName = '';
+
+  constructor(private authService: AuthService) {
+    const user = this.authService.getUsuarioAtual();
+    this.userName = user?.nome || user?.email || 'Usuário';
+  }
 
   statCards: StatCard[] = [
     {
@@ -124,7 +132,7 @@ export class DashboardComponent implements AfterViewInit {
     }
   ];
 
-  private chart: Chart | null = null;
+  private _chart: Chart | null = null;
 
   ngAfterViewInit(): void {
     this.createChart();
@@ -136,7 +144,7 @@ export class DashboardComponent implements AfterViewInit {
     const ctx = this.chartCanvas.nativeElement.getContext('2d');
     if (!ctx) return;
 
-    this.chart = new Chart(ctx, {
+    this._chart = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],

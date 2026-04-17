@@ -19,6 +19,12 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'chamados',
+    loadComponent: () =>
+      import('./features/chamados/chamados-list/chamados-list.component').then(m => m.ChamadosListComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: '**',
     redirectTo: '/login'
   }

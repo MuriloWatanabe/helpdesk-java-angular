@@ -1,0 +1,126 @@
+<div class="layout">
+  <app-sidebar />
+
+  <main class="main-content">
+    <header class="page-header">
+      <div class="header-left">
+        <h1 class="page-title">Chamados</h1>
+        @if (totalElements > 0) {
+          <span class="total-badge">{{ totalElements }} total</span>
+        }
+      </div>
+      <a routerLink="/chamados/novo" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Novo Chamado
+      </a>
+    </header>
+
+    <div class="filters-bar">
+      <div class="status-tabs">
+        @for (opt of statusOptions; track opt.label) {
+          <button
+            class="tab-btn"
+            [class.active]="filtroStatus === opt.value"
+            (click)="filtrarStatus(opt.value)"
+          >{{ opt.label }}</button>
+        }
+      </div>
+      <div class="search-wrap">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input class="search-input" type="text" placeholder="Buscar por título ou cliente..." [(ngModel)]="busca" />
+      </div>
+    </div>
+
+    @if (error) {
+      <div class="alert-error">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ error }}
+      </div>
+    }
+
+    @if (loading) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Carregando chamados...</p>
+      </div>
+    }
+
+    @if (!loading && !error) {
+      <div class="table-card">
+        @if (chamadosFiltrados.length === 0) {
+          <div class="empty-state">
+            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.3">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            <p>Nenhum chamado encontrado</p>
+            <span>Tente ajustar os filtros ou crie um novo chamado.</span>
+          </div>
+        } @else {
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th class="col-id">#</th>
+                  <th>Título</th>
+                  <th>Cliente</th>
+                  <th>Técnico</th>
+                  <th>Prioridade</th>
+                  <th>Status</th>
+                  <th>Abertura</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (c of chamadosFiltrados; track c.id) {
+                  <tr>
+                    <td class="col-id">{{ c.id }}</td>
+                    <td class="col-titulo">{{ c.titulo }}</td>
+                    <td>{{ c.cliente?.nome ?? '—' }}</td>
+                    <td class="col-tecnico">{{ c.tecnico?.nome ?? 'Não atribuído' }}</td>
+                    <td>
+                      <span class="badge" [ngClass]="getPrioridadeClass(c.prioridade)">
+                        {{ getPrioridadeLabel(c.prioridade) }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge" [ngClass]="getStatusClass(c.status)">
+                        {{ getStatusLabel(c.status) }}
+                      </span>
+                    </td>
+                    <td class="col-data">{{ formatData(c.dataAbertura) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          @if (totalPages > 1) {
+            <div class="pagination">
+              <button class="page-btn" (click)="paginaAnterior()" [disabled]="currentPage === 0">
+                ‹ Anterior
+              </button>
+              @for (p of paginas; track p) {
+                <button
+                  class="page-btn"
+                  [class.active]="p === currentPage"
+                  (click)="irParaPagina(p)"
+                >{{ p + 1 }}</button>
+              }
+              <button class="page-btn" (click)="proximaPagina()" [disabled]="currentPage === totalPages - 1">
+                Próximo ›
+              </button>
+            </div>
+          }
+        }
+      </div>
+    }
+  </main>
+</div>

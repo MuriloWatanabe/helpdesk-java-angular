@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -17,12 +17,11 @@ interface NavItem {
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss'
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   mainNavItems: NavItem[] = [
     { label: 'Dashboard', route: '/dashboard', icon: 'grid' },
     { label: 'Chamados', route: '/chamados', icon: 'list' },
-    { label: 'Detalhe do chamado', route: '/chamados/detalhe', icon: 'file-text' },
-    { label: '+ Criar chamado', route: '/chamados/novo', icon: 'plus-circle' }
+    { label: '+ Novo Chamado', route: '/chamados/novo', icon: 'plus-circle' }
   ];
 
   contaNavItems: NavItem[] = [
@@ -33,7 +32,20 @@ export class SidebarComponent {
     { label: 'Relatórios', route: '/relatorios', icon: 'bar-chart' }
   ];
 
+  userName = '';
+  userRole = '';
+  userInitials = '?';
+
   constructor(private authService: AuthService, private router: Router) {}
+
+  ngOnInit(): void {
+    const user = this.authService.getUsuarioAtual();
+    if (user) {
+      this.userName = user.nome || user.email;
+      this.userRole = this.authService.getPerfilLabel(user.perfis);
+      this.userInitials = this.authService.getIniciais(user.nome || user.email);
+    }
+  }
 
   logout(): void {
     this.authService.logout();
