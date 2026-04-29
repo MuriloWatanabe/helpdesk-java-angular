@@ -164,7 +164,7 @@ helpdesk-java-angular/
 
 ## 8. Endpoints da API
 
-> Base URL: `http://localhost:8080/api`
+> Base URL: `http://localhost:8080/api/swagger-ui.html`
 
 | Método | Endpoint | Descrição |
 |---|---|---|

@@ -1,33 +1,12 @@
-import { Component, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, AfterViewInit, OnInit, OnDestroy, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Chart } from 'chart.js/auto';
 import { SidebarComponent } from '../../layout/sidebar/sidebar.component';
 import { AuthService } from '../../core/services/auth.service';
-
-interface StatCard {
-  title: string;
-  value: string | number;
-  subtitle: string;
-  colorClass: string;
-  icon: string;
-}
-
-interface Categoria {
-  nome: string;
-  percentual: number;
-  colorClass: string;
-}
-
-interface Chamado {
-  id: string;
-  titulo: string;
-  solicitante: string;
-  categoria: string;
-  prioridade: 'Alta' | 'Média' | 'Baixa';
-  status: 'Aberto' | 'Em Andamento' | 'Resolvido';
-  data: string;
-}
+import { DashboardService } from '../../core/services/dashboard.service';
+import { DashboardStats } from '../../core/models/dashboard.model';
+import { Chamado } from '../../core/models/chamado.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -36,148 +15,123 @@ interface Chamado {
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
-export class DashboardComponent implements AfterViewInit {
+export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>;
 
   userName = '';
+  loading = true;
+  erro = false;
+  stats: DashboardStats | null = null;
+  chamadosRecentes: Chamado[] = [];
 
-  constructor(private authService: AuthService) {
+  private _chart: Chart | null = null;
+  private chartReady = false;
+  private dataReady = false;
+
+  constructor(
+    private authService: AuthService,
+    private dashboardService: DashboardService,
+    private cdr: ChangeDetectorRef
+  ) {
     const user = this.authService.getUsuarioAtual();
     this.userName = user?.nome || user?.email || 'Usuário';
   }
 
-  statCards: StatCard[] = [
-    {
-      title: 'Total Abertos',
-      value: 48,
-      subtitle: '+5 desde ontem',
-      colorClass: 'stat-blue',
-      icon: 'folder'
-    },
-    {
-      title: 'Em Andamento',
-      value: 23,
-      subtitle: '+2 desde ontem',
-      colorClass: 'stat-orange',
-      icon: 'clock'
-    },
-    {
-      title: 'Resolvidos hoje',
-      value: 11,
-      subtitle: '+3 desde ontem',
-      colorClass: 'stat-green',
-      icon: 'check'
-    },
-    {
-      title: 'Tempo médio',
-      value: '4.2h',
-      subtitle: '-0.3h desde ontem',
-      colorClass: 'stat-purple',
-      icon: 'timer'
-    }
-  ];
+  ngOnInit(): void {
+    this.carregarDados();
+  }
 
-  categorias: Categoria[] = [
-    { nome: 'Infraestrutura', percentual: 34, colorClass: 'bar-blue' },
-    { nome: 'Software', percentual: 28, colorClass: 'bar-indigo' },
-    { nome: 'Hardware', percentual: 21, colorClass: 'bar-orange' },
-    { nome: 'Acesso/Senhas', percentual: 17, colorClass: 'bar-green' }
-  ];
-
-  chamadosRecentes: Chamado[] = [
-    {
-      id: '#1042',
-      titulo: 'Impressora não responde',
-      solicitante: 'Ana Silva',
-      categoria: 'Hardware',
-      prioridade: 'Alta',
-      status: 'Aberto',
-      data: '16/04/2026'
-    },
-    {
-      id: '#1041',
-      titulo: 'Sem acesso ao sistema ERP',
-      solicitante: 'Carlos Souza',
-      categoria: 'Software',
-      prioridade: 'Alta',
-      status: 'Em Andamento',
-      data: '16/04/2026'
-    },
-    {
-      id: '#1040',
-      titulo: 'Redefinição de senha AD',
-      solicitante: 'Mariana Costa',
-      categoria: 'Acesso/Senhas',
-      prioridade: 'Baixa',
-      status: 'Resolvido',
-      data: '15/04/2026'
-    },
-    {
-      id: '#1039',
-      titulo: 'Lentidão na rede Wi-Fi',
-      solicitante: 'Pedro Lima',
-      categoria: 'Infraestrutura',
-      prioridade: 'Média',
-      status: 'Em Andamento',
-      data: '15/04/2026'
-    },
-    {
-      id: '#1038',
-      titulo: 'Monitor com tela piscando',
-      solicitante: 'Julia Rocha',
-      categoria: 'Hardware',
-      prioridade: 'Média',
-      status: 'Aberto',
-      data: '14/04/2026'
-    }
-  ];
-
-  private _chart: Chart | null = null;
+  carregarDados(forceRefresh = false): void {
+    this.loading = true;
+    this.erro = false;
+    this._chart?.destroy();
+    this._chart = null;
+    this.dataReady = false;
+    this.dashboardService.getStats(forceRefresh).subscribe({
+      next: (data) => {
+        this.stats = data;
+        this.chamadosRecentes = data.chamadosRecentes;
+        this.loading = false;
+        this.dataReady = true;
+        this.cdr.detectChanges();
+        setTimeout(() => this.tryRenderChart(), 0);
+      },
+      error: () => {
+        this.loading = false;
+        this.erro = true;
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
   ngAfterViewInit(): void {
-    this.createChart();
+    this.chartReady = true;
+    this.tryRenderChart();
+  }
+
+  private tryRenderChart(): void {
+    if (this.chartReady && this.dataReady && !this._chart) {
+      this.createChart();
+    }
+  }
+
+  getStatusLabel(s: number): string {
+    return ({ 0: 'Aberto', 1: 'Em Andamento', 2: 'Encerrado' } as Record<number, string>)[s] ?? '—';
+  }
+
+  getStatusClass(s: number): string {
+    return ({ 0: 'badge-aberto', 1: 'badge-andamento', 2: 'badge-encerrado' } as Record<number, string>)[s] ?? '';
+  }
+
+  getPrioridadeLabel(p: number): string {
+    return ({ 0: 'Baixa', 1: 'Média', 2: 'Alta' } as Record<number, string>)[p] ?? '—';
+  }
+
+  getPrioridadeClass(p: number): string {
+    return ({ 0: 'badge-baixa', 1: 'badge-media', 2: 'badge-alta' } as Record<number, string>)[p] ?? '';
+  }
+
+  formatData(data: string): string {
+    if (!data) return '—';
+    return new Date(data).toLocaleDateString('pt-BR');
+  }
+
+  ngOnDestroy(): void {
+    this._chart?.destroy();
   }
 
   private createChart(): void {
-    if (!this.chartCanvas) return;
-
+    if (!this.chartCanvas || !this.stats) return;
     const ctx = this.chartCanvas.nativeElement.getContext('2d');
     if (!ctx) return;
+
+    const total = this.stats.totalChamados || 1;
+    const abertos = this.stats.totalAbertos;
+    const andamento = this.stats.totalEmAndamento;
+    const encerrados = this.stats.totalEncerrados;
 
     this._chart = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
-        datasets: [
-          {
-            label: 'Abertos',
-            data: [12, 19, 8, 15, 22, 7, 4],
-            backgroundColor: 'rgba(29, 78, 216, 0.8)',
-            borderRadius: 4,
-            borderSkipped: false
-          },
-          {
-            label: 'Resolvidos',
-            data: [8, 14, 6, 11, 17, 5, 3],
-            backgroundColor: 'rgba(5, 150, 105, 0.8)',
-            borderRadius: 4,
-            borderSkipped: false
-          }
-        ]
+        labels: ['Abertos', 'Em Andamento', 'Encerrados', 'Total'],
+        datasets: [{
+          label: 'Chamados',
+          data: [abertos, andamento, encerrados, total],
+          backgroundColor: [
+            'rgba(29, 78, 216, 0.8)',
+            'rgba(234, 88, 12, 0.8)',
+            'rgba(5, 150, 105, 0.8)',
+            'rgba(100, 116, 139, 0.8)'
+          ],
+          borderRadius: 4,
+          borderSkipped: false
+        }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              padding: 16,
-              font: { size: 12 },
-              usePointStyle: true,
-              pointStyleWidth: 10
-            }
-          },
+          legend: { display: false },
           tooltip: {
             backgroundColor: '#1e293b',
             titleColor: '#f8fafc',
@@ -193,7 +147,7 @@ export class DashboardComponent implements AfterViewInit {
           },
           y: {
             grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 12 }, color: '#64748b', stepSize: 5 },
+            ticks: { font: { size: 12 }, color: '#64748b', stepSize: 1 },
             beginAtZero: true
           }
         }

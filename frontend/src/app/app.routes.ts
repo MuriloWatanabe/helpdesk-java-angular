@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   {
@@ -23,6 +24,24 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/chamados/chamados-list/chamados-list.component').then(m => m.ChamadosListComponent),
     canActivate: [authGuard]
+  },
+  {
+    path: 'chamados/novo',
+    loadComponent: () =>
+      import('./features/chamados/novo-chamado/novo-chamado.component').then(m => m.NovoChamadoComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'chamados/:id',
+    loadComponent: () =>
+      import('./features/chamados/chamado-detail/chamado-detail.component').then(m => m.ChamadoDetailComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'usuarios',
+    loadComponent: () =>
+      import('./features/usuarios/usuarios.component').then(m => m.UsuariosComponent),
+    canActivate: [adminGuard]
   },
   {
     path: '**',

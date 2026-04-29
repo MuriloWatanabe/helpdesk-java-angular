@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -33,7 +33,10 @@ export class ChamadosListComponent implements OnInit {
     { label: 'Encerrado', value: 2 }
   ];
 
-  constructor(private chamadoService: ChamadoService) {}
+  constructor(
+    private chamadoService: ChamadoService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.carregar();
@@ -48,10 +51,12 @@ export class ChamadosListComponent implements OnInit {
         this.totalPages = page.totalPages;
         this.totalElements = page.totalElements;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.error = 'Erro ao carregar chamados. Verifique se o servidor está rodando.';
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }

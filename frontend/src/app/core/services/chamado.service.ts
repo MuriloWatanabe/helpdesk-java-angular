@@ -2,10 +2,19 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Chamado, PageResponse } from '../models/chamado.model';
+import { environment } from '../../../environments/environment';
+
+export interface ChamadoRequest {
+  titulo: string;
+  observacoes: string;
+  prioridade: number;
+  tecnicoId?: number;
+  clienteId?: number;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ChamadoService {
-  private readonly url = 'http://localhost:8080/api/v1/chamados';
+  private readonly url = `${environment.apiUrl}/v1/chamados`;
 
   constructor(private http: HttpClient) {}
 
@@ -17,15 +26,15 @@ export class ChamadoService {
     return this.http.get<Chamado>(`${this.url}/${id}`);
   }
 
-  criar(chamado: Partial<Chamado>): Observable<Chamado> {
-    return this.http.post<Chamado>(this.url, chamado);
+  criar(request: ChamadoRequest): Observable<Chamado> {
+    return this.http.post<Chamado>(this.url, request);
   }
 
-  atualizar(id: number, chamado: Partial<Chamado>): Observable<Chamado> {
-    return this.http.put<Chamado>(`${this.url}/${id}`, chamado);
+  atualizar(id: number, request: ChamadoRequest): Observable<Chamado> {
+    return this.http.put<Chamado>(`${this.url}/${id}`, request);
   }
 
-  alterarStatus(id: number, status: number): Observable<Chamado> {
+  alterarStatus(id: number, status: string): Observable<Chamado> {
     return this.http.patch<Chamado>(`${this.url}/${id}/status/${status}`, {});
   }
 

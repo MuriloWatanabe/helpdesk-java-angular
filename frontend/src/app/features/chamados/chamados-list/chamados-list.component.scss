@@ -210,6 +210,11 @@
     transition: background 0.1s;
     &:hover { background: #f8fafc; }
   }
+
+  .row-clicavel {
+    cursor: pointer;
+    &:hover { background: #eff6ff; }
+  }
 }
 
 .col-id {

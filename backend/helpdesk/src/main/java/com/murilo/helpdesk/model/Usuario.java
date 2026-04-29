@@ -79,4 +79,11 @@ public class Usuario implements Serializable {
     public void addPerfil(Perfil perfil) {
         this.perfis.add(perfil.getCodigo());
     }
+
+    public void updatePerfis(java.util.Set<Integer> novosPerfis) {
+        this.perfis.clear();
+        if (novosPerfis != null) {
+            this.perfis.addAll(novosPerfis);
+        }
+    }
 }

@@ -52,6 +52,6 @@ public class AuthController {
                 .map(p -> p.getDescricao())
                 .collect(Collectors.toSet());
 
-        return ResponseEntity.ok(new LoginResponse(token, "Bearer", request.email(), perfis));
+        return ResponseEntity.ok(new LoginResponse(usuario.getId(), token, "Bearer", usuario.getNome(), request.email(), perfis));
     }
 }

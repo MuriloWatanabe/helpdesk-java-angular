@@ -80,7 +80,7 @@
               </thead>
               <tbody>
                 @for (c of chamadosFiltrados; track c.id) {
-                  <tr>
+                  <tr class="row-clicavel" [routerLink]="['/chamados', c.id]">
                     <td class="col-id">{{ c.id }}</td>
                     <td class="col-titulo">{{ c.titulo }}</td>
                     <td>{{ c.cliente?.nome ?? '—' }}</td>
