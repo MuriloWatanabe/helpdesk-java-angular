@@ -342,8 +342,9 @@ O `HelpdeskApplicationTests` (context loading) usa H2 em memória via `src/test/
 
 ```bash
 cd backend/helpdesk
-./gradlew test
-
+./gradlew test 
+ou
+./gradlew cleanTest test --info
 # Relatório HTML gerado em:
 # build/reports/tests/test/index.html
 ```
