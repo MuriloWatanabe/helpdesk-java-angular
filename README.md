@@ -247,7 +247,110 @@ Todos os arquivos foram movidos para o caminho correto:
 
 ---
 
-## 11. Status do Projeto
+## 11. CI/CD — Integração e Entrega Contínua
+
+O projeto utiliza **GitHub Actions** com dois pipelines independentes, acionados automaticamente em `push` e `pull_request` para a branch `main`.
+
+### Pipeline do Backend (`ci-backend.yml`)
+
+| Etapa | O que faz |
+|---|---|
+| Checkout | Clona o repositório |
+| Setup JDK 21 | Configura o Java 21 (Temurin) |
+| Cache Gradle | Reutiliza cache de dependências entre execuções |
+| `./gradlew test` | Executa todos os testes unitários com H2 em memória |
+| Publicar relatório | Sobe o relatório HTML de testes como artefato |
+| `./gradlew build -x test` | Gera o JAR de produção |
+| Publicar JAR | Disponibiliza o `.jar` como artefato para download |
+
+> O pipeline usa banco **H2 em memória** para os testes — nenhuma dependência de PostgreSQL em CI.
+
+### Pipeline do Frontend (`ci-frontend.yml`)
+
+| Etapa | O que faz |
+|---|---|
+| Checkout | Clona o repositório |
+| Setup Node 22 | Configura o Node.js com cache de `npm` |
+| `npm ci` | Instala dependências de forma reproduzível |
+| `npm run build` | Build de produção com Angular CLI |
+| Publicar dist | Sobe os arquivos compilados como artefato |
+
+### Localização dos arquivos de workflow
+
+```
+.github/
+└── workflows/
+    ├── ci-backend.yml   # Pipeline Java/Gradle
+    └── ci-frontend.yml  # Pipeline Angular/Node
+```
+
+---
+
+## 12. TDD — Testes Unitários
+
+O projeto conta com **16 testes unitários** organizados em três classes, todos rodando sem Spring context (apenas Mockito + AssertJ), o que garante execução rápida.
+
+### Estrutura dos testes
+
+```
+src/test/java/com/murilo/helpdesk/
+├── service/
+│   ├── UsuarioServiceTest.java   (6 testes)
+│   └── ChamadoServiceTest.java   (6 testes)
+└── security/
+    └── JwtServiceTest.java       (4 testes)
+```
+
+### UsuarioServiceTest — 5 testes
+
+| Teste | Cenário |
+|---|---|
+| `findById_quandoExiste_retornaUsuario` | Retorna entidade quando ID existe |
+| `findById_quandoNaoExiste_lancaRuntimeException` | Lança exceção quando ID não existe |
+| `create_comDadosValidos_retornaResponse` | Cria usuário e retorna DTO mapeado |
+| `create_comEmailDuplicado_lancaRuntimeException` | Bloqueia cadastro com e-mail duplicado |
+| `delete_quandoExiste_deletaSemExcecao` | Deleta usuário sem lançar exceção |
+| `findAll_retornaListaMapeada` | Retorna lista de UsuarioResponse corretamente mapeada |
+
+### ChamadoServiceTest — 6 testes
+
+| Teste | Cenário |
+|---|---|
+| `findById_quandoNaoExiste_lancaRuntimeException` | Lança exceção quando chamado não existe |
+| `findById_quandoExiste_retornaChamado` | Retorna entidade quando ID existe |
+| `updateStatus_quandoEncerrado_setaDataFechamento` | Status ENCERRADO define `dataFechamento` |
+| `updateStatus_emAndamento_naoSetaDataFechamento` | Status EM_ANDAMENTO não altera `dataFechamento` |
+| `create_adminCriandoChamado_salvaChamado` | Admin cria chamado com status ABERTO |
+| `delete_quandoNaoExiste_lancaRuntimeException` | Lança exceção e não chama `deleteById` |
+
+### JwtServiceTest — 4 testes
+
+| Teste | Cenário |
+|---|---|
+| `generateToken_retornaTokenNaoVazio` | Token gerado é não vazio e tem 3 partes (JWT) |
+| `extractUsername_retornaUsernameCorreto` | Username extraído bate com o do token |
+| `isTokenValid_comTokenCorreto_retornaVerdadeiro` | Validação retorna `true` para token correto |
+| `isTokenValid_comOutroUsuario_retornaFalso` | Validação retorna `false` para usuário diferente |
+
+### Configuração de teste
+
+Os testes de serviço usam `@ExtendWith(MockitoExtension.class)` sem carregar o Spring context.  
+O `JwtService` tem seus campos `@Value` injetados via `ReflectionTestUtils`.  
+O `HelpdeskApplicationTests` (context loading) usa H2 em memória via `src/test/resources/application.properties`.
+
+### Como executar
+
+```bash
+cd backend/helpdesk
+./gradlew test
+
+# Relatório HTML gerado em:
+# build/reports/tests/test/index.html
+```
+
+---
+
+## 13. Status do Projeto
 
 | Componente | Status |
 |---|---|
@@ -257,7 +360,8 @@ Todos os arquivos foram movidos para o caminho correto:
 | Repositories | Completos |
 | Services (Usuario, Chamado) | Completos |
 | Controllers (Usuario, Chamado) | Completos |
-| application.properties | Pendente de limpeza |
-| Spring Security + JWT | Pendente |
-| DTOs | Pendente |
-| Frontend | Em desenvolvimento |
+| Spring Security + JWT | Completo |
+| DTOs (request/response) | Completos |
+| Testes Unitários (TDD) | **16 testes unitários + 1 context test — Completos** |
+| CI/CD (GitHub Actions) | **2 pipelines — Completos** |
+| Frontend Angular | Em desenvolvimento |

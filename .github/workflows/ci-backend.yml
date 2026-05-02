@@ -1,0 +1,64 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/ci-backend.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/ci-backend.yml'
+
+jobs:
+  build-and-test:
+    name: Build & Test (Java 21)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('backend/helpdesk/**/*.gradle*', 'backend/helpdesk/**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Permissão de execução ao gradlew
+        run: chmod +x backend/helpdesk/gradlew
+
+      - name: Executar testes unitários
+        working-directory: backend/helpdesk
+        run: ./gradlew test
+
+      - name: Publicar relatório de testes
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports-backend
+          path: backend/helpdesk/build/reports/tests/
+          retention-days: 7
+
+      - name: Build do JAR (sem testes)
+        working-directory: backend/helpdesk
+        run: ./gradlew build -x test
+
+      - name: Publicar JAR como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: helpdesk-jar
+          path: backend/helpdesk/build/libs/*.jar
+          retention-days: 7
