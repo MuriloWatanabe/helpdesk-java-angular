@@ -184,32 +184,115 @@ Documentação interativa disponível em: `http://localhost:8080/api/swagger-ui.
 
 ---
 
-## 9. Como executar o backend
+## 9. Como configurar o banco de dados (PostgreSQL)
 
-**Pré-requisitos:** Java 17+, PostgreSQL rodando localmente
+Escolha uma das opções abaixo de acordo com seu sistema operacional.
 
-1. Crie o banco de dados:
-   ```sql
-   CREATE DATABASE helpdesk;
-   ```
+---
 
-2. Execute o schema e dados iniciais:
-   ```
-   backend/helpdesk/database/schema.sql
-   backend/helpdesk/database/data.sql
-   ```
+### Opção A — Docker (recomendado, funciona em ambos os sistemas)
 
-3. Configure as credenciais em `src/main/resources/application.properties`
+> Pré-requisito: [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado.
 
-4. Execute:
+```bash
+docker run -d \
+  --name helpdesk-db \
+  -e POSTGRES_DB=helpdesk \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -p 5432:5432 \
+  postgres:16
+```
+
+Para parar / reiniciar:
+
+```bash
+docker stop helpdesk-db
+docker start helpdesk-db
+```
+
+---
+
+### Opção B — Pop OS / Ubuntu (instalação nativa)
+
+```bash
+# 1. Instalar o PostgreSQL
+sudo apt update
+sudo apt install -y postgresql postgresql-contrib
+
+# 2. Habilitar e iniciar o serviço
+sudo systemctl enable postgresql
+sudo systemctl start postgresql
+
+# 3. Criar o banco e o usuário
+sudo -u postgres psql -c "CREATE DATABASE helpdesk;"
+sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
+
+# 4. Carregar o schema e os dados iniciais
+sudo -u postgres psql -d helpdesk -f backend/helpdesk/database/schema.sql
+sudo -u postgres psql -d helpdesk -f backend/helpdesk/database/data.sql
+```
+
+Verificar se está rodando:
+
+```bash
+sudo systemctl status postgresql
+```
+
+---
+
+### Opção C — Windows (instalação nativa)
+
+> Pré-requisito: baixe e instale o PostgreSQL em [postgresql.org/download/windows](https://www.postgresql.org/download/windows/).  
+> Durante a instalação, defina a senha do usuário `postgres` como `postgres`.
+
+Abra o **CMD** ou **PowerShell** como administrador:
+
+```cmd
+:: 1. Verificar se o serviço está rodando
+sc query postgresql-x64-16
+
+:: 2. Iniciar o serviço (caso esteja parado)
+net start postgresql-x64-16
+
+:: 3. Criar o banco de dados
+psql -U postgres -c "CREATE DATABASE helpdesk;"
+
+:: 4. Carregar o schema e os dados iniciais
+psql -U postgres -d helpdesk -f backend\helpdesk\database\schema.sql
+psql -U postgres -d helpdesk -f backend\helpdesk\database\data.sql
+```
+
+> Se `psql` não for reconhecido, adicione o bin do PostgreSQL ao PATH:  
+> `C:\Program Files\PostgreSQL\16\bin`
+
+---
+
+## 10. Como executar o backend
+
+**Pré-requisitos:** Java 21+, banco de dados configurado (seção 9)
+
+1. Configure as credenciais em `backend/helpdesk/src/main/resources/application.properties` se necessário (padrão já aponta para `localhost:5432/helpdesk` com usuário `postgres`/`postgres`).
+
+2. Execute:
+
+   **Pop OS / Linux / macOS:**
    ```bash
    cd backend/helpdesk
    ./gradlew bootRun
    ```
 
+   **Windows (CMD ou PowerShell):**
+   ```cmd
+   cd backend\helpdesk
+   gradlew.bat bootRun
+   ```
+
+3. API disponível em: `http://localhost:8080/api/swagger-ui.html`
+
 ---
 
-## 10. Histórico de Melhorias
+## 11. Histórico de Melhorias
 
 ### build.gradle — Dependências adicionadas
 
@@ -247,7 +330,7 @@ Todos os arquivos foram movidos para o caminho correto:
 
 ---
 
-## 11. CI/CD — Integração e Entrega Contínua
+## 12. CI/CD — Integração e Entrega Contínua
 
 O projeto utiliza **GitHub Actions** com dois pipelines independentes, acionados automaticamente em `push` e `pull_request` para a branch `main`.
 
@@ -286,7 +369,7 @@ O projeto utiliza **GitHub Actions** com dois pipelines independentes, acionados
 
 ---
 
-## 12. TDD — Testes Unitários
+## 13. TDD — Testes Unitários
 
 O projeto conta com **16 testes unitários** organizados em três classes, todos rodando sem Spring context (apenas Mockito + AssertJ), o que garante execução rápida.
 
@@ -351,7 +434,7 @@ ou
 
 ---
 
-## 13. Status do Projeto
+## 14. Status do Projeto
 
 | Componente | Status |
 |---|---|
