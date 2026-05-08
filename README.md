@@ -164,7 +164,7 @@ helpdesk-java-angular/
 
 ## 8. Endpoints da API
 
-> Base URL: `http://localhost:8080/api/swagger-ui.html`
+> Base URL: `http://localhost:9090/api/swagger-ui.html`
 
 | Método | Endpoint | Descrição |
 |---|---|---|
@@ -180,20 +180,18 @@ helpdesk-java-angular/
 | PATCH | `/v1/chamados/{id}/status/{status}` | Altera status do chamado |
 | DELETE | `/v1/chamados/{id}` | Remove chamado |
 
-Documentação interativa disponível em: `http://localhost:8080/api/swagger-ui.html`
+Documentação interativa disponível em: `http://localhost:9090/api/swagger-ui.html`
 
 ---
 
-## 9. Como configurar o banco de dados (PostgreSQL)
+## 9. Como configurar o banco de dados (PostgreSQL via Docker)
 
-Escolha uma das opções abaixo de acordo com seu sistema operacional.
+> **Pré-requisito:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado e em execução.  
+> Funciona da mesma forma no **Windows 11** e no **Pop OS**.
 
----
+### Subir o container do PostgreSQL
 
-### Opção A — Docker (recomendado, funciona em ambos os sistemas)
-
-> Pré-requisito: [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado.
-
+**Pop OS (terminal):**
 ```bash
 docker run -d \
   --name helpdesk-db \
@@ -204,91 +202,82 @@ docker run -d \
   postgres:16
 ```
 
-Para parar / reiniciar:
-
-```bash
-docker stop helpdesk-db
-docker start helpdesk-db
+**Windows 11 (PowerShell ou CMD):**
+```cmd
+docker run -d ^
+  --name helpdesk-db ^
+  -e POSTGRES_DB=helpdesk ^
+  -e POSTGRES_USER=postgres ^
+  -e POSTGRES_PASSWORD=postgres ^
+  -p 5432:5432 ^
+  postgres:16
 ```
 
----
+> O `^` é a quebra de linha do Windows. Você também pode escrever tudo em uma linha só.
 
-### Opção B — Pop OS / Ubuntu (instalação nativa)
+### Carregar o schema e os dados iniciais
+
+**Pop OS:**
+```bash
+# Executar a partir da raiz do projeto
+docker exec -i helpdesk-db psql -U postgres -d helpdesk < backend/helpdesk/database/schema.sql
+docker exec -i helpdesk-db psql -U postgres -d helpdesk < backend/helpdesk/database/data.sql
+```
+
+**Windows 11 (PowerShell):**
+```powershell
+# Executar a partir da raiz do projeto
+Get-Content backend\helpdesk\database\schema.sql | docker exec -i helpdesk-db psql -U postgres -d helpdesk
+Get-Content backend\helpdesk\database\data.sql   | docker exec -i helpdesk-db psql -U postgres -d helpdesk
+```
+
+### Gerenciar o container
+
+| Ação | Comando |
+|---|---|
+| Verificar se está rodando | `docker ps` |
+| Parar | `docker stop helpdesk-db` |
+| Reiniciar | `docker start helpdesk-db` |
+| Ver logs | `docker logs helpdesk-db` |
+| Remover | `docker rm -f helpdesk-db` |
+
+### Pop OS — instalação nativa (sem Docker)
+
+Caso prefira instalar o PostgreSQL diretamente no sistema:
 
 ```bash
-# 1. Instalar o PostgreSQL
-sudo apt update
-sudo apt install -y postgresql postgresql-contrib
-
-# 2. Habilitar e iniciar o serviço
-sudo systemctl enable postgresql
-sudo systemctl start postgresql
-
-# 3. Criar o banco e o usuário
+sudo apt update && sudo apt install -y postgresql postgresql-contrib
+sudo systemctl enable --now postgresql
 sudo -u postgres psql -c "CREATE DATABASE helpdesk;"
 sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
-
-# 4. Carregar o schema e os dados iniciais
-sudo -u postgres psql -d helpdesk -f backend/helpdesk/database/schema.sql
-sudo -u postgres psql -d helpdesk -f backend/helpdesk/database/data.sql
+sudo -u postgres psql -d helpdesk < backend/helpdesk/database/schema.sql
+sudo -u postgres psql -d helpdesk < backend/helpdesk/database/data.sql
 ```
-
-Verificar se está rodando:
-
-```bash
-sudo systemctl status postgresql
-```
-
----
-
-### Opção C — Windows (instalação nativa)
-
-> Pré-requisito: baixe e instale o PostgreSQL em [postgresql.org/download/windows](https://www.postgresql.org/download/windows/).  
-> Durante a instalação, defina a senha do usuário `postgres` como `postgres`.
-
-Abra o **CMD** ou **PowerShell** como administrador:
-
-```cmd
-:: 1. Verificar se o serviço está rodando
-sc query postgresql-x64-16
-
-:: 2. Iniciar o serviço (caso esteja parado)
-net start postgresql-x64-16
-
-:: 3. Criar o banco de dados
-psql -U postgres -c "CREATE DATABASE helpdesk;"
-
-:: 4. Carregar o schema e os dados iniciais
-psql -U postgres -d helpdesk -f backend\helpdesk\database\schema.sql
-psql -U postgres -d helpdesk -f backend\helpdesk\database\data.sql
-```
-
-> Se `psql` não for reconhecido, adicione o bin do PostgreSQL ao PATH:  
-> `C:\Program Files\PostgreSQL\16\bin`
 
 ---
 
 ## 10. Como executar o backend
 
-**Pré-requisitos:** Java 21+, banco de dados configurado (seção 9)
+**Pré-requisitos:** Java 21+, banco de dados rodando (seção 9), porta **9090** livre.
 
-1. Configure as credenciais em `backend/helpdesk/src/main/resources/application.properties` se necessário (padrão já aponta para `localhost:5432/helpdesk` com usuário `postgres`/`postgres`).
+**Pop OS / Linux:**
+```bash
+cd backend/helpdesk
+./gradlew bootRun
+```
 
-2. Execute:
+**Windows 11 (PowerShell ou CMD):**
+```cmd
+cd backend\helpdesk
+gradlew.bat bootRun
+```
 
-   **Pop OS / Linux / macOS:**
-   ```bash
-   cd backend/helpdesk
-   ./gradlew bootRun
-   ```
+Após iniciar:
 
-   **Windows (CMD ou PowerShell):**
-   ```cmd
-   cd backend\helpdesk
-   gradlew.bat bootRun
-   ```
-
-3. API disponível em: `http://localhost:8080/api/swagger-ui.html`
+| Recurso | URL |
+|---|---|
+| API REST | `http://localhost:9090/api` |
+| Swagger UI | `http://localhost:9090/api/swagger-ui.html` |
 
 ---
 
