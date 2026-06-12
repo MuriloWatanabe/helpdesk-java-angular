@@ -2,6 +2,9 @@ package com.murilo.helpdesk.controller;
 
 import com.murilo.helpdesk.dto.LoginRequest;
 import com.murilo.helpdesk.dto.LoginResponse;
+import com.murilo.helpdesk.dto.request.RegisterRequest;
+import com.murilo.helpdesk.dto.request.UsuarioRequest;
+import com.murilo.helpdesk.dto.response.UsuarioResponse;
 import com.murilo.helpdesk.model.Usuario;
 import com.murilo.helpdesk.security.JwtService;
 import com.murilo.helpdesk.security.UserDetailsServiceImpl;
@@ -10,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -53,5 +57,16 @@ public class AuthController {
                 .collect(Collectors.toSet());
 
         return ResponseEntity.ok(new LoginResponse(usuario.getId(), token, "Bearer", usuario.getNome(), request.email(), perfis));
+    }
+
+    @PostMapping("/register")
+    @Operation(
+        summary = "Cadastrar novo usuário",
+        description = "Registra um novo usuário com perfil CLIENTE"
+    )
+    public ResponseEntity<UsuarioResponse> register(@Valid @RequestBody RegisterRequest request) {
+        UsuarioRequest usuarioRequest = new UsuarioRequest(request.nome(), request.email(), request.senha(), Set.of(1));
+        UsuarioResponse criado = usuarioService.create(usuarioRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(criado);
     }
 }

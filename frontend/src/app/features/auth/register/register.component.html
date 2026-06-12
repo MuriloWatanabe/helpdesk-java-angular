@@ -9,16 +9,33 @@
       <span class="logo-icon">&#9830;</span>
       <span class="logo-text">HelpDesk</span>
     </div>
-    <p class="subtitle">Sistema de Chamados Internos</p>
+    <p class="subtitle">Criar nova conta</p>
 
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
       <div class="form-group">
-        <label for="email">E-mail corporativo</label>
+        <label for="nome">Nome completo</label>
+        <input
+          id="nome"
+          type="text"
+          formControlName="nome"
+          placeholder="Seu nome"
+          [class.input-error]="nomeControl?.invalid && nomeControl?.touched"
+        />
+        @if (nomeControl?.invalid && nomeControl?.touched) {
+          <span class="field-error">
+            @if (nomeControl?.errors?.['required']) { Nome é obrigatório. }
+            @else if (nomeControl?.errors?.['minlength']) { Mínimo de 3 caracteres. }
+          </span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="email">E-mail</label>
         <input
           id="email"
           type="email"
           formControlName="email"
-          placeholder="seu@empresa.com.br"
+          placeholder="seu@email.com"
           [class.input-error]="emailControl?.invalid && emailControl?.touched"
         />
         @if (emailControl?.invalid && emailControl?.touched) {
@@ -46,29 +63,36 @@
         }
       </div>
 
-      <div class="forgot">
-        <a href="#">Esqueci minha senha</a>
+      <div class="form-group">
+        <label for="confirmarSenha">Confirmar senha</label>
+        <input
+          id="confirmarSenha"
+          type="password"
+          formControlName="confirmarSenha"
+          placeholder="••••••••"
+          [class.input-error]="(confirmarSenhaControl?.touched && form.errors?.['senhasDiferentes'])
+                                || (confirmarSenhaControl?.invalid && confirmarSenhaControl?.touched)"
+        />
+        @if (confirmarSenhaControl?.touched && form.errors?.['senhasDiferentes']) {
+          <span class="field-error">As senhas não coincidem.</span>
+        }
       </div>
 
       <button type="submit" class="btn-primary" [disabled]="isLoading">
-        @if (isLoading) { Entrando... } @else { Entrar }
+        @if (isLoading) { Cadastrando... } @else { Cadastrar }
       </button>
 
       @if (errorMessage) {
         <div class="error-msg">{{ errorMessage }}</div>
       }
 
-      <div class="divider">
-        <span>ou</span>
-      </div>
-
-      <button type="button" class="btn-secondary">
-        Entrar com SSO corporativo
-      </button>
+      @if (successMessage) {
+        <div class="success-msg">{{ successMessage }}</div>
+      }
     </form>
 
     <div class="register-link">
-      Não tem conta? <a routerLink="/register">Cadastre-se</a>
+      Já tem uma conta? <a routerLink="/login">Entrar</a>
     </div>
   </div>
 </div>
