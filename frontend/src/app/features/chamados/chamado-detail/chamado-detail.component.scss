@@ -320,6 +320,45 @@
   text-align: center;
 }
 
+// Alterar técnico
+.tecnico-acao {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tecnico-select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #374151;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &:focus { border-color: #93c5fd; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.btn-confirmar {
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #1d4ed8;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover:not(:disabled) { background: #1e40af; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
 // Badges (reutilizados do list)
 .badge {
   display: inline-block;

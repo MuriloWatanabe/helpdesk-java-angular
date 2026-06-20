@@ -154,6 +154,39 @@
             </div>
           </section>
 
+          <!-- Alterar técnico (só ADMIN) -->
+          @if (isAdmin) {
+            <section class="card">
+              <h2 class="card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                  <line x1="19" y1="8" x2="23" y2="8"/><line x1="21" y1="6" x2="21" y2="10"/>
+                </svg>
+                Alterar técnico
+              </h2>
+              <div class="tecnico-acao">
+                <select
+                  class="tecnico-select"
+                  [(ngModel)]="tecnicoSelecionadoId"
+                  [disabled]="alterandoTecnico"
+                >
+                  <option [ngValue]="null">— Não atribuído —</option>
+                  @for (t of tecnicos; track t.id) {
+                    <option [ngValue]="t.id">{{ t.nome }}</option>
+                  }
+                </select>
+                <button
+                  class="btn-confirmar"
+                  [disabled]="alterandoTecnico"
+                  (click)="alterarTecnico()"
+                >
+                  @if (alterandoTecnico) { Salvando... } @else { Confirmar }
+                </button>
+              </div>
+            </section>
+          }
+
           <!-- Alterar status (só ADMIN/TECNICO) -->
           @if (podeAlterarStatus) {
             <section class="card">

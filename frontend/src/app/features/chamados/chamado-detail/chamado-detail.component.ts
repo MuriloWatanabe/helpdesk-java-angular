@@ -1,15 +1,18 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { SidebarComponent } from '../../../layout/sidebar/sidebar.component';
 import { ChamadoService } from '../../../core/services/chamado.service';
+import { UsuarioService } from '../../../core/services/usuario.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Chamado } from '../../../core/models/chamado.model';
+import { Usuario } from '../../../core/models/usuario.model';
 
 @Component({
   selector: 'app-chamado-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, RouterModule, SidebarComponent],
   templateUrl: './chamado-detail.component.html',
   styleUrl: './chamado-detail.component.scss'
 })
@@ -19,6 +22,10 @@ export class ChamadoDetailComponent implements OnInit {
   erro = '';
   alterandoStatus = false;
   linkCopiado = false;
+
+  tecnicos: Usuario[] = [];
+  tecnicoSelecionadoId: number | null = null;
+  alterandoTecnico = false;
 
   readonly isAdmin: boolean;
   readonly isTecnico: boolean;
@@ -30,11 +37,12 @@ export class ChamadoDetailComponent implements OnInit {
   ];
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private chamadoService: ChamadoService,
-    private authService: AuthService,
-    private cdr: ChangeDetectorRef
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly chamadoService: ChamadoService,
+    private readonly usuarioService: UsuarioService,
+    private readonly authService: AuthService,
+    private readonly cdr: ChangeDetectorRef
   ) {
     this.isAdmin  = authService.isAdmin();
     this.isTecnico = authService.isTecnico();
@@ -43,8 +51,9 @@ export class ChamadoDetailComponent implements OnInit {
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.chamadoService.buscarPorId(id).subscribe({
-      next: (data) => {
+      next: (data: Chamado) => {
         this.chamado = data;
+        this.tecnicoSelecionadoId = data.tecnico?.id ?? null;
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -54,6 +63,15 @@ export class ChamadoDetailComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+
+    if (this.isAdmin) {
+      this.usuarioService.listar().subscribe({
+        next: (usuarios: Usuario[]) => {
+          this.tecnicos = usuarios.filter(u => u.perfis.includes('ROLE_TECNICO'));
+          this.cdr.detectChanges();
+        }
+      });
+    }
   }
 
   get podeAlterarStatus(): boolean {
@@ -64,7 +82,7 @@ export class ChamadoDetailComponent implements OnInit {
     if (!this.chamado || this.alterandoStatus) return;
     this.alterandoStatus = true;
     this.chamadoService.alterarStatus(this.chamado.id, enumNome).subscribe({
-      next: (atualizado) => {
+      next: (atualizado: Chamado) => {
         this.chamado = atualizado;
         this.alterandoStatus = false;
         this.cdr.detectChanges();
@@ -76,8 +94,31 @@ export class ChamadoDetailComponent implements OnInit {
     });
   }
 
+  alterarTecnico(): void {
+    if (!this.chamado || this.alterandoTecnico) return;
+    this.alterandoTecnico = true;
+    this.chamadoService.atualizar(this.chamado.id, {
+      titulo: this.chamado.titulo,
+      observacoes: this.chamado.observacoes,
+      prioridade: this.chamado.prioridade,
+      clienteId: this.chamado.cliente.id,
+      tecnicoId: this.tecnicoSelecionadoId ?? undefined,
+    }).subscribe({
+      next: (atualizado: Chamado) => {
+        this.chamado = atualizado;
+        this.tecnicoSelecionadoId = atualizado.tecnico?.id ?? null;
+        this.alterandoTecnico = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.alterandoTecnico = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   copiarLink(): void {
-    navigator.clipboard.writeText(window.location.href).then(() => {
+    navigator.clipboard.writeText(globalThis.location.href).then(() => {
       this.linkCopiado = true;
       setTimeout(() => { this.linkCopiado = false; this.cdr.detectChanges(); }, 2000);
     });

@@ -184,7 +184,96 @@ Documentação interativa disponível em: `http://localhost:9090/api/swagger-ui.
 
 ---
 
-## 9. Como configurar o banco de dados (PostgreSQL via Docker)
+## 9. Como subir o projeto completo com Docker Compose
+
+> Sobe **banco de dados + backend + frontend** com um único comando. Não é necessário ter Java, Node ou PostgreSQL instalados localmente.
+
+### Pré-requisitos
+
+| Sistema | O que instalar |
+|---|---|
+| **Windows 11** | [Docker Desktop para Windows](https://www.docker.com/products/docker-desktop/) (inclui Docker Compose) |
+| **Arch Linux** | `docker` + `docker-compose` (veja abaixo) |
+
+#### Arch Linux — instalação do Docker
+
+```bash
+sudo pacman -S docker docker-compose
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER   # evita usar sudo a cada comando
+newgrp docker                   # aplica o grupo sem reiniciar
+```
+
+### Subindo tudo
+
+Execute na **raiz do projeto** (onde está o `docker-compose.yml`):
+
+**Windows 11 (PowerShell ou CMD):**
+```powershell
+docker compose up --build
+```
+
+**Arch Linux (terminal):**
+```bash
+docker compose up --build
+```
+
+O comando `--build` reconstrói as imagens a cada execução. Nas próximas vezes que não houver mudança de código, pode omiti-lo:
+
+```bash
+docker compose up
+```
+
+### O que sobe
+
+| Serviço | URL de acesso | Descrição |
+|---|---|---|
+| Frontend (Angular) | http://localhost:4200 | Interface web |
+| Backend (Spring Boot) | http://localhost:9090/api | API REST |
+| Swagger UI | http://localhost:9090/api/swagger-ui/index.html | Documentação interativa |
+| PostgreSQL | `localhost:5433` | Banco de dados (acesso direto via psql/DBeaver) |
+
+> O banco é inicializado automaticamente com `schema.sql` e `data.sql` na primeira vez que o volume é criado.
+
+### Parar os serviços
+
+```bash
+# Para os containers sem remover dados
+docker compose down
+
+# Para e remove também os volumes (apaga o banco)
+docker compose down -v
+```
+
+### Reconstruir apenas um serviço
+
+```bash
+docker compose up --build backend
+docker compose up --build frontend
+```
+
+### Ver logs em tempo real
+
+```bash
+# Todos os serviços
+docker compose logs -f
+
+# Apenas o backend
+docker compose logs -f backend
+```
+
+### Solução de problemas comuns
+
+| Problema | Solução |
+|---|---|
+| Porta já em uso (9090, 4200, 5433) | Pare o processo que usa a porta ou mude o mapeamento no `docker-compose.yml` |
+| Backend não conecta ao banco | Aguarde o healthcheck do `db` passar; use `docker compose logs db` para verificar |
+| Arch Linux: `permission denied` no Docker | Execute `sudo usermod -aG docker $USER` e reinicie a sessão |
+| Windows: WSL 2 não habilitado | No Docker Desktop, vá em *Settings → General* e marque "Use the WSL 2 based engine" |
+
+---
+
+## 10. Como configurar o banco de dados (PostgreSQL via Docker)
 
 > **Pré-requisito:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado e em execução.  
 > Funciona da mesma forma no **Windows 11** e no **Pop OS**.
@@ -256,7 +345,7 @@ sudo -u postgres psql -d helpdesk < backend/helpdesk/database/data.sql
 
 ---
 
-## 10. Como executar o backend
+## 11. Como executar o backend
 
 **Pré-requisitos:** Java 21+, banco de dados rodando (seção 9), porta **9090** livre.
 
@@ -281,7 +370,7 @@ Após iniciar:
 
 ---
 
-## 11. Histórico de Melhorias
+## 12. Histórico de Melhorias
 
 ### build.gradle — Dependências adicionadas
 
@@ -319,7 +408,7 @@ Todos os arquivos foram movidos para o caminho correto:
 
 ---
 
-## 12. CI/CD — Integração e Entrega Contínua
+## 13. CI/CD — Integração e Entrega Contínua
 
 O projeto utiliza **GitHub Actions** com dois pipelines independentes, acionados automaticamente em `push` e `pull_request` para a branch `main`.
 
@@ -358,7 +447,7 @@ O projeto utiliza **GitHub Actions** com dois pipelines independentes, acionados
 
 ---
 
-## 13. TDD — Testes Unitários
+## 14. TDD — Testes Unitários
 
 O projeto conta com **16 testes unitários** organizados em três classes, todos rodando sem Spring context (apenas Mockito + AssertJ), o que garante execução rápida.
 
@@ -423,7 +512,7 @@ ou
 
 ---
 
-## 14. Status do Projeto
+## 15. Status do Projeto
 
 | Componente | Status |
 |---|---|

@@ -10,11 +10,14 @@
 -- USUÁRIOS
 -- ================================================
 INSERT INTO usuarios (nome, email, senha) VALUES
-    ('Admin',           'admin@helpdesk.com',   '$2b$10$oJoU2XK9Uh.ghqVex/p78umK48wDDMoDMMjo0.2QhJUhXSkkrF9XW'),
-    ('Carlos Técnico',  'tecnico@helpdesk.com', '$2b$10$oJoU2XK9Uh.ghqVex/p78umK48wDDMoDMMjo0.2QhJUhXSkkrF9XW'),
-    ('Ana Cliente',     'cliente@helpdesk.com', '$2b$10$oJoU2XK9Uh.ghqVex/p78umK48wDDMoDMMjo0.2QhJUhXSkkrF9XW'),
-    ('Pedro Santos',    'pedro@helpdesk.com',   '$2b$10$oJoU2XK9Uh.ghqVex/p78umK48wDDMoDMMjo0.2QhJUhXSkkrF9XW'),
-    ('Julia Almeida',   'julia@helpdesk.com',   '$2b$10$oJoU2XK9Uh.ghqVex/p78umK48wDDMoDMMjo0.2QhJUhXSkkrF9XW')
+    ('Admin',             'admin@helpdesk.com',   '$2b$10$oJoU2XK9Uh.ghqVex/p78umK48wDDMoDMMjo0.2QhJUhXSkkrF9XW'),
+    ('Carlos Técnico',    'tecnico@helpdesk.com', '$2b$10$oJoU2XK9Uh.ghqVex/p78umK48wDDMoDMMjo0.2QhJUhXSkkrF9XW'),
+    ('Lucas Ferreira',    'lucas@helpdesk.com',   '$2b$10$oJoU2XK9Uh.ghqVex/p78umK48wDDMoDMMjo0.2QhJUhXSkkrF9XW'),
+    ('Marina Costa',      'marina@helpdesk.com',  '$2b$10$oJoU2XK9Uh.ghqVex/p78umK48wDDMoDMMjo0.2QhJUhXSkkrF9XW'),
+    ('Roberto Lima',      'roberto@helpdesk.com', '$2b$10$oJoU2XK9Uh.ghqVex/p78umK48wDDMoDMMjo0.2QhJUhXSkkrF9XW'),
+    ('Ana Cliente',       'cliente@helpdesk.com', '$2b$10$oJoU2XK9Uh.ghqVex/p78umK48wDDMoDMMjo0.2QhJUhXSkkrF9XW'),
+    ('Pedro Santos',      'pedro@helpdesk.com',   '$2b$10$oJoU2XK9Uh.ghqVex/p78umK48wDDMoDMMjo0.2QhJUhXSkkrF9XW'),
+    ('Julia Almeida',     'julia@helpdesk.com',   '$2b$10$oJoU2XK9Uh.ghqVex/p78umK48wDDMoDMMjo0.2QhJUhXSkkrF9XW')
 ON CONFLICT (email) DO NOTHING;
 
 -- ================================================
@@ -23,6 +26,9 @@ ON CONFLICT (email) DO NOTHING;
 INSERT INTO usuario_perfis (usuario_id, perfil) VALUES
     ((SELECT id FROM usuarios WHERE email = 'admin@helpdesk.com'),   0),
     ((SELECT id FROM usuarios WHERE email = 'tecnico@helpdesk.com'), 2),
+    ((SELECT id FROM usuarios WHERE email = 'lucas@helpdesk.com'),   2),
+    ((SELECT id FROM usuarios WHERE email = 'marina@helpdesk.com'),  2),
+    ((SELECT id FROM usuarios WHERE email = 'roberto@helpdesk.com'), 2),
     ((SELECT id FROM usuarios WHERE email = 'cliente@helpdesk.com'), 1),
     ((SELECT id FROM usuarios WHERE email = 'pedro@helpdesk.com'),   1),
     ((SELECT id FROM usuarios WHERE email = 'julia@helpdesk.com'),   1)
