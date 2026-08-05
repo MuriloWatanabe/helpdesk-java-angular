@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -13,7 +12,7 @@ function senhasIguais(group: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss'
 })
@@ -31,8 +30,9 @@ export class RegisterComponent {
     this.form = this.fb.group({
       nome: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
       email: ['', [Validators.required, Validators.email]],
-      senha: ['', [Validators.required, Validators.minLength(4)]],
-      confirmarSenha: ['', Validators.required]
+      senha: ['', [Validators.required, Validators.minLength(6)]],
+      confirmarSenha: ['', Validators.required],
+      telefone: ['']
     }, { validators: senhasIguais });
   }
 
@@ -46,9 +46,9 @@ export class RegisterComponent {
     this.errorMessage = '';
     this.successMessage = '';
 
-    const { nome, email, senha } = this.form.value;
+    const { nome, email, senha, telefone } = this.form.value;
 
-    this.authService.register(nome, email, senha).subscribe({
+    this.authService.register(nome, email, senha, telefone || undefined).subscribe({
       next: () => {
         this.isLoading = false;
         this.successMessage = 'Cadastro realizado! Redirecionando para o login...';
@@ -71,4 +71,5 @@ export class RegisterComponent {
   get emailControl() { return this.form.get('email'); }
   get senhaControl() { return this.form.get('senha'); }
   get confirmarSenhaControl() { return this.form.get('confirmarSenha'); }
+  get telefoneControl() { return this.form.get('telefone'); }
 }

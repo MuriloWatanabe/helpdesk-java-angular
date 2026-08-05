@@ -3,133 +3,148 @@
 
   <main class="main-content">
     <header class="page-header">
-      <h1 class="page-title">Meu Perfil</h1>
+      <div>
+        <h1 class="page-title">Meu perfil</h1>
+        <p class="page-subtitle">Seus dados de contato e acesso ao sistema</p>
+      </div>
     </header>
 
-    @if (usuario) {
-      <div class="perfil-grid">
+    @if (carregando()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Carregando seus dados...</p>
+      </div>
+    }
 
-        <!-- Coluna esquerda: card de identidade -->
+    @if (!carregando() && usuario(); as u) {
+      <div class="perfil-grid">
+        <!-- Identidade -->
         <div class="col-identity">
-          <div class="card identity-card">
+          <section class="card identity-card">
             <div class="avatar-wrap">
-              <div class="avatar">{{ iniciais }}</div>
+              <div class="avatar" aria-hidden="true">{{ iniciais }}</div>
             </div>
-            <h2 class="identity-nome">{{ usuario.nome }}</h2>
-            <p class="identity-email">{{ usuario.email }}</p>
+            <h2 class="identity-nome">{{ u.nome }}</h2>
+            <p class="identity-email">{{ u.email }}</p>
             <span class="perfil-badge" [ngClass]="perfilClasses">{{ perfilLabel }}</span>
-            @if (dataCriacao) {
-              <p class="identity-since">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                  <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-                  <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-                Membro desde {{ formatData(dataCriacao) }}
-              </p>
-            }
-          </div>
+
+            <dl class="identity-dados">
+              <div>
+                <dt>Cargo</dt>
+                <dd>{{ u.cargo || '—' }}</dd>
+              </div>
+              <div>
+                <dt>Telefone</dt>
+                <dd>{{ u.telefone || '—' }}</dd>
+              </div>
+              <div>
+                <dt>Situação</dt>
+                <dd>{{ u.ativo ? 'Ativo' : 'Inativo' }}</dd>
+              </div>
+            </dl>
+
+            <p class="identity-since">
+              Membro desde {{ u.dataCriacao ? (u.dataCriacao | date: 'MMMM \'de\' y') : '—' }}
+            </p>
+          </section>
         </div>
 
-        <!-- Coluna direita: formulários -->
+        <!-- Formulários -->
         <div class="col-forms">
-
-          <!-- Dados pessoais -->
           <section class="card">
-            <h2 class="card-title">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-              </svg>
-              Dados pessoais
-            </h2>
-
-            <div class="form-group">
-              <label class="form-label">Nome</label>
-              <input
-                class="form-input"
-                type="text"
-                [(ngModel)]="editNome"
-                placeholder="Seu nome completo"
-                [disabled]="salvandoDados"
-              />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">E-mail</label>
-              <input
-                class="form-input"
-                type="email"
-                [(ngModel)]="editEmail"
-                placeholder="seu@email.com"
-                [disabled]="salvandoDados"
-              />
-            </div>
+            <h2 class="card-title">Dados pessoais</h2>
 
             @if (erroDados) {
-              <p class="msg msg-erro">{{ erroDados }}</p>
-            }
-            @if (mensagemDados) {
-              <p class="msg msg-ok">{{ mensagemDados }}</p>
+              <div class="alert-error" role="alert">{{ erroDados }}</div>
             }
 
-            <button
-              class="btn-salvar"
-              [disabled]="salvandoDados"
-              (click)="salvarDados()"
-            >
-              @if (salvandoDados) { Salvando... } @else { Salvar dados }
+            <div class="form-group">
+              <label class="form-label" for="nome">Nome completo</label>
+              <input id="nome" class="form-input" type="text" [(ngModel)]="editNome" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="email">E-mail</label>
+              <input id="email" class="form-input" type="email" [(ngModel)]="editEmail" />
+              <span class="form-hint">Este é o e-mail usado para entrar no sistema.</span>
+            </div>
+
+            <div class="form-linha-dupla">
+              <div class="form-group">
+                <label class="form-label" for="telefone">Telefone</label>
+                <input
+                  id="telefone"
+                  class="form-input"
+                  type="text"
+                  placeholder="(11) 99999-0000"
+                  [(ngModel)]="editTelefone"
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cargo">Cargo</label>
+                <input
+                  id="cargo"
+                  class="form-input"
+                  type="text"
+                  placeholder="Analista, Assistente..."
+                  [(ngModel)]="editCargo"
+                />
+              </div>
+            </div>
+
+            <button class="btn-salvar" type="button" [disabled]="salvandoDados" (click)="salvarDados()">
+              @if (salvandoDados) { Salvando... } @else { Salvar alterações }
             </button>
           </section>
 
-          <!-- Alterar senha -->
           <section class="card">
-            <h2 class="card-title">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-              Alterar senha
-            </h2>
-
-            <div class="form-group">
-              <label class="form-label">Nova senha</label>
-              <input
-                class="form-input"
-                type="password"
-                [(ngModel)]="novaSenha"
-                placeholder="Mínimo 6 caracteres"
-                [disabled]="salvandoSenha"
-              />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Confirmar nova senha</label>
-              <input
-                class="form-input"
-                type="password"
-                [(ngModel)]="confirmSenha"
-                placeholder="Repita a nova senha"
-                [disabled]="salvandoSenha"
-              />
-            </div>
+            <h2 class="card-title">Alterar senha</h2>
 
             @if (erroSenha) {
-              <p class="msg msg-erro">{{ erroSenha }}</p>
-            }
-            @if (mensagemSenha) {
-              <p class="msg msg-ok">{{ mensagemSenha }}</p>
+              <div class="alert-error" role="alert">{{ erroSenha }}</div>
             }
 
-            <button
-              class="btn-salvar"
-              [disabled]="salvandoSenha"
-              (click)="salvarSenha()"
-            >
+            <div class="form-group">
+              <label class="form-label" for="senhaAtual">Senha atual</label>
+              <input
+                id="senhaAtual"
+                class="form-input"
+                type="password"
+                autocomplete="current-password"
+                [(ngModel)]="senhaAtual"
+              />
+              <span class="form-hint">
+                Pedimos a senha atual para garantir que é você quem está alterando.
+              </span>
+            </div>
+
+            <div class="form-linha-dupla">
+              <div class="form-group">
+                <label class="form-label" for="novaSenha">Nova senha</label>
+                <input
+                  id="novaSenha"
+                  class="form-input"
+                  type="password"
+                  autocomplete="new-password"
+                  [(ngModel)]="novaSenha"
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="confirmSenha">Confirmar nova senha</label>
+                <input
+                  id="confirmSenha"
+                  class="form-input"
+                  type="password"
+                  autocomplete="new-password"
+                  [(ngModel)]="confirmSenha"
+                />
+              </div>
+            </div>
+
+            <button class="btn-salvar" type="button" [disabled]="salvandoSenha" (click)="salvarSenha()">
               @if (salvandoSenha) { Alterando... } @else { Alterar senha }
             </button>
           </section>
-
         </div>
       </div>
     }

@@ -1,0 +1,58 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="logo-icon" aria-hidden="true">&#9830;</span>
+      <span class="logo-text">HelpDesk</span>
+    </div>
+
+    <h1 class="auth-titulo">Recuperar senha</h1>
+    <p class="auth-descricao">
+      Informe o e-mail cadastrado e enviaremos as instruções para você criar
+      uma nova senha. O link vale por 30 minutos.
+    </p>
+
+    @if (mensagem) {
+      <div class="msg-sucesso" role="status">{{ mensagem }}</div>
+    }
+
+    @if (linkGerado) {
+      <div class="msg-link">
+        <strong>Ambiente de demonstração</strong>
+        Como não há envio de e-mail configurado, use este link:
+        <a [href]="caminhoDoLink">Definir nova senha</a>
+      </div>
+    }
+
+    @if (erro) {
+      <div class="msg-erro" role="alert">{{ erro }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="enviar()">
+      <div class="form-group">
+        <label for="email">E-mail cadastrado</label>
+        <input
+          id="email"
+          type="email"
+          autocomplete="username"
+          formControlName="email"
+          placeholder="seu@empresa.com.br"
+          [class.input-error]="emailControl?.invalid && emailControl?.touched"
+        />
+        @if (emailControl?.invalid && emailControl?.touched) {
+          <span class="field-error">
+            @if (emailControl?.errors?.['required']) { Informe seu e-mail. }
+            @else if (emailControl?.errors?.['email']) { Informe um e-mail válido. }
+          </span>
+        }
+      </div>
+
+      <button type="submit" class="btn-enviar" [disabled]="enviando">
+        @if (enviando) { Enviando... } @else { Enviar instruções }
+      </button>
+    </form>
+
+    <div class="auth-rodape">
+      Lembrou a senha? <a routerLink="/login">Voltar para o login</a>
+    </div>
+  </div>
+</div>

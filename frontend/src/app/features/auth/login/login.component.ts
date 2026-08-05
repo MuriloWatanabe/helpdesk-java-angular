@@ -1,30 +1,48 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { mensagemDoErro } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.scss'
+  styleUrl: './login.component.scss',
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
   loginForm: FormGroup;
   errorMessage = '';
+  avisoSessao = '';
   isLoading = false;
+  mostrarSenha = false;
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router
-  ) {
+  /** Destino original quando o usuário caiu no login por um guard. */
+  private retorno = '/dashboard';
+
+  constructor() {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      senha: ['', [Validators.required, Validators.minLength(4)]]
+      senha: ['', [Validators.required, Validators.minLength(6)]],
     });
+  }
+
+  ngOnInit(): void {
+    const params = this.route.snapshot.queryParamMap;
+
+    const retorno = params.get('retorno');
+    if (retorno && !retorno.startsWith('/login')) {
+      this.retorno = retorno;
+    }
+    if (params.get('expirado') === '1') {
+      this.avisoSessao = 'Sua sessão expirou. Entre novamente para continuar.';
+    }
   }
 
   onSubmit(): void {
@@ -35,25 +53,31 @@ export class LoginComponent {
 
     this.isLoading = true;
     this.errorMessage = '';
+    this.avisoSessao = '';
 
     const { email, senha } = this.loginForm.value;
 
     this.authService.login(email, senha).subscribe({
       next: () => {
         this.isLoading = false;
-        this.router.navigate(['/dashboard']);
+        this.router.navigateByUrl(this.retorno);
       },
       error: (err) => {
         this.isLoading = false;
-        if (err.status === 401 || err.status === 403) {
-          this.errorMessage = 'E-mail ou senha inválidos.';
-        } else if (err.status === 0) {
-          this.errorMessage = 'Não foi possível conectar ao servidor.';
+        if (err.status === 0) {
+          this.errorMessage =
+            'Não foi possível conectar ao servidor. Verifique se a API está no ar.';
         } else {
-          this.errorMessage = 'Ocorreu um erro. Tente novamente.';
+          // O backend já devolve mensagens prontas (credenciais, usuário inativo).
+          this.errorMessage = mensagemDoErro(err, 'E-mail ou senha inválidos.');
         }
-      }
+      },
     });
+  }
+
+  /** Preenche as credenciais de demonstração para facilitar a avaliação. */
+  usarDemo(email: string): void {
+    this.loginForm.patchValue({ email, senha: '123456' });
   }
 
   get emailControl() {

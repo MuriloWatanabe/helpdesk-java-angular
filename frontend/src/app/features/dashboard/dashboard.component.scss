@@ -366,3 +366,158 @@
   background: var(--badge-resolvido-bg, #d1fae5);
   color: var(--badge-resolvido-color, #059669);
 }
+
+/* ==================================================================
+   Adições: alerta de operação, novos indicadores, SLA e protocolo
+   ================================================================== */
+
+.page-title {
+  font-size: 23px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.4px;
+}
+
+.page-subtitle {
+  font-size: 13.5px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.alerta-operacao {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 14px 16px;
+  margin-bottom: 22px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 11px;
+}
+
+.alerta-icone {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #ea580c;
+  color: #fff;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.alerta-texto {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+
+  strong {
+    font-size: 13.5px;
+    color: #9a3412;
+  }
+
+  span {
+    font-size: 13px;
+    color: #b45309;
+  }
+}
+
+.alerta-acao {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  background: #ea580c;
+  color: #fff;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+
+  &:hover { background: #c2410c; }
+}
+
+.stat-card.critico {
+  border-color: #fecaca;
+  background: #fff5f5;
+
+  .stat-value { color: #dc2626; }
+}
+
+.stat-sufixo {
+  font-size: 15px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-left: 2px;
+}
+
+.btn-link-retry {
+  margin-left: 10px;
+  background: transparent;
+  color: #b91c1c;
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: underline;
+}
+
+.categories-section {
+  margin-bottom: 24px;
+}
+
+.protocolo {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.col-titulo {
+  font-weight: 600;
+  color: #1e293b;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row-clicavel {
+  cursor: pointer;
+
+  &:hover { background: #eff6ff; }
+}
+
+.sla {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+
+  &.sla-vencido { color: #dc2626; }
+}
+
+/* Badges dos status/prioridades novos */
+.badge-aguardando { background: #ede9fe; color: #7c3aed; }
+.badge-encerrado  { background: #e2e8f0; color: #475569; }
+.badge-cancelado  { background: #f1f5f9; color: #64748b; }
+.badge-urgente    { background: #fecaca; color: #991b1b; }
+
+.empty-state .btn-primary {
+  margin-top: 14px;
+}
+
+@media (max-width: 900px) {
+  .dashboard-main {
+    padding: 76px 16px 32px;
+  }
+
+  .charts-section {
+    grid-template-columns: 1fr;
+  }
+}

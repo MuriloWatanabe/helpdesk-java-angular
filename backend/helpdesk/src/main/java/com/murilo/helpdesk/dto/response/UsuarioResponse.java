@@ -7,6 +7,12 @@ public record UsuarioResponse(
         Long id,
         String nome,
         String email,
+        String telefone,
+        String cargo,
+        boolean ativo,
         Set<String> perfis,
-        LocalDateTime dataCriacao
+        Set<Integer> perfisCodigos,
+        String perfilPrincipal,
+        LocalDateTime dataCriacao,
+        LocalDateTime ultimoAcesso
 ) {}

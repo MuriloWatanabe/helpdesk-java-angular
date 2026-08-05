@@ -3,223 +3,471 @@
 
   <main class="main-content">
 
-    @if (loading) {
+    @if (loading()) {
       <div class="loading-state">
         <div class="spinner"></div>
         <p>Carregando chamado...</p>
       </div>
     }
 
-    @if (!loading && erro) {
+    @if (!loading() && erro()) {
       <div class="erro-state">
-        <p>{{ erro }}</p>
-        <button class="btn-voltar" (click)="voltar()">← Voltar para Chamados</button>
+        <p>{{ erro() }}</p>
+        <button class="btn-secondary" (click)="voltar()">← Voltar para chamados</button>
       </div>
     }
 
-    @if (!loading && chamado) {
-      <!-- Breadcrumb / Header -->
-      <header class="page-header">
+    @if (!loading() && chamado(); as c) {
+      <!-- Cabeçalho -->
+      <header class="page-header detalhe-header">
         <div class="header-left">
           <button class="btn-voltar" (click)="voltar()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
               <polyline points="15 18 9 12 15 6"/>
             </svg>
             Chamados
           </button>
           <span class="sep">/</span>
-          <span class="breadcrumb-id">#{{ chamado.id }}</span>
+          <span class="breadcrumb-id">{{ c.numero || ('#' + c.id) }}</span>
         </div>
-        <button class="btn-copiar" (click)="copiarLink()" [class.copiado]="linkCopiado">
-          @if (linkCopiado) {
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            Link copiado!
-          } @else {
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-            </svg>
-            Compartilhar
+
+        <div class="header-acoes">
+          @if (isAtendente()) {
+            <a class="btn-secondary" [routerLink]="['/chamados', c.id, 'editar']">Editar</a>
           }
-        </button>
+          @if (isAdmin()) {
+            <button class="btn-excluir" type="button" (click)="excluirChamado()">Excluir</button>
+          }
+          <button class="btn-copiar" (click)="copiarLink()" [class.copiado]="linkCopiado">
+            {{ linkCopiado ? 'Link copiado!' : 'Compartilhar' }}
+          </button>
+        </div>
       </header>
 
-      <!-- Título e badges -->
+      <!-- Título e situação -->
       <div class="titulo-row">
-        <h1 class="titulo">{{ chamado.titulo }}</h1>
+        <h1 class="titulo">{{ c.titulo }}</h1>
         <div class="badges-row">
-          <span class="badge" [ngClass]="getStatusClass(chamado.status)">
-            {{ getStatusLabel(chamado.status) }}
-          </span>
-          <span class="badge" [ngClass]="getPrioridadeClass(chamado.prioridade)">
-            {{ getPrioridadeLabel(chamado.prioridade) }}
-          </span>
+          <span class="badge" [class]="classeStatus(c.status)">{{ c.statusLabel }}</span>
+          <span class="badge" [class]="classePrioridade(c.prioridade)">{{ c.prioridadeLabel }}</span>
+          @if (c.categoriaLabel) {
+            <span class="badge badge-categoria">{{ c.categoriaLabel }}</span>
+          }
+          @if (c.slaVencido) {
+            <span class="badge badge-sla-vencido">Prazo estourado</span>
+          }
         </div>
       </div>
 
-      <!-- Layout de duas colunas -->
       <div class="detail-grid">
-
-        <!-- Coluna principal -->
+        <!-- ============================ COLUNA PRINCIPAL ============================ -->
         <div class="col-main">
 
-          <!-- Descrição do problema -->
           <section class="card">
-            <h2 class="card-title">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
-              </svg>
-              Descrição do problema
-            </h2>
-            <p class="observacoes">{{ chamado.observacoes }}</p>
+            <h2 class="card-title">Descrição do problema</h2>
+            <p class="observacoes">{{ c.observacoes }}</p>
           </section>
 
-          <!-- Datas -->
-          <section class="card datas-card">
+          <!-- Conversa -->
+          <section class="card">
             <h2 class="card-title">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
-              Histórico de datas
+              Conversa
+              <span class="contador">{{ comentarios().length }}</span>
             </h2>
-            <div class="datas-grid">
-              <div class="data-item">
-                <span class="data-label">Abertura</span>
-                <span class="data-valor">{{ formatData(chamado.dataAbertura) }}</span>
-              </div>
-              <div class="data-item">
-                <span class="data-label">Última atualização</span>
-                <span class="data-valor">{{ formatData(chamado.dataAtualizacao) }}</span>
-              </div>
-              <div class="data-item">
-                <span class="data-label">Fechamento</span>
-                <span class="data-valor" [class.sem-data]="!chamado.dataFechamento">
-                  {{ formatData(chamado.dataFechamento) }}
-                </span>
+
+            @if (comentarios().length === 0) {
+              <p class="vazio-inline">
+                Nenhuma mensagem ainda. Use o campo abaixo para falar com
+                {{ isAtendente() ? 'o cliente' : 'a equipe de suporte' }}.
+              </p>
+            }
+
+            <ul class="comentarios">
+              @for (comentario of comentarios(); track comentario.id) {
+                <li class="comentario" [class.interno]="comentario.interno">
+                  <div class="comentario-avatar">{{ iniciais(comentario.autor.nome) }}</div>
+                  <div class="comentario-corpo">
+                    <div class="comentario-topo">
+                      <span class="comentario-autor">{{ comentario.autor.nome }}</span>
+                      <span class="comentario-perfil">{{ comentario.autorPerfil }}</span>
+                      @if (comentario.interno) {
+                        <span class="badge badge-interno">Nota interna</span>
+                      }
+                      <span class="comentario-data">
+                        {{ comentario.dataCriacao | date: 'dd/MM/yyyy HH:mm' }}
+                      </span>
+                      @if (comentario.editado) { <span class="editado">(editado)</span> }
+                      @if (podeExcluirComentario(comentario)) {
+                        <button
+                          class="btn-remover-inline"
+                          type="button"
+                          aria-label="Excluir comentário"
+                          (click)="excluirComentario(comentario)"
+                        >×</button>
+                      }
+                    </div>
+                    <p class="comentario-texto">{{ comentario.texto }}</p>
+                  </div>
+                </li>
+              }
+            </ul>
+
+            <!-- Novo comentário -->
+            <div class="comentario-form">
+              <label class="sr-only" for="novo-comentario">Escrever comentário</label>
+              <textarea
+                id="novo-comentario"
+                class="form-control"
+                rows="3"
+                maxlength="2000"
+                placeholder="Escreva uma atualização ou tire uma dúvida..."
+                [(ngModel)]="novoComentario"
+              ></textarea>
+
+              <div class="comentario-form-rodape">
+                @if (isAtendente()) {
+                  <label class="check-item" title="Visível apenas para a equipe de suporte">
+                    <input type="checkbox" [(ngModel)]="comentarioInterno" />
+                    Nota interna (o cliente não vê)
+                  </label>
+                } @else {
+                  <span class="dica">Sua mensagem fica visível para a equipe de suporte.</span>
+                }
+
+                <button
+                  class="btn-primary"
+                  type="button"
+                  [disabled]="novoComentario.trim().length < 2 || enviandoComentario()"
+                  (click)="enviarComentario()"
+                >
+                  @if (enviandoComentario()) { Enviando... } @else { Enviar }
+                </button>
               </div>
             </div>
           </section>
 
-        </div>
-
-        <!-- Coluna lateral -->
-        <div class="col-side">
-
-          <!-- Pessoas envolvidas -->
+          <!-- Anexos -->
           <section class="card">
             <h2 class="card-title">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-              </svg>
-              Pessoas envolvidas
+              Anexos
+              <span class="contador">{{ anexos().length }}</span>
             </h2>
 
-            <div class="pessoa-item">
-              <div class="pessoa-avatar cliente-avatar">
-                {{ chamado.cliente.nome[0].toUpperCase() }}
+            @if (anexos().length === 0) {
+              <p class="vazio-inline">Nenhum arquivo anexado a este chamado.</p>
+            }
+
+            <ul class="anexos">
+              @for (anexo of anexos(); track anexo.id) {
+                <li class="anexo-item">
+                  <span class="anexo-icone" aria-hidden="true">
+                    {{ anexo.imagem ? '🖼' : '📄' }}
+                  </span>
+                  <div class="anexo-info">
+                    <span class="anexo-nome">{{ anexo.nomeArquivo }}</span>
+                    <span class="anexo-meta">
+                      {{ anexo.tamanhoFormatado }} ·
+                      {{ anexo.enviadoPor.nome }} ·
+                      {{ anexo.dataUpload | date: 'dd/MM/yyyy HH:mm' }}
+                      @if (!anexo.publico) { · <strong>interno</strong> }
+                    </span>
+                  </div>
+                  <div class="anexo-acoes">
+                    <button class="btn-link" type="button" (click)="baixarAnexo(anexo)">Baixar</button>
+                    @if (podeExcluirAnexo(anexo)) {
+                      <button
+                        class="btn-link perigo"
+                        type="button"
+                        (click)="excluirAnexo(anexo)"
+                      >Excluir</button>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+
+            <div class="anexo-form">
+              <label class="sr-only" for="arquivo">Selecionar arquivo</label>
+              <input
+                id="arquivo"
+                #inputArquivo
+                type="file"
+                class="input-arquivo"
+                (change)="aoEscolherArquivo($event)"
+              />
+              @if (isAtendente()) {
+                <label class="check-item">
+                  <input type="checkbox" [(ngModel)]="anexoInterno" />
+                  Interno
+                </label>
+              }
+              <button
+                class="btn-secondary"
+                type="button"
+                [disabled]="!arquivoSelecionado || enviandoAnexo()"
+                (click)="enviarAnexo(inputArquivo)"
+              >
+                @if (enviandoAnexo()) { Enviando... } @else { Anexar }
+              </button>
+            </div>
+            <span class="form-hint">
+              Até 10 MB. Aceita imagens, PDF, Word, TXT e CSV.
+            </span>
+          </section>
+
+          <!-- Avaliação -->
+          @if (avaliacao(); as av) {
+            <section class="card">
+              <h2 class="card-title">Avaliação do atendimento</h2>
+              <div class="avaliacao-resultado">
+                <div class="estrelas-exibicao" [attr.aria-label]="'Nota ' + av.nota + ' de 5'">
+                  @for (n of [1,2,3,4,5]; track n) {
+                    <span class="estrela" [class.ativa]="n <= av.nota" aria-hidden="true">★</span>
+                  }
+                  <strong class="nota-texto">{{ av.interpretacao }}</strong>
+                </div>
+                @if (av.comentario) {
+                  <p class="avaliacao-comentario">"{{ av.comentario }}"</p>
+                }
+                @if (av.aspectos.length > 0) {
+                  <div class="aspectos-lista">
+                    @for (a of av.aspectos; track a) {
+                      <span class="aspecto-chip">{{ a }}</span>
+                    }
+                  </div>
+                }
+                <span class="avaliacao-data">
+                  Avaliado em {{ av.dataAvaliacao | date: 'dd/MM/yyyy' }}
+                </span>
               </div>
+            </section>
+          } @else if (podeAvaliar()) {
+            <section class="card destaque-avaliacao">
+              <h2 class="card-title">Como foi o atendimento?</h2>
+              <p class="vazio-inline">
+                Sua avaliação ajuda a equipe de suporte a melhorar.
+              </p>
+
+              <div class="estrelas-escolha" role="group" aria-label="Nota de 1 a 5">
+                @for (n of [1,2,3,4,5]; track n) {
+                  <button
+                    type="button"
+                    class="estrela-btn"
+                    [class.ativa]="n <= notaEscolhida"
+                    [attr.aria-label]="'Dar nota ' + n"
+                    [attr.aria-pressed]="n === notaEscolhida"
+                    (click)="notaEscolhida = n"
+                  >★</button>
+                }
+              </div>
+
+              <div class="aspectos-escolha">
+                @for (a of aspectosDisponiveis; track a) {
+                  <button
+                    type="button"
+                    class="aspecto-btn"
+                    [class.ativo]="aspectosEscolhidos.has(a)"
+                    (click)="alternarAspecto(a)"
+                  >{{ a }}</button>
+                }
+              </div>
+
+              <label class="sr-only" for="comentario-avaliacao">Comentário da avaliação</label>
+              <textarea
+                id="comentario-avaliacao"
+                class="form-control"
+                rows="2"
+                maxlength="1000"
+                placeholder="Quer deixar um comentário? (opcional)"
+                [(ngModel)]="comentarioAvaliacao"
+              ></textarea>
+
+              <button
+                class="btn-primary avaliar-btn"
+                type="button"
+                [disabled]="notaEscolhida < 1 || enviandoAvaliacao()"
+                (click)="enviarAvaliacao()"
+              >
+                @if (enviandoAvaliacao()) { Enviando... } @else { Enviar avaliação }
+              </button>
+            </section>
+          }
+        </div>
+
+        <!-- ============================ COLUNA LATERAL ============================ -->
+        <div class="col-side">
+
+          <!-- SLA -->
+          <section class="card sla-card" [class.vencido]="c.slaVencido">
+            <h2 class="card-title">Prazo de atendimento</h2>
+            @if (c.prazoSla) {
+              <p class="sla-limite">
+                Limite: <strong>{{ c.prazoSla | date: 'dd/MM/yyyy HH:mm' }}</strong>
+              </p>
+              @if (textoSla(c); as sla) {
+                <p class="sla-restante" [class.vencido]="c.slaVencido">{{ sla }}</p>
+              } @else {
+                <p class="sla-restante concluido">Atendimento concluído</p>
+              }
+            } @else {
+              <p class="vazio-inline">Sem prazo definido.</p>
+            }
+          </section>
+
+          <!-- Pessoas -->
+          <section class="card">
+            <h2 class="card-title">Pessoas envolvidas</h2>
+
+            <div class="pessoa-item">
+              <div class="pessoa-avatar cliente-avatar">{{ iniciais(c.cliente.nome) }}</div>
               <div class="pessoa-info">
                 <span class="pessoa-papel">Cliente</span>
-                <span class="pessoa-nome">{{ chamado.cliente.nome }}</span>
-                <span class="pessoa-email">{{ chamado.cliente.email }}</span>
+                <span class="pessoa-nome">{{ c.cliente.nome }}</span>
+                <span class="pessoa-email">{{ c.cliente.email }}</span>
               </div>
             </div>
 
             <div class="divider"></div>
 
             <div class="pessoa-item">
-              @if (chamado.tecnico) {
-                <div class="pessoa-avatar tecnico-avatar">
-                  {{ chamado.tecnico.nome[0].toUpperCase() }}
-                </div>
+              @if (c.tecnico) {
+                <div class="pessoa-avatar tecnico-avatar">{{ iniciais(c.tecnico.nome) }}</div>
                 <div class="pessoa-info">
-                  <span class="pessoa-papel">Técnico</span>
-                  <span class="pessoa-nome">{{ chamado.tecnico.nome }}</span>
-                  <span class="pessoa-email">{{ chamado.tecnico.email }}</span>
+                  <span class="pessoa-papel">Técnico responsável</span>
+                  <span class="pessoa-nome">{{ c.tecnico.nome }}</span>
+                  <span class="pessoa-email">{{ c.tecnico.email }}</span>
                 </div>
               } @else {
                 <div class="pessoa-avatar sem-avatar">?</div>
                 <div class="pessoa-info">
-                  <span class="pessoa-papel">Técnico</span>
-                  <span class="pessoa-nome sem-dados">Não atribuído</span>
+                  <span class="pessoa-papel">Técnico responsável</span>
+                  <span class="pessoa-nome sem-dados">Aguardando atribuição</span>
                 </div>
               }
             </div>
+
+            @if (isAtendente() && !c.tecnico && !c.encerrado) {
+              <button class="btn-primary largura-total" type="button"
+                      [disabled]="processando()" (click)="assumir()">
+                Assumir este chamado
+              </button>
+            }
           </section>
 
-          <!-- Alterar técnico (só ADMIN) -->
-          @if (isAdmin) {
-            <section class="card">
-              <h2 class="card-title">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                  <circle cx="12" cy="7" r="4"/>
-                  <line x1="19" y1="8" x2="23" y2="8"/><line x1="21" y1="6" x2="21" y2="10"/>
-                </svg>
-                Alterar técnico
-              </h2>
-              <div class="tecnico-acao">
-                <select
-                  class="tecnico-select"
-                  [(ngModel)]="tecnicoSelecionadoId"
-                  [disabled]="alterandoTecnico"
-                >
-                  <option [ngValue]="null">— Não atribuído —</option>
-                  @for (t of tecnicos; track t.id) {
-                    <option [ngValue]="t.id">{{ t.nome }}</option>
-                  }
-                </select>
-                <button
-                  class="btn-confirmar"
-                  [disabled]="alterandoTecnico"
-                  (click)="alterarTecnico()"
-                >
-                  @if (alterandoTecnico) { Salvando... } @else { Confirmar }
-                </button>
-              </div>
-            </section>
-          }
+          <!-- Abas: ações / histórico -->
+          <section class="card">
+            <div class="abas" role="tablist">
+              <button
+                class="aba"
+                role="tab"
+                [class.ativa]="abaLateral === 'acoes'"
+                [attr.aria-selected]="abaLateral === 'acoes'"
+                (click)="abaLateral = 'acoes'"
+              >Ações</button>
+              <button
+                class="aba"
+                role="tab"
+                [class.ativa]="abaLateral === 'historico'"
+                [attr.aria-selected]="abaLateral === 'historico'"
+                (click)="abaLateral = 'historico'"
+              >Histórico</button>
+            </div>
 
-          <!-- Alterar status (só ADMIN/TECNICO) -->
-          @if (podeAlterarStatus) {
-            <section class="card">
-              <h2 class="card-title">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
-                  <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
-                </svg>
-                Alterar status
-              </h2>
-              <div class="status-acoes">
-                @for (opt of statusOpcoes; track opt.valor) {
-                  <button
-                    class="btn-status"
-                    [class.ativo]="chamado.status === opt.valor"
-                    [disabled]="chamado.status === opt.valor || alterandoStatus"
-                    (click)="alterarStatus(opt.enum)"
-                  >
-                    <span class="status-dot" [ngClass]="getStatusClass(opt.valor)"></span>
-                    {{ opt.label }}
-                    @if (chamado.status === opt.valor) { <span class="atual-tag">atual</span> }
-                  </button>
-                }
-              </div>
-              @if (alterandoStatus) {
-                <p class="atualizando">Atualizando...</p>
+            @if (abaLateral === 'acoes') {
+              @if (acoesDeStatus().length > 0) {
+                <p class="acoes-legenda">Mover o chamado para:</p>
+                <div class="status-acoes">
+                  @for (opt of acoesDeStatus(); track opt.codigo) {
+                    <button
+                      class="btn-status"
+                      type="button"
+                      [disabled]="processando()"
+                      (click)="alterarStatus(opt.codigo)"
+                    >
+                      <span class="status-dot" [class]="classeStatus(opt.codigo)"></span>
+                      {{ opt.rotulo }}
+                    </button>
+                  }
+                </div>
+              } @else {
+                <p class="vazio-inline">
+                  Não há ações disponíveis para você neste chamado no momento.
+                </p>
               }
-            </section>
-          }
+
+              @if (isAtendente()) {
+                <div class="divider"></div>
+                <label class="form-label" for="sel-tecnico">Técnico responsável</label>
+                <div class="tecnico-acao">
+                  <select
+                    id="sel-tecnico"
+                    class="form-control"
+                    [(ngModel)]="tecnicoSelecionadoId"
+                    [disabled]="processando()"
+                  >
+                    <option [ngValue]="null">— Não atribuído —</option>
+                    @for (t of tecnicos; track t.id) {
+                      <option [ngValue]="t.id">{{ t.nome }}</option>
+                    }
+                  </select>
+                  <button
+                    class="btn-secondary"
+                    type="button"
+                    [disabled]="processando()"
+                    (click)="alterarTecnico()"
+                  >Salvar</button>
+                </div>
+              }
+            } @else {
+              @if (historico().length === 0) {
+                <p class="vazio-inline">Sem registros no histórico.</p>
+              }
+              <ol class="timeline">
+                @for (h of historico(); track h.id) {
+                  <li class="timeline-item">
+                    <span class="timeline-icone" aria-hidden="true">{{ iconeHistorico(h.tipo) }}</span>
+                    <div class="timeline-corpo">
+                      <span class="timeline-desc">{{ h.descricao }}</span>
+                      <span class="timeline-meta">
+                        {{ h.usuario?.nome ?? 'Sistema' }} ·
+                        {{ h.dataAlteracao | date: 'dd/MM/yyyy HH:mm' }}
+                      </span>
+                    </div>
+                  </li>
+                }
+              </ol>
+            }
+          </section>
+
+          <!-- Datas -->
+          <section class="card">
+            <h2 class="card-title">Datas</h2>
+            <div class="datas-grid">
+              <div class="data-item">
+                <span class="data-label">Abertura</span>
+                <span class="data-valor">{{ c.dataAbertura | date: 'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+              <div class="data-item">
+                <span class="data-label">Primeira resposta</span>
+                <span class="data-valor" [class.sem-data]="!c.dataPrimeiraResposta">
+                  {{ c.dataPrimeiraResposta ? (c.dataPrimeiraResposta | date: 'dd/MM/yyyy HH:mm') : '—' }}
+                </span>
+              </div>
+              <div class="data-item">
+                <span class="data-label">Última atualização</span>
+                <span class="data-valor">{{ c.dataAtualizacao | date: 'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+              <div class="data-item">
+                <span class="data-label">Fechamento</span>
+                <span class="data-valor" [class.sem-data]="!c.dataFechamento">
+                  {{ c.dataFechamento ? (c.dataFechamento | date: 'dd/MM/yyyy HH:mm') : '—' }}
+                </span>
+              </div>
+            </div>
+          </section>
 
         </div>
       </div>
     }
-
   </main>
 </div>

@@ -1,7 +1,12 @@
-import { Injectable } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import {
+  AlterarSenhaRequest,
+  AtualizarPerfilRequest,
+  Usuario,
+} from '../models/usuario.model';
 
 export interface LoginResponse {
   id: number;
@@ -10,6 +15,7 @@ export interface LoginResponse {
   nome: string;
   email: string;
   perfis: string[];
+  expiraEm: string;
 }
 
 export interface LoginRequest {
@@ -26,72 +32,182 @@ export interface UsuarioAtual {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/v1/auth`;
+
   private readonly tokenKey = 'helpdesk_token';
   private readonly userKey = 'helpdesk_user';
 
-  constructor(private http: HttpClient) {}
+  /** Estado reativo: o layout acompanha alterações do perfil sem recarregar a página. */
+  private readonly _usuario = signal<UsuarioAtual | null>(this.lerUsuarioSalvo());
+  readonly usuario = this._usuario.asReadonly();
 
-  register(nome: string, email: string, senha: string): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/v1/auth/register`, { nome, email, senha });
-  }
+  readonly isAdmin = computed(() => this.temPerfil('ROLE_ADMIN'));
+  readonly isTecnico = computed(() => this.temPerfil('ROLE_TECNICO'));
+  readonly isAtendente = computed(() => this.isAdmin() || this.isTecnico());
+  readonly isCliente = computed(() => this.temPerfil('ROLE_CLIENTE') && !this.isAtendente());
+
+  readonly perfilLabel = computed(() => {
+    if (this.isAdmin()) return 'Administrador';
+    if (this.isTecnico()) return 'Técnico';
+    if (this.temPerfil('ROLE_CLIENTE')) return 'Cliente';
+    return 'Usuário';
+  });
+
+  // ------------------------------------------------------------------
+  // Autenticação
+  // ------------------------------------------------------------------
 
   login(email: string, senha: string): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { email, senha }).pipe(
       tap((response) => {
-        if (response?.token) {
-          localStorage.setItem(this.tokenKey, response.token);
-          localStorage.setItem(this.userKey, JSON.stringify({
-            id: response.id,
-            nome: response.nome,
-            email: response.email,
-            perfis: response.perfis
-          } as UsuarioAtual));
-        }
-      })
+        if (!response?.token) return;
+        localStorage.setItem(this.tokenKey, response.token);
+        this.salvarUsuario({
+          id: response.id,
+          nome: response.nome,
+          email: response.email,
+          perfis: response.perfis,
+        });
+      }),
     );
+  }
+
+  register(nome: string, email: string, senha: string, telefone?: string): Observable<Usuario> {
+    return this.http.post<Usuario>(`${this.apiUrl}/register`, { nome, email, senha, telefone });
   }
 
   logout(): void {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userKey);
-  }
-
-  isLoggedIn(): boolean {
-    return !!localStorage.getItem(this.tokenKey);
+    this._usuario.set(null);
   }
 
   getToken(): string | null {
     return localStorage.getItem(this.tokenKey);
   }
 
+  /**
+   * Considera logado apenas quem tem um token ainda válido. Antes bastava
+   * existir a string no localStorage: com o token expirado o usuário entrava
+   * nas telas e só descobria o problema quando a primeira chamada falhava.
+   */
+  isLoggedIn(): boolean {
+    const token = this.getToken();
+    if (!token) return false;
+
+    if (this.tokenExpirado(token)) {
+      this.logout();
+      return false;
+    }
+    return true;
+  }
+
+  private tokenExpirado(token: string): boolean {
+    const exp = this.lerExpiracao(token);
+    if (exp === null) return false; // token sem exp legível: deixa o servidor decidir
+    return Date.now() >= exp;
+  }
+
+  /** Lê o campo `exp` do payload do JWT (em milissegundos). */
+  private lerExpiracao(token: string): number | null {
+    try {
+      const payload = token.split('.')[1];
+      if (!payload) return null;
+      const json = JSON.parse(
+        atob(payload.replaceAll('-', '+').replaceAll('_', '/')),
+      ) as { exp?: number };
+      return json.exp ? json.exp * 1000 : null;
+    } catch {
+      return null;
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // Usuário autenticado
+  // ------------------------------------------------------------------
+
+  /** Dados completos e atualizados do próprio usuário. */
+  carregarMeuPerfil(): Observable<Usuario> {
+    return this.http.get<Usuario>(`${this.apiUrl}/me`).pipe(
+      tap((u) =>
+        this.salvarUsuario({ id: u.id, nome: u.nome, email: u.email, perfis: u.perfis }),
+      ),
+    );
+  }
+
+  /** Autosserviço: não exige perfil de administrador. */
+  atualizarMeuPerfil(request: AtualizarPerfilRequest): Observable<Usuario> {
+    return this.http.put<Usuario>(`${this.apiUrl}/me`, request).pipe(
+      tap((u) =>
+        this.salvarUsuario({ id: u.id, nome: u.nome, email: u.email, perfis: u.perfis }),
+      ),
+    );
+  }
+
+  alterarSenha(request: AlterarSenhaRequest): Observable<{ mensagem: string }> {
+    return this.http.post<{ mensagem: string }>(`${this.apiUrl}/alterar-senha`, request);
+  }
+
+  recuperarSenha(email: string): Observable<{ mensagem: string; detalhe?: string }> {
+    return this.http.post<{ mensagem: string; detalhe?: string }>(
+      `${this.apiUrl}/recuperar-senha`,
+      { email },
+    );
+  }
+
+  redefinirSenha(token: string, novaSenha: string): Observable<{ mensagem: string }> {
+    return this.http.post<{ mensagem: string }>(`${this.apiUrl}/redefinir-senha`, {
+      token,
+      novaSenha,
+    });
+  }
+
   getUsuarioAtual(): UsuarioAtual | null {
-    const raw = localStorage.getItem(this.userKey);
-    if (!raw) return null;
-    try { return JSON.parse(raw); } catch { return null; }
+    return this._usuario();
   }
 
-  isAdmin(): boolean {
-    return this.getUsuarioAtual()?.perfis?.includes('ROLE_ADMIN') ?? false;
+  // ------------------------------------------------------------------
+  // Helpers de apresentação
+  // ------------------------------------------------------------------
+
+  getIniciais(nome?: string | null): string {
+    if (!nome?.trim()) return '?';
+    return nome
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((parte) => parte[0])
+      .join('')
+      .toUpperCase();
   }
 
-  isTecnico(): boolean {
-    return this.getUsuarioAtual()?.perfis?.includes('ROLE_TECNICO') ?? false;
-  }
-
-  isCliente(): boolean {
-    const perfis = this.getUsuarioAtual()?.perfis ?? [];
-    return perfis.includes('ROLE_CLIENTE') && !perfis.includes('ROLE_ADMIN') && !perfis.includes('ROLE_TECNICO');
-  }
-
-  getIniciais(nome: string): string {
-    if (!nome) return '?';
-    return nome.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
-  }
-
-  getPerfilLabel(perfis: string[]): string {
+  getPerfilLabel(perfis: string[] | undefined | null): string {
     if (perfis?.includes('ROLE_ADMIN')) return 'Administrador';
     if (perfis?.includes('ROLE_TECNICO')) return 'Técnico';
     return 'Cliente';
+  }
+
+  // ------------------------------------------------------------------
+  // Internos
+  // ------------------------------------------------------------------
+
+  private temPerfil(role: string): boolean {
+    return this._usuario()?.perfis?.includes(role) ?? false;
+  }
+
+  private salvarUsuario(usuario: UsuarioAtual): void {
+    localStorage.setItem(this.userKey, JSON.stringify(usuario));
+    this._usuario.set(usuario);
+  }
+
+  private lerUsuarioSalvo(): UsuarioAtual | null {
+    const bruto = localStorage.getItem(this.userKey);
+    if (!bruto) return null;
+    try {
+      return JSON.parse(bruto) as UsuarioAtual;
+    } catch {
+      return null;
+    }
   }
 }

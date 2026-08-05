@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -19,6 +20,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private final UsuarioRepository usuarioRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         var usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + email));
@@ -27,6 +29,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .map(perfil -> new SimpleGrantedAuthority(perfil.getDescricao()))
                 .collect(Collectors.toSet());
 
-        return new User(usuario.getEmail(), usuario.getSenha(), authorities);
+        return User.withUsername(usuario.getEmail())
+                .password(usuario.getSenha())
+                .authorities(authorities)
+                // Usuário desativado pelo admin não autentica mais, e o token que
+                // ele já possuía deixa de valer na requisição seguinte.
+                .disabled(Boolean.FALSE.equals(usuario.getAtivo()))
+                .build();
     }
 }

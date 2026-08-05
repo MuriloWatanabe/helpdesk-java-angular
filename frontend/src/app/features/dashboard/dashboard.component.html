@@ -1,198 +1,239 @@
 <div class="dashboard-layout">
-  <app-sidebar></app-sidebar>
+  <app-sidebar />
 
   <main class="dashboard-main">
     <header class="dashboard-header">
       <div class="header-left">
-        <h1 class="page-title">Dashboard</h1>
-        <p class="page-subtitle">Bem-vindo de volta, {{ userName }}</p>
+        <h1 class="page-title">Olá, {{ primeiroNome() }}</h1>
+        <p class="page-subtitle">
+          @if (isCliente()) {
+            Acompanhe aqui o andamento das suas solicitações.
+          } @else {
+            Visão geral do atendimento e dos prazos.
+          }
+        </p>
       </div>
       <div class="header-right">
-        <a routerLink="/chamados/novo" class="btn-novo-chamado">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          Novo chamado
-        </a>
+        <button class="btn-secondary" type="button" (click)="atualizar()">Atualizar</button>
+        <a routerLink="/chamados/novo" class="btn-novo-chamado">+ Abrir chamado</a>
       </div>
     </header>
 
-    @if (loading) {
+    @if (loading()) {
       <div class="loading-state">
         <div class="spinner"></div>
-        <p>Carregando dados...</p>
+        <p>Carregando indicadores...</p>
       </div>
     }
 
-    @if (!loading && erro) {
-      <div class="loading-state">
-        <p style="color: #ef4444; font-weight: 500;">Erro ao carregar dados. Tente novamente.</p>
-        <button (click)="carregarDados(true)" style="margin-top: 12px; padding: 8px 20px; background: #1d4ed8; color: #fff; border: none; border-radius: 6px; cursor: pointer;">
-          Tentar novamente
-        </button>
+    @if (erro()) {
+      <div class="alert-error" role="alert">
+        Não foi possível carregar os indicadores. Verifique se a API está no ar.
+        <button class="btn-link-retry" type="button" (click)="atualizar()">Tentar novamente</button>
       </div>
     }
 
-    @if (!loading && stats) {
+    @if (!loading() && stats(); as s) {
       <div class="dashboard-content">
-        <!-- Stat Cards -->
-        <section class="stats-section">
-          <div class="stat-card stat-blue">
+
+        <!-- Alerta de SLA: só faz sentido para quem atende -->
+        @if (isAtendente() && (s.totalSlaVencido > 0 || s.totalSemTecnico > 0)) {
+          <div class="alerta-operacao">
+            <div class="alerta-icone" aria-hidden="true">!</div>
+            <div class="alerta-texto">
+              <strong>Precisa de atenção agora</strong>
+              <span>
+                @if (s.totalSlaVencido > 0) {
+                  {{ s.totalSlaVencido }} chamado(s) com prazo estourado.
+                }
+                @if (s.totalSemTecnico > 0) {
+                  {{ s.totalSemTecnico }} aguardando atribuição.
+                }
+              </span>
+            </div>
+            <a class="alerta-acao" routerLink="/fila">Ver fila</a>
+          </div>
+        }
+
+        <!-- Indicadores -->
+        <section class="stats-section" aria-label="Indicadores">
+          <article class="stat-card">
             <div class="stat-card-header">
-              <span class="stat-title">Total Abertos</span>
-              <div class="stat-icon-wrap">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                </svg>
-              </div>
+              <span class="stat-title">Em aberto</span>
             </div>
-            <div class="stat-value">{{ stats.totalAbertos }}</div>
-            <div class="stat-subtitle">chamados em aberto</div>
-          </div>
+            <p class="stat-value">{{ emAberto() }}</p>
+            <span class="stat-subtitle">
+              {{ s.totalAbertos }} novos · {{ s.totalEmAndamento }} em andamento
+            </span>
+          </article>
 
-          <div class="stat-card stat-orange">
+          <article class="stat-card">
             <div class="stat-card-header">
-              <span class="stat-title">Em Andamento</span>
-              <div class="stat-icon-wrap">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                </svg>
-              </div>
+              <span class="stat-title">Resolvidos</span>
             </div>
-            <div class="stat-value">{{ stats.totalEmAndamento }}</div>
-            <div class="stat-subtitle">em atendimento</div>
-          </div>
-
-          <div class="stat-card stat-green">
-            <div class="stat-card-header">
-              <span class="stat-title">Encerrados</span>
-              <div class="stat-icon-wrap">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-              </div>
-            </div>
-            <div class="stat-value">{{ stats.totalEncerrados }}</div>
-            <div class="stat-subtitle">resolvidos</div>
-          </div>
-
-          <div class="stat-card stat-purple">
-            <div class="stat-card-header">
-              <span class="stat-title">Total Geral</span>
-              <div class="stat-icon-wrap">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
-                  <line x1="6" y1="20" x2="6" y2="14"/>
-                </svg>
-              </div>
-            </div>
-            <div class="stat-value">{{ stats.totalChamados }}</div>
-            <div class="stat-subtitle">no sistema</div>
-          </div>
-        </section>
-
-        <!-- Chart -->
-        <section class="charts-section">
-          <div class="chart-card">
-            <div class="card-header">
-              <h2 class="card-title">Visão geral por status</h2>
-              <span class="card-subtitle">Todos os chamados</span>
-            </div>
-            <div class="chart-wrapper">
-              <canvas #chartCanvas></canvas>
-            </div>
-          </div>
-
-          <div class="category-card">
-            <div class="card-header">
-              <h2 class="card-title">Distribuição</h2>
-              <span class="card-subtitle">Por status</span>
-            </div>
-            <div class="categories-list">
-              @if (stats.totalChamados > 0) {
-                <div class="category-item">
-                  <div class="category-header">
-                    <span class="category-name">Abertos</span>
-                    <span class="category-pct">{{ ((stats.totalAbertos / stats.totalChamados) * 100) | number:'1.0-0' }}%</span>
-                  </div>
-                  <div class="progress-bar-bg">
-                    <div class="progress-bar-fill bar-blue"
-                         [style.width.%]="(stats.totalAbertos / stats.totalChamados) * 100"></div>
-                  </div>
-                </div>
-                <div class="category-item">
-                  <div class="category-header">
-                    <span class="category-name">Em Andamento</span>
-                    <span class="category-pct">{{ ((stats.totalEmAndamento / stats.totalChamados) * 100) | number:'1.0-0' }}%</span>
-                  </div>
-                  <div class="progress-bar-bg">
-                    <div class="progress-bar-fill bar-orange"
-                         [style.width.%]="(stats.totalEmAndamento / stats.totalChamados) * 100"></div>
-                  </div>
-                </div>
-                <div class="category-item">
-                  <div class="category-header">
-                    <span class="category-name">Encerrados</span>
-                    <span class="category-pct">{{ ((stats.totalEncerrados / stats.totalChamados) * 100) | number:'1.0-0' }}%</span>
-                  </div>
-                  <div class="progress-bar-bg">
-                    <div class="progress-bar-fill bar-green"
-                         [style.width.%]="(stats.totalEncerrados / stats.totalChamados) * 100"></div>
-                  </div>
-                </div>
+            <p class="stat-value">{{ s.totalResolvidos + s.totalEncerrados }}</p>
+            <span class="stat-subtitle">
+              @if (s.totalResolvidos > 0) {
+                {{ s.totalResolvidos }} aguardando confirmação
+              } @else {
+                Nenhum aguardando confirmação
               }
-            </div>
-          </div>
+            </span>
+          </article>
+
+          @if (isAtendente()) {
+            <article class="stat-card" [class.critico]="s.totalSlaVencido > 0">
+              <div class="stat-card-header">
+                <span class="stat-title">Prazo estourado</span>
+              </div>
+              <p class="stat-value">{{ s.totalSlaVencido }}</p>
+              <span class="stat-subtitle">{{ s.totalSlaEmRisco }} vencem nas próximas 8h</span>
+            </article>
+
+            <article class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-title">Tempo médio</span>
+              </div>
+              <p class="stat-value">{{ tempoMedioTexto }}</p>
+              <span class="stat-subtitle">Da abertura até o fechamento</span>
+            </article>
+
+            <article class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-title">Satisfação</span>
+              </div>
+              <p class="stat-value">
+                @if (s.notaMediaAtendimento !== null) {
+                  {{ s.notaMediaAtendimento | number: '1.1-1' }}<span class="stat-sufixo">/5</span>
+                } @else { — }
+              </p>
+              <span class="stat-subtitle">{{ s.totalAvaliacoes }} avaliação(ões)</span>
+            </article>
+          } @else {
+            <article class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-title">Total de chamados</span>
+              </div>
+              <p class="stat-value">{{ s.totalChamados }}</p>
+              <span class="stat-subtitle">Desde o início do seu cadastro</span>
+            </article>
+          }
         </section>
 
-        <!-- Recent Chamados -->
+        <!-- Gráficos -->
+        @if (s.totalChamados > 0) {
+          <section class="charts-section">
+            <article class="chart-card">
+              <div class="card-header">
+                <h2 class="card-title">Situação dos chamados</h2>
+              </div>
+              <div class="chart-wrapper">
+                <canvas #graficoStatus aria-label="Distribuição por situação"></canvas>
+              </div>
+            </article>
+
+            @if (isAtendente()) {
+              <article class="chart-card">
+                <div class="card-header">
+                  <h2 class="card-title">Aberturas nos últimos 14 dias</h2>
+                </div>
+                <div class="chart-wrapper">
+                  <canvas #graficoEvolucao aria-label="Chamados abertos por dia"></canvas>
+                </div>
+              </article>
+            }
+          </section>
+
+          @if (isAtendente() && s.porCategoria.length > 0) {
+            <section class="categories-section">
+              <article class="chart-card">
+                <div class="card-header">
+                  <h2 class="card-title">Principais categorias</h2>
+                  <span class="card-subtitle">Onde os problemas se concentram</span>
+                </div>
+                <ul class="categories-list">
+                  @for (cat of s.porCategoria.slice(0, 6); track cat.rotulo) {
+                    <li class="category-item">
+                      <div class="category-header">
+                        <span class="category-name">{{ cat.rotulo }}</span>
+                        <span class="category-pct">{{ cat.total }} ({{ percentual(cat.total) }}%)</span>
+                      </div>
+                      <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" [style.width.%]="percentual(cat.total)"></div>
+                      </div>
+                    </li>
+                  }
+                </ul>
+              </article>
+            </section>
+          }
+        }
+
+        <!-- Chamados recentes -->
         <section class="table-section">
-          <div class="table-card">
+          <article class="table-card">
             <div class="card-header">
-              <h2 class="card-title">Chamados recentes</h2>
-              <a routerLink="/chamados" class="ver-todos">Ver todos</a>
+              <h2 class="card-title">
+                @if (isCliente()) { Seus chamados recentes } @else { Chamados recentes }
+              </h2>
+              <a routerLink="/chamados" class="ver-todos">Ver todos →</a>
             </div>
-            @if (chamadosRecentes.length === 0) {
-              <div class="empty-state-small">Nenhum chamado cadastrado.</div>
+
+            @if (s.chamadosRecentes.length === 0) {
+              <div class="empty-state">
+                <p>Nenhum chamado por aqui ainda</p>
+                <span>
+                  @if (isCliente()) {
+                    Precisa de ajuda com algo? Abra seu primeiro chamado.
+                  } @else {
+                    Assim que um chamado for aberto, ele aparece nesta lista.
+                  }
+                </span>
+                <a routerLink="/chamados/novo" class="btn-primary">Abrir chamado</a>
+              </div>
             } @else {
               <div class="table-wrapper">
                 <table class="chamados-table">
                   <thead>
                     <tr>
-                      <th>#</th>
+                      <th>Protocolo</th>
                       <th>Título</th>
-                      <th>Cliente</th>
-                      <th>Técnico</th>
+                      @if (!isCliente()) { <th>Cliente</th> }
                       <th>Prioridade</th>
                       <th>Status</th>
+                      <th>Prazo</th>
                       <th>Abertura</th>
                     </tr>
                   </thead>
                   <tbody>
-                    @for (c of chamadosRecentes; track c.id) {
-                      <tr>
-                        <td class="col-id">{{ c.id }}</td>
+                    @for (c of s.chamadosRecentes; track c.id) {
+                      <tr class="row-clicavel" [routerLink]="['/chamados', c.id]">
+                        <td class="protocolo">{{ c.numero || ('#' + c.id) }}</td>
                         <td class="col-titulo">{{ c.titulo }}</td>
-                        <td>{{ c.cliente?.nome ?? '—' }}</td>
-                        <td>{{ c.tecnico?.nome ?? 'Não atribuído' }}</td>
+                        @if (!isCliente()) { <td>{{ c.cliente.nome }}</td> }
                         <td>
-                          <span class="badge" [ngClass]="getPrioridadeClass(c.prioridade)">
-                            {{ getPrioridadeLabel(c.prioridade) }}
+                          <span class="badge" [class]="classePrioridade(c.prioridade)">
+                            {{ c.prioridadeLabel }}
                           </span>
                         </td>
                         <td>
-                          <span class="badge" [ngClass]="getStatusClass(c.status)">
-                            {{ getStatusLabel(c.status) }}
+                          <span class="badge" [class]="classeStatus(c.status)">
+                            {{ c.statusLabel }}
                           </span>
                         </td>
-                        <td class="col-data">{{ formatData(c.dataAbertura) }}</td>
+                        <td>
+                          @if (textoSla(c); as sla) {
+                            <span class="sla" [class.sla-vencido]="c.slaVencido">{{ sla }}</span>
+                          } @else { — }
+                        </td>
+                        <td>{{ c.dataAbertura | date: 'dd/MM/yyyy' }}</td>
                       </tr>
                     }
                   </tbody>
                 </table>
               </div>
             }
-          </div>
+          </article>
         </section>
       </div>
     }

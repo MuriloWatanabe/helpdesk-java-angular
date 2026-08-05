@@ -4,11 +4,16 @@
 --
 -- Para recriar do zero em dev:
 --   psql -U postgres -d helpdesk -f schema.sql
+--   psql -U postgres -d helpdesk -f data.sql
+--
+-- Para atualizar um banco que já existe sem perder dados,
+-- use migration-v2.sql em vez deste arquivo.
 -- ================================================
 
 -- ================================================
 -- DROP (ordem inversa para respeitar FKs)
 -- ================================================
+DROP TABLE IF EXISTS password_reset_tokens CASCADE;
 DROP TABLE IF EXISTS historico_chamados  CASCADE;
 DROP TABLE IF EXISTS avaliacao_aspectos  CASCADE;
 DROP TABLE IF EXISTS avaliacoes          CASCADE;
@@ -42,16 +47,20 @@ CREATE TABLE departamentos (
 -- ================================================
 -- USUÁRIOS
 -- Perfis gerenciados via tabela usuario_perfis.
--- FK de departamento_id adicionada via ALTER TABLE depois.
+-- ativo = FALSE bloqueia o login preservando o histórico de chamados.
 -- ================================================
 CREATE TABLE usuarios (
     id                BIGSERIAL    PRIMARY KEY,
     nome              VARCHAR(100) NOT NULL,
     email             VARCHAR(100) NOT NULL UNIQUE,
     senha             VARCHAR(255) NOT NULL,
-    departamento_id   BIGINT,                        -- FK adicionada após criar departamentos
+    telefone          VARCHAR(20),
+    cargo             VARCHAR(100),
+    ativo             BOOLEAN      NOT NULL DEFAULT TRUE,
+    departamento_id   BIGINT,                        -- FK adicionada após departamentos
     data_criacao      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    data_atualizacao  TIMESTAMP
+    data_atualizacao  TIMESTAMP,
+    ultimo_acesso     TIMESTAMP
 );
 
 -- Tabela de perfis do usuário (ADMIN=0, CLIENTE=1, TECNICO=2)
@@ -60,7 +69,9 @@ CREATE TABLE usuario_perfis (
     perfil      INTEGER NOT NULL,
     PRIMARY KEY (usuario_id, perfil),
     CONSTRAINT fk_perfis_usuario
-        FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    -- Um código fora da faixa deixava o usuário sem conseguir autenticar.
+    CONSTRAINT ck_perfil_valido CHECK (perfil BETWEEN 0 AND 2)
 );
 
 
@@ -78,40 +89,53 @@ ALTER TABLE usuarios
 
 -- ================================================
 -- CHAMADOS
--- status:    0=ABERTO | 1=EM_ANDAMENTO | 2=ENCERRADO
--- prioridade: 0=BAIXA | 1=MEDIA | 2=ALTA
+-- status:     0=ABERTO | 1=EM_ANDAMENTO | 2=ENCERRADO
+--             3=AGUARDANDO_CLIENTE | 4=RESOLVIDO | 5=CANCELADO
+-- prioridade: 0=BAIXA | 1=MEDIA | 2=ALTA | 3=URGENTE
+-- categoria:  0=REDE | 1=HARDWARE | 2=SOFTWARE | 3=ACESSO | 4=EMAIL
+--             5=VPN | 6=IMPRESSORA | 7=BACKUP | 8=INSTALACAO | 9=OUTRO
 -- ================================================
 CREATE TABLE chamados (
-    id                BIGSERIAL    PRIMARY KEY,
-    titulo            VARCHAR(200) NOT NULL,
-    observacoes       TEXT         NOT NULL,
-    status            INTEGER      NOT NULL,
-    prioridade        INTEGER      NOT NULL,
-    tecnico_id        BIGINT,
-    cliente_id        BIGINT       NOT NULL,
-    data_abertura     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    data_fechamento   TIMESTAMP,
-    data_atualizacao  TIMESTAMP,
+    id                     BIGSERIAL    PRIMARY KEY,
+    numero                 VARCHAR(20)  UNIQUE,      -- protocolo CH-AAAA-NNNNNN
+    titulo                 VARCHAR(200) NOT NULL,
+    observacoes            TEXT         NOT NULL,
+    status                 INTEGER      NOT NULL,
+    prioridade             INTEGER      NOT NULL,
+    categoria              INTEGER,
+    tecnico_id             BIGINT,
+    cliente_id             BIGINT       NOT NULL,
+    data_abertura          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    data_fechamento        TIMESTAMP,
+    data_atualizacao       TIMESTAMP,
+    prazo_sla              TIMESTAMP,                -- limite calculado pela prioridade
+    data_primeira_resposta TIMESTAMP,
 
     CONSTRAINT fk_chamado_cliente
         FOREIGN KEY (cliente_id) REFERENCES usuarios(id) ON DELETE RESTRICT,
     CONSTRAINT fk_chamado_tecnico
-        FOREIGN KEY (tecnico_id) REFERENCES usuarios(id) ON DELETE SET NULL
+        FOREIGN KEY (tecnico_id) REFERENCES usuarios(id) ON DELETE SET NULL,
+    CONSTRAINT ck_chamado_status     CHECK (status BETWEEN 0 AND 5),
+    CONSTRAINT ck_chamado_prioridade CHECK (prioridade BETWEEN 0 AND 3)
 );
 
-CREATE INDEX idx_chamado_cliente    ON chamados(cliente_id);
-CREATE INDEX idx_chamado_tecnico    ON chamados(tecnico_id);
-CREATE INDEX idx_chamado_status     ON chamados(status);
+CREATE INDEX idx_chamado_cliente   ON chamados(cliente_id);
+CREATE INDEX idx_chamado_tecnico   ON chamados(tecnico_id);
+CREATE INDEX idx_chamado_status    ON chamados(status);
+CREATE INDEX idx_chamado_categoria ON chamados(categoria);
+CREATE INDEX idx_chamado_abertura  ON chamados(data_abertura);
 
 
 -- ================================================
 -- COMENTÁRIOS
+-- interno = TRUE → nota visível apenas para ADMIN/TECNICO
 -- ================================================
 CREATE TABLE comentarios (
     id                BIGSERIAL  PRIMARY KEY,
     chamado_id        BIGINT     NOT NULL,
     autor_id          BIGINT     NOT NULL,
     texto             TEXT       NOT NULL,
+    interno           BOOLEAN    NOT NULL DEFAULT FALSE,
     editado           BOOLEAN    NOT NULL DEFAULT FALSE,
     data_criacao      TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP,
     data_atualizacao  TIMESTAMP,
@@ -128,6 +152,8 @@ CREATE INDEX idx_comentario_autor   ON comentarios(autor_id);
 
 -- ================================================
 -- ANEXOS
+-- caminho_arquivo guarda o nome gerado em disco, nunca o nome enviado
+-- pelo usuário (evita path traversal).
 -- ================================================
 CREATE TABLE anexos (
     id               BIGSERIAL    PRIMARY KEY,
@@ -154,7 +180,7 @@ CREATE INDEX idx_anexo_usuario ON anexos(usuario_id);
 -- ================================================
 -- AVALIAÇÕES
 -- nota: 1=Muito Ruim | 2=Ruim | 3=Regular | 4=Bom | 5=Excelente
--- Relação OneToOne com chamado (unique em chamado_id).
+-- Uma avaliação por chamado (unique em chamado_id).
 -- ================================================
 CREATE TABLE avaliacoes (
     id               BIGSERIAL  PRIMARY KEY,
@@ -209,3 +235,23 @@ CREATE INDEX idx_historico_chamado ON historico_chamados(chamado_id);
 CREATE INDEX idx_historico_usuario ON historico_chamados(usuario_id);
 CREATE INDEX idx_historico_data    ON historico_chamados(data_alteracao);
 CREATE INDEX idx_historico_tipo    ON historico_chamados(tipo_alteracao);
+
+
+-- ================================================
+-- TOKENS DE REDEFINIÇÃO DE SENHA
+-- Uso único, expiração em 30 minutos.
+-- ================================================
+CREATE TABLE password_reset_tokens (
+    id              BIGSERIAL    PRIMARY KEY,
+    token           VARCHAR(100) NOT NULL UNIQUE,
+    usuario_id      BIGINT       NOT NULL,
+    data_expiracao  TIMESTAMP    NOT NULL,
+    data_uso        TIMESTAMP,
+    data_criacao    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_reset_usuario
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_reset_token   ON password_reset_tokens(token);
+CREATE INDEX idx_reset_usuario ON password_reset_tokens(usuario_id);

@@ -1,37 +1,60 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Component, computed, inject, signal } from '@angular/core';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { filter } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
-import { Router } from '@angular/router';
+import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './sidebar.component.html',
-  styleUrl: './sidebar.component.scss'
+  styleUrl: './sidebar.component.scss',
 })
-export class SidebarComponent implements OnInit {
-  userName     = '';
-  userRole     = '';
-  userInitials = '?';
-  isAdmin      = false;
-  isTecnico    = false;
+export class SidebarComponent {
+  private readonly authService = inject(AuthService);
+  private readonly confirmService = inject(ConfirmService);
+  private readonly router = inject(Router);
 
-  constructor(private authService: AuthService, private router: Router) {}
+  /** Em telas estreitas a sidebar vira um painel deslizante. */
+  readonly aberta = signal(false);
 
-  ngOnInit(): void {
-    const user = this.authService.getUsuarioAtual();
-    if (user) {
-      this.userName     = user.nome || user.email;
-      this.userRole     = this.authService.getPerfilLabel(user.perfis);
-      this.userInitials = this.authService.getIniciais(user.nome || user.email);
-      this.isAdmin      = this.authService.isAdmin();
-      this.isTecnico    = this.authService.isTecnico();
-    }
+  readonly usuario = this.authService.usuario;
+  readonly isAdmin = this.authService.isAdmin;
+  readonly isAtendente = this.authService.isAtendente;
+  readonly isCliente = this.authService.isCliente;
+
+  readonly userName = computed(() => {
+    const u = this.usuario();
+    return u?.nome || u?.email || 'Usuário';
+  });
+
+  readonly userRole = this.authService.perfilLabel;
+  readonly userInitials = computed(() => this.authService.getIniciais(this.userName()));
+
+  constructor() {
+    // Navegar em um celular deve fechar o menu.
+    this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe(() => this.aberta.set(false));
   }
 
-  logout(): void {
+  alternarMenu(): void {
+    this.aberta.update((v) => !v);
+  }
+
+  fecharMenu(): void {
+    this.aberta.set(false);
+  }
+
+  async logout(): Promise<void> {
+    const confirmado = await this.confirmService.perguntar({
+      titulo: 'Sair do sistema',
+      mensagem: 'Deseja encerrar a sessão agora?',
+      confirmar: 'Sair',
+    });
+    if (!confirmado) return;
+
     this.authService.logout();
     this.router.navigate(['/login']);
   }

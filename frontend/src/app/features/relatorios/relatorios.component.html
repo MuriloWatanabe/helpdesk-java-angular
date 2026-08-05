@@ -1,0 +1,184 @@
+<div class="layout">
+  <app-sidebar />
+
+  <main class="main-content">
+    <header class="page-header">
+      <div>
+        <h1 class="page-title">Relatórios</h1>
+        <p class="page-subtitle">Indicadores consolidados do atendimento</p>
+      </div>
+      <div class="acoes-topo">
+        <button class="btn-secondary" type="button" (click)="carregar()">Atualizar</button>
+        <button class="btn-secondary" type="button" (click)="imprimir()">Imprimir</button>
+        <button class="btn-primary" type="button" [disabled]="!stats()" (click)="exportarCsv()">
+          Exportar CSV
+        </button>
+      </div>
+    </header>
+
+    @if (loading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Gerando relatório...</p>
+      </div>
+    }
+
+    @if (erro()) {
+      <div class="alert-error" role="alert">
+        Não foi possível carregar os dados do relatório.
+      </div>
+    }
+
+    @if (!loading() && stats(); as s) {
+      @if (s.totalChamados === 0) {
+        <div class="card">
+          <div class="empty-state">
+            <p>Ainda não há dados para relatar</p>
+            <span>Os indicadores aparecem assim que os primeiros chamados forem registrados.</span>
+          </div>
+        </div>
+      } @else {
+        <!-- Resumo -->
+        <section class="resumo-grid" aria-label="Resumo geral">
+          <article class="resumo-card">
+            <span class="resumo-label">Total de chamados</span>
+            <strong class="resumo-valor">{{ s.totalChamados }}</strong>
+          </article>
+          <article class="resumo-card">
+            <span class="resumo-label">Taxa de resolução</span>
+            <strong class="resumo-valor">
+              {{ percentual(s.totalResolvidos + s.totalEncerrados) }}%
+            </strong>
+            <span class="resumo-nota">
+              {{ s.totalResolvidos + s.totalEncerrados }} de {{ s.totalChamados }}
+            </span>
+          </article>
+          <article class="resumo-card" [class.critico]="s.totalSlaVencido > 0">
+            <span class="resumo-label">Prazo estourado</span>
+            <strong class="resumo-valor">{{ s.totalSlaVencido }}</strong>
+            <span class="resumo-nota">{{ s.totalSlaEmRisco }} vencem em 8h</span>
+          </article>
+          <article class="resumo-card">
+            <span class="resumo-label">Tempo médio</span>
+            <strong class="resumo-valor">{{ tempoMedioTexto }}</strong>
+            <span class="resumo-nota">Abertura → fechamento</span>
+          </article>
+          <article class="resumo-card">
+            <span class="resumo-label">Satisfação</span>
+            <strong class="resumo-valor">
+              @if (s.notaMediaAtendimento !== null) {
+                {{ s.notaMediaAtendimento | number: '1.1-1' }}/5
+              } @else { — }
+            </strong>
+            <span class="resumo-nota">{{ s.totalAvaliacoes }} avaliação(ões)</span>
+          </article>
+          <article class="resumo-card">
+            <span class="resumo-label">Sem técnico</span>
+            <strong class="resumo-valor">{{ s.totalSemTecnico }}</strong>
+            <span class="resumo-nota">Aguardando atribuição</span>
+          </article>
+        </section>
+
+        <!-- Gráficos -->
+        <section class="graficos-grid">
+          <article class="card">
+            <h2 class="card-title">Chamados por prioridade</h2>
+            <div class="grafico-wrap">
+              <canvas #graficoPrioridade aria-label="Chamados por prioridade"></canvas>
+            </div>
+          </article>
+
+          <article class="card">
+            <h2 class="card-title">Chamados por categoria</h2>
+            <div class="grafico-wrap">
+              <canvas #graficoCategoria aria-label="Chamados por categoria"></canvas>
+            </div>
+          </article>
+        </section>
+
+        <!-- Carga por técnico -->
+        <section class="card">
+          <h2 class="card-title">Carga por técnico</h2>
+
+          @if (s.porTecnico.length === 0) {
+            <p class="vazio-inline">Nenhum chamado atribuído até o momento.</p>
+          } @else {
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Técnico</th>
+                    <th class="num">Chamados atribuídos</th>
+                    <th class="col-barra">Participação</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (t of s.porTecnico; track t.rotulo) {
+                    <tr>
+                      <td>{{ t.rotulo }}</td>
+                      <td class="num">{{ t.total }}</td>
+                      <td class="col-barra">
+                        <div class="barra-bg">
+                          <div class="barra-fill" [style.width.%]="percentual(t.total)"></div>
+                        </div>
+                        <span class="barra-pct">{{ percentual(t.total) }}%</span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </section>
+
+        <!-- Detalhamento por situação -->
+        <section class="card">
+          <h2 class="card-title">Detalhamento por situação</h2>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Situação</th>
+                  <th class="num">Quantidade</th>
+                  <th class="num">Participação</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Abertos</td>
+                  <td class="num">{{ s.totalAbertos }}</td>
+                  <td class="num">{{ percentual(s.totalAbertos) }}%</td>
+                </tr>
+                <tr>
+                  <td>Em andamento</td>
+                  <td class="num">{{ s.totalEmAndamento }}</td>
+                  <td class="num">{{ percentual(s.totalEmAndamento) }}%</td>
+                </tr>
+                <tr>
+                  <td>Aguardando cliente</td>
+                  <td class="num">{{ s.totalAguardandoCliente }}</td>
+                  <td class="num">{{ percentual(s.totalAguardandoCliente) }}%</td>
+                </tr>
+                <tr>
+                  <td>Resolvidos</td>
+                  <td class="num">{{ s.totalResolvidos }}</td>
+                  <td class="num">{{ percentual(s.totalResolvidos) }}%</td>
+                </tr>
+                <tr>
+                  <td>Encerrados</td>
+                  <td class="num">{{ s.totalEncerrados }}</td>
+                  <td class="num">{{ percentual(s.totalEncerrados) }}%</td>
+                </tr>
+                <tr>
+                  <td>Cancelados</td>
+                  <td class="num">{{ s.totalCancelados }}</td>
+                  <td class="num">{{ percentual(s.totalCancelados) }}%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+    }
+  </main>
+</div>

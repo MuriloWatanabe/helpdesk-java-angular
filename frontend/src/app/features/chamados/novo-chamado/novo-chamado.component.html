@@ -4,89 +4,146 @@
   <main class="main-content">
     <header class="page-header">
       <div class="header-left">
-        <a routerLink="/chamados" class="btn-back">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-          Voltar
-        </a>
-        <h1 class="page-title">Novo Chamado</h1>
+        <a routerLink="/chamados" class="btn-back">← Voltar</a>
+        <div>
+          <h1 class="page-title">Abrir chamado</h1>
+          <p class="page-subtitle">
+            Descreva o problema com o máximo de detalhes para agilizar o atendimento.
+          </p>
+        </div>
       </div>
     </header>
 
-    <div class="form-card">
-      <form [formGroup]="form" (ngSubmit)="submit()">
+    @if (erro) {
+      <div class="alert-error" role="alert">{{ erro }}</div>
+    }
 
-        @if (erro) {
-          <div class="alert-error">{{ erro }}</div>
+    <form class="form-card" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="form-group">
+        <label class="form-label" for="titulo">
+          Assunto <span class="required">*</span>
+        </label>
+        <input
+          id="titulo"
+          class="form-control"
+          type="text"
+          maxlength="200"
+          placeholder="Ex.: Impressora do 2º andar não imprime"
+          formControlName="titulo"
+          [class.invalido]="hasError('titulo')"
+        />
+        @if (hasError('titulo')) {
+          <span class="field-error">
+            @if (form.get('titulo')?.errors?.['required']) { Informe um assunto. }
+            @else { O assunto deve ter entre 5 e 200 caracteres. }
+          </span>
         }
+      </div>
 
+      <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Título <span class="required">*</span></label>
-          <input class="form-control" formControlName="titulo"
-                 placeholder="Descreva resumidamente o problema" />
-          @if (hasError('titulo')) {
-            <span class="field-error">Título deve ter entre 5 e 200 caracteres</span>
+          <label class="form-label" for="categoria">
+            Categoria <span class="required">*</span>
+          </label>
+          <select
+            id="categoria"
+            class="form-control"
+            formControlName="categoria"
+            [class.invalido]="hasError('categoria')"
+          >
+            <option [ngValue]="null">Selecione...</option>
+            @for (c of categorias; track c.codigo) {
+              <option [ngValue]="c.codigo">{{ c.rotulo }}</option>
+            }
+          </select>
+          @if (hasError('categoria')) {
+            <span class="field-error">Selecione a categoria do problema.</span>
           }
         </div>
 
         <div class="form-group">
-          <label class="form-label">Descrição detalhada <span class="required">*</span></label>
-          <textarea class="form-control textarea" formControlName="observacoes" rows="5"
-                    placeholder="Descreva o problema com detalhes: quando começou, o que já foi tentado, impacto..."></textarea>
-          @if (hasError('observacoes')) {
-            <span class="field-error">Descrição deve ter entre 10 e 2000 caracteres</span>
+          <label class="form-label" for="prioridade">
+            Prioridade <span class="required">*</span>
+          </label>
+          <select id="prioridade" class="form-control" formControlName="prioridade">
+            @for (p of prioridades; track p.codigo) {
+              <option [ngValue]="p.codigo">{{ p.rotulo }}</option>
+            }
+          </select>
+          @if (slaEscolhido) {
+            <span class="form-hint">{{ slaEscolhido }}</span>
           }
         </div>
+      </div>
 
+      <div class="form-group">
+        <label class="form-label" for="observacoes">
+          Descrição do problema <span class="required">*</span>
+        </label>
+        <textarea
+          id="observacoes"
+          class="form-control"
+          rows="6"
+          maxlength="2000"
+          placeholder="O que aconteceu? Desde quando? Já tentou alguma coisa? Alguma mensagem de erro?"
+          formControlName="observacoes"
+          [class.invalido]="hasError('observacoes')"
+        ></textarea>
+        @if (hasError('observacoes')) {
+          <span class="field-error">
+            @if (form.get('observacoes')?.errors?.['required']) { Descreva o problema. }
+            @else { A descrição deve ter entre 10 e 2000 caracteres. }
+          </span>
+        } @else {
+          <span class="form-hint">
+            {{ form.get('observacoes')?.value?.length || 0 }}/2000 caracteres
+          </span>
+        }
+      </div>
+
+      <!-- Abertura em nome de terceiros: exclusivo da equipe de suporte -->
+      @if (isAtendente()) {
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Prioridade <span class="required">*</span></label>
-            <select class="form-control" formControlName="prioridade">
-              @for (p of prioridades; track p.value) {
-                <option [value]="p.value">{{ p.label }}</option>
+            <label class="form-label" for="clienteId">
+              Cliente solicitante <span class="required">*</span>
+            </label>
+            <select
+              id="clienteId"
+              class="form-control"
+              formControlName="clienteId"
+              [class.invalido]="hasError('clienteId')"
+            >
+              <option [ngValue]="null">Selecione...</option>
+              @for (c of clientes; track c.id) {
+                <option [ngValue]="c.id">{{ c.nome }} — {{ c.email }}</option>
               }
             </select>
+            @if (hasError('clienteId')) {
+              <span class="field-error">Selecione para quem o chamado será aberto.</span>
+            }
           </div>
 
-          @if (isAdmin || isTecnico) {
-            <div class="form-group">
-              <label class="form-label">Cliente <span class="required">*</span></label>
-              <select class="form-control" formControlName="clienteId">
-                <option [value]="null">Selecione o cliente</option>
-                @for (c of clientes; track c.id) {
-                  <option [value]="c.id">{{ c.nome }} ({{ c.email }})</option>
-                }
-              </select>
-              @if (hasError('clienteId')) {
-                <span class="field-error">Selecione o cliente</span>
-              }
-            </div>
-          }
-        </div>
-
-        @if (isAdmin || isTecnico) {
           <div class="form-group">
-            <label class="form-label">Técnico responsável <span class="optional">(opcional)</span></label>
-            <select class="form-control" formControlName="tecnicoId">
-              <option [value]="null">Sem técnico atribuído</option>
+            <label class="form-label" for="tecnicoId">
+              Técnico responsável <span class="optional">(opcional)</span>
+            </label>
+            <select id="tecnicoId" class="form-control" formControlName="tecnicoId">
+              <option [ngValue]="null">Deixar na fila</option>
               @for (t of tecnicos; track t.id) {
-                <option [value]="t.id">{{ t.nome }} ({{ t.email }})</option>
+                <option [ngValue]="t.id">{{ t.nome }}</option>
               }
             </select>
           </div>
-        }
-
-        <div class="form-actions">
-          <button type="button" class="btn-secondary" (click)="cancelar()" [disabled]="loading">
-            Cancelar
-          </button>
-          <button type="submit" class="btn-primary" [disabled]="loading">
-            @if (loading) { Criando... } @else { Criar Chamado }
-          </button>
         </div>
+      }
 
-      </form>
-    </div>
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="btn-primary" [disabled]="loading">
+          @if (loading) { Abrindo... } @else { Abrir chamado }
+        </button>
+      </div>
+    </form>
   </main>
 </div>

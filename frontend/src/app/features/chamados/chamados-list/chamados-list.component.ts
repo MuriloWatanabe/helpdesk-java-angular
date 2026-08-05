@@ -1,93 +1,224 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DatePipe } from '@angular/common';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { SidebarComponent } from '../../../layout/sidebar/sidebar.component';
 import { ChamadoService } from '../../../core/services/chamado.service';
-import { Chamado } from '../../../core/models/chamado.model';
+import { UsuarioService } from '../../../core/services/usuario.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { Chamado, ChamadoFiltro } from '../../../core/models/chamado.model';
+import { Opcao, Usuario } from '../../../core/models/usuario.model';
+import { classeStatus, classePrioridade, textoSla } from '../chamado-ui';
+
+type Modo = 'todos' | 'fila' | 'meus';
 
 @Component({
   selector: 'app-chamados-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, SidebarComponent],
+  imports: [RouterModule, FormsModule, DatePipe, SidebarComponent],
   templateUrl: './chamados-list.component.html',
-  styleUrl: './chamados-list.component.scss'
+  styleUrl: './chamados-list.component.scss',
 })
 export class ChamadosListComponent implements OnInit {
-  chamados: Chamado[] = [];
-  loading = false;
-  error = '';
+  private readonly chamadoService = inject(ChamadoService);
+  private readonly usuarioService = inject(UsuarioService);
+  private readonly authService = inject(AuthService);
+  private readonly toast = inject(ToastService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly isAtendente = this.authService.isAtendente;
+  readonly isCliente = this.authService.isCliente;
+
+  chamados = signal<Chamado[]>([]);
+  loading = signal(false);
+  error = signal('');
 
   currentPage = 0;
   totalPages = 0;
   totalElements = 0;
-  pageSize = 10;
+  readonly pageSize = 10;
 
-  filtroStatus: number | null = null;
+  // Filtros — todos resolvidos no servidor
   busca = '';
+  filtroStatus: number | null = null;
+  filtroPrioridade: number | null = null;
+  filtroCategoria: number | null = null;
+  filtroTecnico: number | null = null;
+  soSlaVencido = false;
+  soSemTecnico = false;
 
-  statusOptions = [
-    { label: 'Todos', value: null },
-    { label: 'Aberto', value: 0 },
-    { label: 'Em Andamento', value: 1 },
-    { label: 'Encerrado', value: 2 }
-  ];
+  statusOpcoes: Opcao[] = [];
+  prioridadeOpcoes: Opcao[] = [];
+  categoriaOpcoes: Opcao[] = [];
+  tecnicos: Usuario[] = [];
 
-  constructor(
-    private chamadoService: ChamadoService,
-    private cdr: ChangeDetectorRef
-  ) {}
+  modo: Modo = 'todos';
+  mostrarFiltrosAvancados = false;
+
+  private readonly buscaSubject = new Subject<string>();
+
+  readonly classeStatus = classeStatus;
+  readonly classePrioridade = classePrioridade;
+  readonly textoSla = textoSla;
 
   ngOnInit(): void {
+    this.modo = (this.route.snapshot.data['modo'] as Modo) ?? 'todos';
+    this.aplicarPreDefinicoesDoModo();
+
+    // Digitar não dispara uma requisição por tecla.
+    this.buscaSubject
+      .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.currentPage = 0;
+        this.carregar();
+      });
+
+    this.carregarOpcoes();
     this.carregar();
   }
 
+  get titulo(): string {
+    if (this.modo === 'fila') return 'Fila de atendimento';
+    if (this.modo === 'meus') return 'Atribuídos a mim';
+    return this.isCliente() ? 'Meus chamados' : 'Todos os chamados';
+  }
+
+  get subtitulo(): string {
+    if (this.modo === 'fila') return 'Chamados aguardando atribuição ou com prazo estourado';
+    if (this.modo === 'meus') return 'Chamados sob sua responsabilidade';
+    return this.isCliente()
+      ? 'Acompanhe as solicitações que você abriu'
+      : 'Todos os chamados registrados no sistema';
+  }
+
+  /** A fila e "atribuídos a mim" são a mesma tela com filtros pré-aplicados. */
+  private aplicarPreDefinicoesDoModo(): void {
+    if (this.modo === 'fila') {
+      this.soSemTecnico = true;
+      this.mostrarFiltrosAvancados = true;
+    } else if (this.modo === 'meus') {
+      this.filtroTecnico = this.authService.getUsuarioAtual()?.id ?? null;
+    }
+  }
+
+  private carregarOpcoes(): void {
+    this.usuarioService.metadados().subscribe({
+      next: (meta) => {
+        this.statusOpcoes = meta.status;
+        this.prioridadeOpcoes = meta.prioridades;
+        this.categoriaOpcoes = meta.categorias;
+      },
+    });
+
+    // A lista de técnicos só está disponível para quem atende.
+    if (this.isAtendente()) {
+      this.usuarioService.listar({ perfil: 2, ativo: true }).subscribe({
+        next: (lista) => (this.tecnicos = lista),
+      });
+    }
+  }
+
   carregar(): void {
-    this.loading = true;
-    this.error = '';
-    this.chamadoService.listar(this.currentPage, this.pageSize).subscribe({
+    this.loading.set(true);
+    this.error.set('');
+
+    this.chamadoService.listar(this.montarFiltro(), this.currentPage, this.pageSize).subscribe({
       next: (page) => {
-        this.chamados = page.content;
+        this.chamados.set(page.content);
         this.totalPages = page.totalPages;
         this.totalElements = page.totalElements;
-        this.loading = false;
-        this.cdr.detectChanges();
+        this.loading.set(false);
       },
       error: () => {
-        this.error = 'Erro ao carregar chamados. Verifique se o servidor está rodando.';
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
+        this.error.set('Não foi possível carregar os chamados. Tente novamente.');
+        this.loading.set(false);
+      },
     });
   }
 
-  filtrarStatus(status: number | null): void {
-    this.filtroStatus = status;
+  private montarFiltro(): ChamadoFiltro {
+    return {
+      q: this.busca.trim() || undefined,
+      status: this.filtroStatus,
+      prioridade: this.filtroPrioridade,
+      categoria: this.filtroCategoria,
+      tecnicoId: this.filtroTecnico,
+      semTecnico: this.soSemTecnico || undefined,
+      slaVencido: this.soSlaVencido || undefined,
+    };
+  }
+
+  aoDigitarBusca(valor: string): void {
+    this.busca = valor;
+    this.buscaSubject.next(valor);
+  }
+
+  filtrar(): void {
     this.currentPage = 0;
     this.carregar();
   }
 
-  get chamadosFiltrados(): Chamado[] {
-    let lista = this.chamados;
-    if (this.filtroStatus !== null) {
-      lista = lista.filter(c => c.status === this.filtroStatus);
-    }
-    if (this.busca.trim()) {
-      const b = this.busca.toLowerCase();
-      lista = lista.filter(c =>
-        c.titulo.toLowerCase().includes(b) ||
-        c.cliente?.nome?.toLowerCase().includes(b)
-      );
-    }
-    return lista;
+  filtrarStatus(status: number | null): void {
+    this.filtroStatus = status;
+    this.filtrar();
   }
 
+  limparFiltros(): void {
+    this.busca = '';
+    this.filtroStatus = null;
+    this.filtroPrioridade = null;
+    this.filtroCategoria = null;
+    this.soSlaVencido = false;
+    this.soSemTecnico = this.modo === 'fila';
+    this.filtroTecnico = this.modo === 'meus' ? this.filtroTecnico : null;
+    this.filtrar();
+  }
+
+  get temFiltroAtivo(): boolean {
+    return !!(
+      this.busca ||
+      this.filtroStatus !== null ||
+      this.filtroPrioridade !== null ||
+      this.filtroCategoria !== null ||
+      this.soSlaVencido ||
+      (this.soSemTecnico && this.modo !== 'fila')
+    );
+  }
+
+  /** Técnico assume o chamado direto da lista, sem abrir o detalhe. */
+  assumir(chamado: Chamado, evento: Event): void {
+    evento.stopPropagation();
+    evento.preventDefault();
+
+    this.chamadoService.assumir(chamado.id).subscribe({
+      next: () => {
+        this.toast.sucesso(`Chamado ${chamado.numero} atribuído a você.`);
+        this.carregar();
+      },
+      error: (err) => this.toast.erroDaApi(err, 'Não foi possível assumir o chamado.'),
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // Paginação
+  // ------------------------------------------------------------------
+
   paginaAnterior(): void {
-    if (this.currentPage > 0) { this.currentPage--; this.carregar(); }
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.carregar();
+    }
   }
 
   proximaPagina(): void {
-    if (this.currentPage < this.totalPages - 1) { this.currentPage++; this.carregar(); }
+    if (this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      this.carregar();
+    }
   }
 
   irParaPagina(p: number): void {
@@ -95,29 +226,13 @@ export class ChamadosListComponent implements OnInit {
     this.carregar();
   }
 
+  /** Janela de no máximo 7 páginas centrada na atual. */
   get paginas(): number[] {
-    const total = Math.min(this.totalPages, 7);
-    return Array.from({ length: total }, (_, i) => i);
-  }
-
-  getStatusLabel(s: number): string {
-    return ({ 0: 'Aberto', 1: 'Em Andamento', 2: 'Encerrado' } as Record<number, string>)[s] ?? '—';
-  }
-
-  getStatusClass(s: number): string {
-    return ({ 0: 'badge-aberto', 1: 'badge-andamento', 2: 'badge-encerrado' } as Record<number, string>)[s] ?? '';
-  }
-
-  getPrioridadeLabel(p: number): string {
-    return ({ 0: 'Baixa', 1: 'Média', 2: 'Alta' } as Record<number, string>)[p] ?? '—';
-  }
-
-  getPrioridadeClass(p: number): string {
-    return ({ 0: 'badge-baixa', 1: 'badge-media', 2: 'badge-alta' } as Record<number, string>)[p] ?? '';
-  }
-
-  formatData(data: string): string {
-    if (!data) return '—';
-    return new Date(data).toLocaleDateString('pt-BR');
+    const maximo = Math.min(this.totalPages, 7);
+    let inicio = Math.max(0, this.currentPage - 3);
+    if (inicio + maximo > this.totalPages) {
+      inicio = Math.max(0, this.totalPages - maximo);
+    }
+    return Array.from({ length: maximo }, (_, i) => inicio + i);
   }
 }

@@ -1,115 +1,125 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { DatePipe, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { SidebarComponent } from '../../layout/sidebar/sidebar.component';
-import { AuthService, UsuarioAtual } from '../../core/services/auth.service';
-import { UsuarioService } from '../../core/services/usuario.service';
+import { AuthService } from '../../core/services/auth.service';
+import { ToastService, mensagemDoErro } from '../../core/services/toast.service';
+import { Usuario } from '../../core/models/usuario.model';
 
+/**
+ * Meus dados e troca de senha.
+ *
+ * Antes esta tela chamava PUT /v1/usuarios/{id} e POST de senha sem senha
+ * atual — endpoints restritos ao administrador. Resultado: cliente e técnico
+ * recebiam 403 ao salvar e o interceptor os deslogava. Agora usa os endpoints
+ * de autosserviço (/v1/auth/me e /v1/auth/alterar-senha).
+ */
 @Component({
   selector: 'app-perfil',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, SidebarComponent],
+  imports: [FormsModule, RouterModule, DatePipe, NgClass, SidebarComponent],
   templateUrl: './perfil.component.html',
-  styleUrl: './perfil.component.scss'
+  styleUrl: './perfil.component.scss',
 })
 export class PerfilComponent implements OnInit {
-  usuario: UsuarioAtual | null = null;
-  dataCriacao: string | null = null;
+  private readonly authService = inject(AuthService);
+  private readonly toast = inject(ToastService);
+
+  usuario = signal<Usuario | null>(null);
+  carregando = signal(true);
 
   // Dados pessoais
   editNome = '';
   editEmail = '';
+  editTelefone = '';
+  editCargo = '';
   salvandoDados = false;
-  mensagemDados = '';
   erroDados = '';
 
-  // Alterar senha
+  // Troca de senha
+  senhaAtual = '';
   novaSenha = '';
   confirmSenha = '';
   salvandoSenha = false;
-  mensagemSenha = '';
   erroSenha = '';
 
   get iniciais(): string {
-    return this.authService.getIniciais(this.usuario?.nome ?? '');
+    return this.authService.getIniciais(this.usuario()?.nome);
   }
 
   get perfilLabel(): string {
-    return this.authService.getPerfilLabel(this.usuario?.perfis ?? []);
+    return this.usuario()?.perfilPrincipal ?? '—';
   }
 
   get perfilClasses(): string[] {
-    const perfis = this.usuario?.perfis ?? [];
-    if (perfis.includes('ROLE_ADMIN'))    return ['badge-admin'];
-    if (perfis.includes('ROLE_TECNICO'))  return ['badge-tecnico'];
+    const perfis = this.usuario()?.perfis ?? [];
+    if (perfis.includes('ROLE_ADMIN')) return ['badge-admin'];
+    if (perfis.includes('ROLE_TECNICO')) return ['badge-tecnico'];
     return ['badge-cliente'];
   }
 
-  constructor(
-    private readonly authService: AuthService,
-    private readonly usuarioService: UsuarioService,
-    private readonly cdr: ChangeDetectorRef
-  ) {}
-
   ngOnInit(): void {
-    this.usuario = this.authService.getUsuarioAtual();
-    if (this.usuario) {
-      this.editNome  = this.usuario.nome;
-      this.editEmail = this.usuario.email;
-
-      this.usuarioService.buscarPorId(this.usuario.id).subscribe({
-        next: (u) => {
-          this.dataCriacao = u.dataCriacao;
-          this.cdr.detectChanges();
-        }
-      });
-    }
+    this.authService.carregarMeuPerfil().subscribe({
+      next: (u) => {
+        this.usuario.set(u);
+        this.editNome = u.nome;
+        this.editEmail = u.email;
+        this.editTelefone = u.telefone ?? '';
+        this.editCargo = u.cargo ?? '';
+        this.carregando.set(false);
+      },
+      error: () => {
+        this.toast.erro('Não foi possível carregar seus dados.');
+        this.carregando.set(false);
+      },
+    });
   }
 
   salvarDados(): void {
-    if (!this.usuario || this.salvandoDados) return;
-    this.mensagemDados = '';
+    if (this.salvandoDados) return;
     this.erroDados = '';
 
     if (!this.editNome.trim() || !this.editEmail.trim()) {
       this.erroDados = 'Nome e e-mail são obrigatórios.';
       return;
     }
+    if (this.editNome.trim().length < 3) {
+      this.erroDados = 'O nome deve ter ao menos 3 caracteres.';
+      return;
+    }
 
     this.salvandoDados = true;
-    this.usuarioService.atualizar(this.usuario.id, {
-      nome:  this.editNome.trim(),
-      email: this.editEmail.trim(),
-    }).subscribe({
-      next: (atualizado) => {
-        const usuarioNovo: UsuarioAtual = {
-          id:     this.usuario!.id,
-          nome:   atualizado.nome,
-          email:  atualizado.email,
-          perfis: this.usuario!.perfis,
-        };
-        localStorage.setItem('helpdesk_user', JSON.stringify(usuarioNovo));
-        this.usuario       = usuarioNovo;
-        this.mensagemDados = 'Dados atualizados com sucesso!';
-        this.salvandoDados = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.erroDados     = err?.error?.message ?? 'Erro ao salvar. Tente novamente.';
-        this.salvandoDados = false;
-        this.cdr.detectChanges();
-      }
-    });
+    this.authService
+      .atualizarMeuPerfil({
+        nome: this.editNome.trim(),
+        email: this.editEmail.trim(),
+        telefone: this.editTelefone.trim() || null,
+        cargo: this.editCargo.trim() || null,
+      })
+      .subscribe({
+        next: (atualizado) => {
+          this.usuario.set(atualizado);
+          this.salvandoDados = false;
+          this.toast.sucesso('Dados atualizados com sucesso.');
+        },
+        error: (err) => {
+          this.erroDados = mensagemDoErro(err, 'Não foi possível salvar. Tente novamente.');
+          this.salvandoDados = false;
+        },
+      });
   }
 
   salvarSenha(): void {
-    if (!this.usuario || this.salvandoSenha) return;
-    this.mensagemSenha = '';
-    this.erroSenha     = '';
+    if (this.salvandoSenha) return;
+    this.erroSenha = '';
 
-    if (!this.novaSenha || this.novaSenha.length < 6) {
-      this.erroSenha = 'A senha deve ter no mínimo 6 caracteres.';
+    if (!this.senhaAtual) {
+      this.erroSenha = 'Informe a senha atual.';
+      return;
+    }
+    if (this.novaSenha.length < 6) {
+      this.erroSenha = 'A nova senha deve ter no mínimo 6 caracteres.';
       return;
     }
     if (this.novaSenha !== this.confirmSenha) {
@@ -118,30 +128,20 @@ export class PerfilComponent implements OnInit {
     }
 
     this.salvandoSenha = true;
-    this.usuarioService.atualizar(this.usuario.id, {
-      nome:  this.usuario.nome,
-      email: this.usuario.email,
-      senha: this.novaSenha,
-    }).subscribe({
-      next: () => {
-        this.novaSenha     = '';
-        this.confirmSenha  = '';
-        this.mensagemSenha = 'Senha alterada com sucesso!';
-        this.salvandoSenha = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.erroSenha     = err?.error?.message ?? 'Erro ao alterar senha.';
-        this.salvandoSenha = false;
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
-  formatData(data: string | null): string {
-    if (!data) return '—';
-    return new Date(data).toLocaleDateString('pt-BR', {
-      day: '2-digit', month: 'long', year: 'numeric'
-    });
+    this.authService
+      .alterarSenha({ senhaAtual: this.senhaAtual, novaSenha: this.novaSenha })
+      .subscribe({
+        next: () => {
+          this.senhaAtual = '';
+          this.novaSenha = '';
+          this.confirmSenha = '';
+          this.salvandoSenha = false;
+          this.toast.sucesso('Senha alterada com sucesso.');
+        },
+        error: (err) => {
+          this.erroSenha = mensagemDoErro(err, 'Não foi possível alterar a senha.');
+          this.salvandoSenha = false;
+        },
+      });
   }
 }

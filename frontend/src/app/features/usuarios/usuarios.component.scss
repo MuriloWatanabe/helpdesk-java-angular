@@ -113,3 +113,136 @@
 }
 .check-label { font-size: 14px; font-weight: 600; padding: 2px 8px; border-radius: 10px; display: inline-block; }
 .check-desc { font-size: 12px; color: #64748b; }
+
+/* Adições: filtros, situação, telefone/cargo e ajustes do modal */
+.header-left {
+  align-items: flex-start;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.filtros-usuarios {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.filtros-usuarios .search-wrap {
+  flex: 1;
+  min-width: 220px;
+}
+
+.filtros-usuarios .filtro-campo {
+  min-width: 170px;
+}
+
+.filtros-usuarios .form-control {
+  padding: 8px 11px;
+  font-size: 13.5px;
+}
+
+.btn-link-limpar {
+  background: transparent;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-radius: 8px;
+
+  &:hover { background: #fef2f2; }
+}
+
+.linha-inativa {
+  opacity: 0.6;
+}
+
+.voce-tag {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 20px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.perfis-cel {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-resolvido { background: #d1fae5; color: #059669; }
+.badge-cancelado { background: #f1f5f9; color: #64748b; }
+
+.col-acoes {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.btn-icon {
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 9px;
+  margin-left: 5px;
+
+  &:hover { background: #f1f5f9; color: #1e293b; }
+
+  &.perigo {
+    color: #dc2626;
+    border-color: #fecaca;
+  }
+  &.perigo:hover { background: #fef2f2; }
+}
+
+.form-linha-dupla {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.form-control.invalido {
+  border-color: #dc2626;
+}
+
+.check-item.destaque {
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.modal {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@media (max-width: 900px) {
+  .main-content {
+    padding: 76px 16px 32px;
+  }
+
+  .form-linha-dupla {
+    grid-template-columns: 1fr;
+  }
+
+  .col-acoes { text-align: left; }
+}

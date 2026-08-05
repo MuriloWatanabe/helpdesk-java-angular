@@ -35,10 +35,18 @@ public class Comentario implements Serializable {
     @JoinColumn(name = "autor_id", nullable = false)
     private Usuario autor;
 
-    @NotBlank(message = "Comentário não pode estar vazio")
-    @Size(min = 5, max = 2000, message = "Comentário deve ter entre 5 e 2000 caracteres")
+    @NotBlank(message = "O comentário não pode estar vazio")
+    @Size(min = 2, max = 2000, message = "O comentário deve ter entre 2 e 2000 caracteres")
     @Column(nullable = false, columnDefinition = "TEXT")
     private String texto;
+
+    /**
+     * Nota interna: visível apenas para técnicos e administradores.
+     * O cliente nunca recebe esses comentários na listagem.
+     */
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean interno = false;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
@@ -54,6 +62,8 @@ public class Comentario implements Serializable {
     protected void onCreate() {
         dataCriacao = LocalDateTime.now();
         dataAtualizacao = LocalDateTime.now();
+        if (interno == null) interno = false;
+        if (editado == null) editado = false;
     }
 
     @PreUpdate

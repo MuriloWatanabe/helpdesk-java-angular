@@ -14,11 +14,15 @@ public interface HistoricoChamadoRepository extends JpaRepository<HistoricoChama
 
     List<HistoricoChamado> findByChamadoOrderByDataAlteracaoDesc(Chamado chamado);
 
-    // Tipo correto: enum TipoAlteracao, não String
+    /** Linha do tempo do chamado, do evento mais recente para o mais antigo. */
+    List<HistoricoChamado> findByChamadoIdOrderByDataAlteracaoDesc(Long chamadoId);
+
     List<HistoricoChamado> findByChamadoAndTipoAlteracao(
             Chamado chamado, HistoricoChamado.TipoAlteracao tipoAlteracao);
 
     Long countByChamado(Chamado chamado);
+
+    void deleteByChamadoId(Long chamadoId);
 
     @Query("SELECT h FROM HistoricoChamado h " +
            "WHERE h.chamado.id = :chamadoId " +

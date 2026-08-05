@@ -1,5 +1,7 @@
 package com.murilo.helpdesk.config;
 
+import com.murilo.helpdesk.security.JsonAccessDeniedHandler;
+import com.murilo.helpdesk.security.JsonAuthenticationEntryPoint;
 import com.murilo.helpdesk.security.JwtAuthenticationFilter;
 import com.murilo.helpdesk.security.JwtService;
 import com.murilo.helpdesk.security.UserDetailsServiceImpl;
@@ -7,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -35,6 +38,8 @@ public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtService jwtService;
+    private final JsonAuthenticationEntryPoint authenticationEntryPoint;
+    private final JsonAccessDeniedHandler accessDeniedHandler;
 
     @Value("${cors.allowed-origins}")
     private String allowedOrigins;
@@ -45,16 +50,30 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                // Autenticação pública
-                .requestMatchers("/v1/auth/**").permitAll()
-                // Swagger UI pública
+                // Pré-flight CORS
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                // Endpoints públicos de autenticação — listados um a um para que
+                // /v1/auth/me e /v1/auth/alterar-senha continuem protegidos.
+                .requestMatchers(
+                    "/v1/auth/login",
+                    "/v1/auth/register",
+                    "/v1/auth/recuperar-senha",
+                    "/v1/auth/redefinir-senha"
+                ).permitAll()
+                // Documentação da API
                 .requestMatchers(
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html"
                 ).permitAll()
-                // Tudo mais requer autenticação
+                // Health check do docker-compose
+                .requestMatchers("/actuator/health").permitAll()
+                // Tudo mais requer autenticação (papéis via @PreAuthorize)
                 .anyRequest().authenticated()
+            )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(authenticationEntryPoint)   // 401 — sem token / expirado
+                .accessDeniedHandler(accessDeniedHandler)             // 403 — sem permissão
             )
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -91,9 +110,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+        config.setAllowedOrigins(Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(origem -> !origem.isEmpty())
+                .toList());
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+        // Necessário para o front ler o nome do arquivo ao baixar um anexo.
+        config.setExposedHeaders(List.of("Content-Disposition"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
 

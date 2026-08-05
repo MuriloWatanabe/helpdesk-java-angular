@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(exclude = {"departamento"})
+@ToString(exclude = {"departamento", "senha"})
 public class Usuario implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -34,15 +34,28 @@ public class Usuario implements Serializable {
     @Column(nullable = false, length = 100)
     private String nome;
 
-    @NotBlank(message = "Email é obrigatório")
-    @Email(message = "Email deve ser válido")
+    @NotBlank(message = "E-mail é obrigatório")
+    @Email(message = "E-mail deve ser válido")
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
     @NotBlank(message = "Senha é obrigatória")
-    @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres")
     @Column(nullable = false)
     private String senha;
+
+    @Column(length = 20)
+    private String telefone;
+
+    @Column(length = 100)
+    private String cargo;
+
+    /**
+     * Usuários não são excluídos quando já possuem chamados: são desativados.
+     * Um usuário inativo não consegue autenticar.
+     */
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean ativo = true;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "usuario_perfis", joinColumns = @JoinColumn(name = "usuario_id"))
@@ -61,10 +74,14 @@ public class Usuario implements Serializable {
     @Column
     private LocalDateTime dataAtualizacao;
 
+    @Column
+    private LocalDateTime ultimoAcesso;
+
     @PrePersist
     protected void onCreate() {
         dataCriacao = LocalDateTime.now();
         dataAtualizacao = LocalDateTime.now();
+        if (ativo == null) ativo = true;
     }
 
     @PreUpdate
@@ -72,15 +89,48 @@ public class Usuario implements Serializable {
         dataAtualizacao = LocalDateTime.now();
     }
 
+    /**
+     * Códigos desconhecidos são ignorados em vez de derrubar a sessão: antes,
+     * um perfil inválido no banco quebrava o login com ArrayIndexOutOfBounds.
+     */
     public Set<Perfil> getPerfis() {
-        return perfis.stream().map(x -> Perfil.values()[x]).collect(Collectors.toSet());
+        return perfis.stream()
+                .filter(Perfil::codigoValido)
+                .map(Perfil::fromCodigo)
+                .collect(Collectors.toSet());
+    }
+
+    public Set<Integer> getPerfisCodigos() {
+        return perfis;
+    }
+
+    public boolean temPerfil(Perfil perfil) {
+        return perfis.contains(perfil.getCodigo());
+    }
+
+    public boolean ehAdmin() {
+        return temPerfil(Perfil.ADMIN);
+    }
+
+    public boolean ehTecnico() {
+        return temPerfil(Perfil.TECNICO);
+    }
+
+    /** Cliente "puro": sem privilégios de admin nem de técnico. */
+    public boolean ehSomenteCliente() {
+        return temPerfil(Perfil.CLIENTE) && !ehAdmin() && !ehTecnico();
+    }
+
+    /** Pode atender chamados de qualquer cliente. */
+    public boolean ehAtendente() {
+        return ehAdmin() || ehTecnico();
     }
 
     public void addPerfil(Perfil perfil) {
         this.perfis.add(perfil.getCodigo());
     }
 
-    public void updatePerfis(java.util.Set<Integer> novosPerfis) {
+    public void updatePerfis(Set<Integer> novosPerfis) {
         this.perfis.clear();
         if (novosPerfis != null) {
             this.perfis.addAll(novosPerfis);

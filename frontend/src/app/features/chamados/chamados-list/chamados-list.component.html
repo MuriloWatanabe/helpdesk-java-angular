@@ -4,98 +4,238 @@
   <main class="main-content">
     <header class="page-header">
       <div class="header-left">
-        <h1 class="page-title">Chamados</h1>
+        <div>
+          <h1 class="page-title">{{ titulo }}</h1>
+          <p class="page-subtitle">{{ subtitulo }}</p>
+        </div>
         @if (totalElements > 0) {
-          <span class="total-badge">{{ totalElements }} total</span>
+          <span class="total-badge">{{ totalElements }}</span>
         }
       </div>
       <a routerLink="/chamados/novo" class="btn-primary">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
-        Novo Chamado
+        Abrir chamado
       </a>
     </header>
 
+    <!-- Filtros aplicados no servidor, não sobre a página já carregada -->
     <div class="filters-bar">
-      <div class="status-tabs">
-        @for (opt of statusOptions; track opt.label) {
+      <div class="status-tabs" aria-label="Filtrar por status">
+        <button
+          class="tab-btn"
+          [class.active]="filtroStatus === null"
+          (click)="filtrarStatus(null)"
+        >Todos</button>
+        @for (opt of statusOpcoes; track opt.codigo) {
           <button
             class="tab-btn"
-            [class.active]="filtroStatus === opt.value"
-            (click)="filtrarStatus(opt.value)"
-          >{{ opt.label }}</button>
+            [class.active]="filtroStatus === opt.codigo"
+            (click)="filtrarStatus(opt.codigo)"
+          >{{ opt.rotulo }}</button>
         }
       </div>
-      <div class="search-wrap">
-        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        <input class="search-input" type="text" placeholder="Buscar por título ou cliente..." [(ngModel)]="busca" />
+
+      <div class="busca-row">
+        <div class="search-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <label class="sr-only" for="busca">Buscar chamados</label>
+          <input
+            id="busca"
+            class="search-input"
+            type="search"
+            placeholder="Buscar por número, título, descrição ou cliente..."
+            [ngModel]="busca"
+            (ngModelChange)="aoDigitarBusca($event)"
+          />
+        </div>
+
+        <button
+          class="btn-secondary"
+          type="button"
+          [attr.aria-expanded]="mostrarFiltrosAvancados"
+          (click)="mostrarFiltrosAvancados = !mostrarFiltrosAvancados"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+          </svg>
+          Filtros
+        </button>
+
+        @if (temFiltroAtivo) {
+          <button class="btn-limpar" type="button" (click)="limparFiltros()">Limpar</button>
+        }
       </div>
+
+      @if (mostrarFiltrosAvancados) {
+        <div class="filtros-avancados">
+          <div class="filtro-campo">
+            <label class="form-label" for="f-prioridade">Prioridade</label>
+            <select
+              id="f-prioridade"
+              class="form-control"
+              [(ngModel)]="filtroPrioridade"
+              (ngModelChange)="filtrar()"
+            >
+              <option [ngValue]="null">Todas</option>
+              @for (p of prioridadeOpcoes; track p.codigo) {
+                <option [ngValue]="p.codigo">{{ p.rotulo }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="filtro-campo">
+            <label class="form-label" for="f-categoria">Categoria</label>
+            <select
+              id="f-categoria"
+              class="form-control"
+              [(ngModel)]="filtroCategoria"
+              (ngModelChange)="filtrar()"
+            >
+              <option [ngValue]="null">Todas</option>
+              @for (c of categoriaOpcoes; track c.codigo) {
+                <option [ngValue]="c.codigo">{{ c.rotulo }}</option>
+              }
+            </select>
+          </div>
+
+          @if (isAtendente()) {
+            <div class="filtro-campo">
+              <label class="form-label" for="f-tecnico">Técnico</label>
+              <select
+                id="f-tecnico"
+                class="form-control"
+                [(ngModel)]="filtroTecnico"
+                (ngModelChange)="filtrar()"
+              >
+                <option [ngValue]="null">Todos</option>
+                @for (t of tecnicos; track t.id) {
+                  <option [ngValue]="t.id">{{ t.nome }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="filtro-checks">
+              <label class="check-item">
+                <input type="checkbox" [(ngModel)]="soSemTecnico" (ngModelChange)="filtrar()" />
+                Sem técnico
+              </label>
+              <label class="check-item">
+                <input type="checkbox" [(ngModel)]="soSlaVencido" (ngModelChange)="filtrar()" />
+                Prazo estourado
+              </label>
+            </div>
+          }
+        </div>
+      }
     </div>
 
-    @if (error) {
-      <div class="alert-error">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    @if (error()) {
+      <div class="alert-error" role="alert">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
-        {{ error }}
+        {{ error() }}
       </div>
     }
 
-    @if (loading) {
+    @if (loading()) {
       <div class="loading-state">
         <div class="spinner"></div>
         <p>Carregando chamados...</p>
       </div>
     }
 
-    @if (!loading && !error) {
+    @if (!loading() && !error()) {
       <div class="table-card">
-        @if (chamadosFiltrados.length === 0) {
+        @if (chamados().length === 0) {
           <div class="empty-state">
-            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.3">
+            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.3" aria-hidden="true">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
               <polyline points="14 2 14 8 20 8"/>
               <line x1="16" y1="13" x2="8" y2="13"/>
               <line x1="16" y1="17" x2="8" y2="17"/>
             </svg>
             <p>Nenhum chamado encontrado</p>
-            <span>Tente ajustar os filtros ou crie um novo chamado.</span>
+            <span>
+              @if (temFiltroAtivo) {
+                Nenhum resultado para os filtros aplicados. Tente limpá-los.
+              } @else {
+                Quando um chamado for aberto, ele aparecerá aqui.
+              }
+            </span>
           </div>
         } @else {
           <div class="table-wrap">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th class="col-id">#</th>
+                  <th class="col-id">Protocolo</th>
                   <th>Título</th>
                   <th>Cliente</th>
                   <th>Técnico</th>
                   <th>Prioridade</th>
                   <th>Status</th>
-                  <th>Abertura</th>
+                  <th>Prazo</th>
+                  <th class="col-data">Abertura</th>
+                  @if (isAtendente()) { <th class="col-acoes"><span class="sr-only">Ações</span></th> }
                 </tr>
               </thead>
               <tbody>
-                @for (c of chamadosFiltrados; track c.id) {
+                @for (c of chamados(); track c.id) {
                   <tr class="row-clicavel" [routerLink]="['/chamados', c.id]">
-                    <td class="col-id">{{ c.id }}</td>
-                    <td class="col-titulo">{{ c.titulo }}</td>
-                    <td>{{ c.cliente?.nome ?? '—' }}</td>
-                    <td class="col-tecnico">{{ c.tecnico?.nome ?? 'Não atribuído' }}</td>
+                    <td class="col-id">
+                      <span class="protocolo">{{ c.numero || ('#' + c.id) }}</span>
+                    </td>
+                    <td class="col-titulo">
+                      <span class="titulo-texto">{{ c.titulo }}</span>
+                      <span class="meta-linha">
+                        @if (c.categoriaLabel) { {{ c.categoriaLabel }} }
+                        @if (c.totalComentarios > 0) {
+                          <span class="meta-chip">{{ c.totalComentarios }} comentário(s)</span>
+                        }
+                        @if (c.totalAnexos > 0) {
+                          <span class="meta-chip">{{ c.totalAnexos }} anexo(s)</span>
+                        }
+                      </span>
+                    </td>
+                    <td>{{ c.cliente.nome }}</td>
+                    <td class="col-tecnico">
+                      @if (c.tecnico) { {{ c.tecnico.nome }} }
+                      @else { <span class="sem-dados">Não atribuído</span> }
+                    </td>
                     <td>
-                      <span class="badge" [ngClass]="getPrioridadeClass(c.prioridade)">
-                        {{ getPrioridadeLabel(c.prioridade) }}
+                      <span class="badge" [class]="classePrioridade(c.prioridade)">
+                        {{ c.prioridadeLabel }}
                       </span>
                     </td>
                     <td>
-                      <span class="badge" [ngClass]="getStatusClass(c.status)">
-                        {{ getStatusLabel(c.status) }}
+                      <span class="badge" [class]="classeStatus(c.status)">
+                        {{ c.statusLabel }}
                       </span>
                     </td>
-                    <td class="col-data">{{ formatData(c.dataAbertura) }}</td>
+                    <td>
+                      @if (textoSla(c); as sla) {
+                        <span class="sla" [class.sla-vencido]="c.slaVencido">{{ sla }}</span>
+                      } @else {
+                        <span class="sem-dados">—</span>
+                      }
+                    </td>
+                    <td class="col-data">{{ c.dataAbertura | date: 'dd/MM/yyyy' }}</td>
+                    @if (isAtendente()) {
+                      <td class="col-acoes">
+                        @if (!c.tecnico && !c.encerrado) {
+                          <button
+                            class="btn-assumir"
+                            type="button"
+                            (click)="assumir(c, $event)"
+                          >Assumir</button>
+                        }
+                      </td>
+                    }
                   </tr>
                 }
               </tbody>
@@ -103,7 +243,7 @@
           </div>
 
           @if (totalPages > 1) {
-            <div class="pagination">
+            <nav class="pagination" aria-label="Paginação">
               <button class="page-btn" (click)="paginaAnterior()" [disabled]="currentPage === 0">
                 ‹ Anterior
               </button>
@@ -111,13 +251,16 @@
                 <button
                   class="page-btn"
                   [class.active]="p === currentPage"
+                  [attr.aria-current]="p === currentPage ? 'page' : null"
                   (click)="irParaPagina(p)"
                 >{{ p + 1 }}</button>
               }
-              <button class="page-btn" (click)="proximaPagina()" [disabled]="currentPage === totalPages - 1">
-                Próximo ›
-              </button>
-            </div>
+              <button
+                class="page-btn"
+                (click)="proximaPagina()"
+                [disabled]="currentPage === totalPages - 1"
+              >Próximo ›</button>
+            </nav>
           }
         }
       </div>

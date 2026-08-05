@@ -4,79 +4,134 @@
   <main class="main-content">
     <header class="page-header">
       <div class="header-left">
-        <h1 class="page-title">Usuários</h1>
-        @if (usuarios.length > 0) {
-          <span class="total-badge">{{ usuarios.length }} total</span>
+        <div>
+          <h1 class="page-title">Usuários</h1>
+          <p class="page-subtitle">Controle de acesso e perfis do sistema</p>
+        </div>
+        @if (usuarios().length > 0) {
+          <span class="total-badge">{{ usuarios().length }}</span>
         }
       </div>
-      <button class="btn-primary" (click)="abrirForm()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <button class="btn-primary" type="button" (click)="abrirForm()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
-        Novo Usuário
+        Novo usuário
       </button>
     </header>
 
-    @if (erro) {
-      <div class="alert-error">{{ erro }}</div>
+    <!-- Filtros -->
+    <div class="filtros-usuarios">
+      <div class="search-wrap">
+        <label class="sr-only" for="busca-usuario">Buscar usuário</label>
+        <input
+          id="busca-usuario"
+          class="form-control"
+          type="search"
+          placeholder="Buscar por nome ou e-mail..."
+          [(ngModel)]="busca"
+          (keyup.enter)="filtrar()"
+        />
+      </div>
+
+      <div class="filtro-campo">
+        <label class="sr-only" for="filtro-perfil">Perfil</label>
+        <select id="filtro-perfil" class="form-control" [(ngModel)]="filtroPerfil" (ngModelChange)="filtrar()">
+          <option [ngValue]="null">Todos os perfis</option>
+          @for (p of perfisOptions; track p.value) {
+            <option [ngValue]="p.value">{{ p.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filtro-campo">
+        <label class="sr-only" for="filtro-situacao">Situação</label>
+        <select id="filtro-situacao" class="form-control" [(ngModel)]="filtroAtivo" (ngModelChange)="filtrar()">
+          <option [ngValue]="null">Ativos e inativos</option>
+          <option [ngValue]="true">Somente ativos</option>
+          <option [ngValue]="false">Somente inativos</option>
+        </select>
+      </div>
+
+      <button class="btn-secondary" type="button" (click)="filtrar()">Buscar</button>
+      @if (temFiltroAtivo) {
+        <button class="btn-link-limpar" type="button" (click)="limparFiltros()">Limpar</button>
+      }
+    </div>
+
+    @if (erro()) {
+      <div class="alert-error" role="alert">{{ erro() }}</div>
     }
 
-    @if (loading) {
-      <div class="loading-state"><div class="spinner"></div><p>Carregando...</p></div>
+    @if (loading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Carregando usuários...</p>
+      </div>
     }
 
-    @if (!loading) {
+    @if (!loading() && !erro()) {
       <div class="table-card">
-        @if (usuarios.length === 0) {
-          <div class="empty-state">Nenhum usuário cadastrado.</div>
+        @if (usuarios().length === 0) {
+          <div class="empty-state">
+            <p>Nenhum usuário encontrado</p>
+            <span>Ajuste os filtros ou cadastre um novo usuário.</span>
+          </div>
         } @else {
           <div class="table-wrap">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>#</th>
-                  <th>Nome</th>
-                  <th>Email</th>
+                  <th class="col-id">#</th>
+                  <th class="col-nome">Nome</th>
+                  <th>E-mail</th>
+                  <th>Cargo</th>
                   <th>Perfis</th>
+                  <th>Situação</th>
                   <th>Cadastro</th>
-                  <th>Ações</th>
+                  <th class="col-acoes"><span class="sr-only">Ações</span></th>
                 </tr>
               </thead>
               <tbody>
-                @for (u of usuarios; track u.id) {
-                  <tr>
+                @for (u of usuarios(); track u.id) {
+                  <tr [class.linha-inativa]="!u.ativo">
                     <td class="col-id">{{ u.id }}</td>
-                    <td class="col-nome">{{ u.nome }}</td>
-                    <td>{{ u.email }}</td>
-                    <td>
-                      @for (p of u.perfis; track p) {
-                        <span class="badge-perfil" [ngClass]="{
-                          'perfil-admin':   p === 'ROLE_ADMIN',
-                          'perfil-tecnico': p === 'ROLE_TECNICO',
-                          'perfil-cliente': p === 'ROLE_CLIENTE'
-                        }">{{ perfilLabel(p) }}</span>
-                      }
+                    <td class="col-nome">
+                      {{ u.nome }}
+                      @if (u.id === meuId) { <span class="voce-tag">você</span> }
                     </td>
-                    <td>{{ formatData(u.dataCriacao) }}</td>
+                    <td>{{ u.email }}</td>
+                    <td>{{ u.cargo || '—' }}</td>
+                    <td>
+                      <div class="perfis-cel">
+                        @for (p of u.perfis; track p) {
+                          <span class="badge-perfil" [class]="classePerfil(p)">
+                            {{ perfilLabel(p) }}
+                          </span>
+                        }
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge" [class]="u.ativo ? 'badge-resolvido' : 'badge-cancelado'">
+                        {{ u.ativo ? 'Ativo' : 'Inativo' }}
+                      </span>
+                    </td>
+                    <td>{{ u.dataCriacao | date: 'dd/MM/yyyy' }}</td>
                     <td class="col-acoes">
-                      <button class="btn-icon" title="Editar perfis" (click)="abrirPerfis(u)">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                        </svg>
+                      <button class="btn-icon" type="button" title="Editar" (click)="abrirForm(u)">
+                        Editar
                       </button>
-                      <button class="btn-icon" title="Editar" (click)="abrirForm(u)">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                      </button>
-                      <button class="btn-icon btn-danger" title="Excluir" (click)="excluir(u.id)">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
-                          <path d="M10 11v6"/><path d="M14 11v6"/>
-                          <path d="M9 6V4h6v2"/>
-                        </svg>
-                      </button>
+                      @if (u.id !== meuId) {
+                        <button
+                          class="btn-icon"
+                          type="button"
+                          [title]="u.ativo ? 'Desativar' : 'Reativar'"
+                          (click)="alternarSituacao(u)"
+                        >{{ u.ativo ? 'Desativar' : 'Reativar' }}</button>
+                        <button class="btn-icon perigo" type="button" title="Excluir" (click)="excluir(u)">
+                          Excluir
+                        </button>
+                      }
                     </td>
                   </tr>
                 }
@@ -86,97 +141,134 @@
         }
       </div>
     }
+
+    <!-- Modal de cadastro/edição -->
+    @if (showForm) {
+      <div class="modal-overlay">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-usuario">
+          <div class="modal-header">
+            <h2 id="titulo-modal-usuario">
+              {{ editingId ? 'Editar usuário' : 'Novo usuário' }}
+            </h2>
+            <button class="modal-close" type="button" aria-label="Fechar" (click)="fecharForm()">×</button>
+          </div>
+
+          @if (formErro) {
+            <div class="alert-error" role="alert">{{ formErro }}</div>
+          }
+
+          <form [formGroup]="form" (ngSubmit)="salvar()">
+            <div class="form-group">
+              <label class="form-label" for="nome">Nome <span class="required">*</span></label>
+              <input
+                id="nome"
+                class="form-control"
+                type="text"
+                formControlName="nome"
+                [class.invalido]="hasError('nome')"
+              />
+              @if (hasError('nome')) {
+                <span class="field-error">Informe ao menos 3 caracteres.</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="email">E-mail <span class="required">*</span></label>
+              <input
+                id="email"
+                class="form-control"
+                type="email"
+                formControlName="email"
+                [class.invalido]="hasError('email')"
+              />
+              @if (hasError('email')) {
+                <span class="field-error">Informe um e-mail válido.</span>
+              }
+            </div>
+
+            <div class="form-linha-dupla">
+              <div class="form-group">
+                <label class="form-label" for="telefone">
+                  Telefone <span class="optional">(opcional)</span>
+                </label>
+                <input id="telefone" class="form-control" type="text" formControlName="telefone" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cargo">
+                  Cargo <span class="optional">(opcional)</span>
+                </label>
+                <input id="cargo" class="form-control" type="text" formControlName="cargo" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="senha">
+                Senha
+                @if (editingId) {
+                  <span class="optional">(deixe em branco para manter a atual)</span>
+                } @else {
+                  <span class="required">*</span>
+                }
+              </label>
+              <input
+                id="senha"
+                class="form-control"
+                type="password"
+                autocomplete="new-password"
+                formControlName="senha"
+                [class.invalido]="hasError('senha')"
+              />
+              @if (hasError('senha')) {
+                <span class="field-error">A senha deve ter no mínimo 6 caracteres.</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">Perfis de acesso <span class="required">*</span></span>
+              <div class="perfis-check-list">
+                <label class="check-item">
+                  <input type="checkbox" formControlName="perfilAdmin" />
+                  <span>
+                    <span class="check-label">Administrador</span>
+                    <span class="check-desc">Acesso total, incluindo gestão de usuários</span>
+                  </span>
+                </label>
+                <label class="check-item">
+                  <input type="checkbox" formControlName="perfilTecnico" />
+                  <span>
+                    <span class="check-label">Técnico</span>
+                    <span class="check-desc">Atende chamados e vê a fila completa</span>
+                  </span>
+                </label>
+                <label class="check-item">
+                  <input type="checkbox" formControlName="perfilCliente" />
+                  <span>
+                    <span class="check-label">Cliente</span>
+                    <span class="check-desc">Abre e acompanha os próprios chamados</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="check-item destaque">
+                <input type="checkbox" formControlName="ativo" />
+                <span>
+                  <span class="check-label">Usuário ativo</span>
+                  <span class="check-desc">Desmarque para bloquear o acesso sem perder o histórico</span>
+                </span>
+              </label>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" (click)="fecharForm()">Cancelar</button>
+              <button type="submit" class="btn-primary" [disabled]="formLoading">
+                @if (formLoading) { Salvando... } @else { Salvar }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
   </main>
 </div>
-
-<!-- Modal Criar/Editar Usuário -->
-@if (showForm) {
-  <div class="modal-overlay" (click)="fecharForm()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>{{ editingId ? 'Editar Usuário' : 'Novo Usuário' }}</h2>
-        <button class="modal-close" (click)="fecharForm()">✕</button>
-      </div>
-
-      <form [formGroup]="form" (ngSubmit)="salvar()">
-        @if (formErro) {
-          <div class="alert-error">{{ formErro }}</div>
-        }
-
-        <div class="form-group">
-          <label class="form-label">Nome <span class="required">*</span></label>
-          <input class="form-control" formControlName="nome" placeholder="Nome completo" />
-          @if (hasError('nome')) { <span class="field-error">Nome obrigatório (mín. 3 caracteres)</span> }
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Email <span class="required">*</span></label>
-          <input class="form-control" formControlName="email" type="email" placeholder="email@exemplo.com" />
-          @if (hasError('email')) { <span class="field-error">Email inválido</span> }
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            Senha <span class="required">{{ editingId ? '' : '*' }}</span>
-            @if (editingId) { <span class="optional">(deixe em branco para manter)</span> }
-          </label>
-          <input class="form-control" formControlName="senha" type="password" placeholder="Mínimo 6 caracteres" />
-          @if (hasError('senha')) { <span class="field-error">Senha obrigatória (mín. 6 caracteres)</span> }
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Perfil <span class="required">*</span></label>
-          <select class="form-control" formControlName="perfis">
-            @for (p of perfisOptions; track p.value) {
-              <option [value]="p.value">{{ p.label }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="modal-actions">
-          <button type="button" class="btn-secondary" (click)="fecharForm()">Cancelar</button>
-          <button type="submit" class="btn-primary" [disabled]="formLoading">
-            {{ formLoading ? 'Salvando...' : 'Salvar' }}
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-}
-
-<!-- Modal Perfis -->
-@if (showPerfisModal && perfisUsuario) {
-  <div class="modal-overlay" (click)="fecharPerfis()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>Permissões — {{ perfisUsuario.nome }}</h2>
-        <button class="modal-close" (click)="fecharPerfis()">✕</button>
-      </div>
-
-      <form [formGroup]="perfisForm" (ngSubmit)="salvarPerfis()">
-        <p class="perfis-info">Selecione os perfis de acesso do usuário:</p>
-        <div class="perfis-check-list">
-          <label class="check-item">
-            <input type="checkbox" formControlName="admin" />
-            <span class="check-label perfil-admin">Administrador</span>
-            <span class="check-desc">Acesso total ao sistema, gestão de usuários</span>
-          </label>
-          <label class="check-item">
-            <input type="checkbox" formControlName="tecnico" />
-            <span class="check-label perfil-tecnico">Técnico</span>
-            <span class="check-desc">Gerencia e resolve chamados</span>
-          </label>
-          <label class="check-item">
-            <input type="checkbox" formControlName="cliente" />
-            <span class="check-label perfil-cliente">Cliente</span>
-            <span class="check-desc">Abre e acompanha seus próprios chamados</span>
-          </label>
-        </div>
-        <div class="modal-actions">
-          <button type="button" class="btn-secondary" (click)="fecharPerfis()">Cancelar</button>
-          <button type="submit" class="btn-primary">Salvar Permissões</button>
-        </div>
-      </form>
-    </div>
-  </div>
-}

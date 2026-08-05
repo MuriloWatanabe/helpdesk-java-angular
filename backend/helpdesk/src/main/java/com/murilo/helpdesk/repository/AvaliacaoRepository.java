@@ -14,13 +14,25 @@ public interface AvaliacaoRepository extends JpaRepository<Avaliacao, Long> {
 
     Optional<Avaliacao> findByChamado(Chamado chamado);
 
+    Optional<Avaliacao> findByChamadoId(Long chamadoId);
+
+    boolean existsByChamadoId(Long chamadoId);
+
+    /** IDs já avaliados dentro de um conjunto — usado na listagem paginada. */
+    @Query("SELECT a.chamado.id FROM Avaliacao a WHERE a.chamado.id IN :ids")
+    List<Long> idsAvaliados(@Param("ids") java.util.Collection<Long> ids);
+
     List<Avaliacao> findByNotaGreaterThanEqualOrderByDataAvaliacaoDesc(Integer nota);
 
     @Query("SELECT AVG(a.nota) FROM Avaliacao a")
     Double calcularNotaMedia();
 
-    @Query("SELECT AVG(a.nota) FROM Avaliacao a WHERE a.nota >= :notaMinima")
-    Double calcularNotaMediaPorMinimo(@Param("notaMinima") Integer notaMinima);
+    /** Nota média de um técnico específico — usado no relatório de desempenho. */
+    @Query("SELECT AVG(a.nota) FROM Avaliacao a WHERE a.chamado.tecnico.id = :tecnicoId")
+    Double calcularNotaMediaPorTecnico(@Param("tecnicoId") Long tecnicoId);
+
+    @Query("SELECT a.nota, COUNT(a) FROM Avaliacao a GROUP BY a.nota ORDER BY a.nota")
+    List<Object[]> contarPorNota();
 
     @Query("SELECT COUNT(a) FROM Avaliacao a WHERE a.nota >= 4")
     Long contarAvaliacoesPositivas();

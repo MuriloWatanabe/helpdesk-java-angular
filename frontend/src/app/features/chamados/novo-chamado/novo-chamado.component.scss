@@ -138,3 +138,45 @@
   &:hover:not(:disabled) { background: #e2e8f0; }
   &:disabled { opacity: 0.6; cursor: not-allowed; }
 }
+
+/* Adições: subtítulo, dica de SLA e responsividade */
+.header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 2px;
+  max-width: 520px;
+}
+
+.form-hint {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 5px;
+}
+
+.form-control.invalido {
+  border-color: #dc2626;
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 110px;
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .main-content {
+    padding: 76px 16px 32px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+}

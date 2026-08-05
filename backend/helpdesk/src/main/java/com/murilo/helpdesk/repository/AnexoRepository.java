@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -13,10 +14,17 @@ public interface AnexoRepository extends JpaRepository<Anexo, Long> {
 
     List<Anexo> findByChamadoOrderByDataUploadDesc(Chamado chamado);
 
+    List<Anexo> findByChamadoIdOrderByDataUploadDesc(Long chamadoId);
+
+    /** Anexos visíveis ao cliente (exclui os marcados como internos). */
+    List<Anexo> findByChamadoIdAndPublicoTrueOrderByDataUploadDesc(Long chamadoId);
+
+    long countByChamadoId(Long chamadoId);
+
+    /** Contagem em lote para a listagem, evitando uma consulta por linha. */
+    @Query("SELECT a.chamado.id, COUNT(a) FROM Anexo a " +
+           "WHERE a.chamado.id IN :ids GROUP BY a.chamado.id")
+    List<Object[]> contarPorChamados(@Param("ids") Collection<Long> ids);
+
     Long countByChamado(Chamado chamado);
-
-    List<Anexo> findByChamadoAndTipoMimeContaining(Chamado chamado, String tipoMime);
-
-    @Query("SELECT a FROM Anexo a WHERE a.chamado.id = :chamadoId AND a.publico = true ORDER BY a.dataUpload DESC")
-    List<Anexo> findAnexosPublicos(@Param("chamadoId") Long chamadoId);
 }

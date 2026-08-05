@@ -1,15 +1,19 @@
 <div class="login-container">
-  <div class="circles">
+  <div class="circles" aria-hidden="true">
     <div class="circle circle-1"></div>
     <div class="circle circle-2"></div>
   </div>
 
   <div class="login-card">
     <div class="logo">
-      <span class="logo-icon">&#9830;</span>
+      <span class="logo-icon" aria-hidden="true">&#9830;</span>
       <span class="logo-text">HelpDesk</span>
     </div>
-    <p class="subtitle">Sistema de Chamados Internos</p>
+    <p class="subtitle">Sistema de chamados internos</p>
+
+    @if (avisoSessao) {
+      <div class="aviso-msg" role="status">{{ avisoSessao }}</div>
+    }
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
@@ -17,13 +21,14 @@
         <input
           id="email"
           type="email"
+          autocomplete="username"
           formControlName="email"
           placeholder="seu@empresa.com.br"
           [class.input-error]="emailControl?.invalid && emailControl?.touched"
         />
         @if (emailControl?.invalid && emailControl?.touched) {
           <span class="field-error">
-            @if (emailControl?.errors?.['required']) { E-mail é obrigatório. }
+            @if (emailControl?.errors?.['required']) { Informe seu e-mail. }
             @else if (emailControl?.errors?.['email']) { Informe um e-mail válido. }
           </span>
         }
@@ -31,41 +36,62 @@
 
       <div class="form-group">
         <label for="senha">Senha</label>
-        <input
-          id="senha"
-          type="password"
-          formControlName="senha"
-          placeholder="••••••••"
-          [class.input-error]="senhaControl?.invalid && senhaControl?.touched"
-        />
+        <div class="senha-wrap">
+          <input
+            id="senha"
+            [type]="mostrarSenha ? 'text' : 'password'"
+            autocomplete="current-password"
+            formControlName="senha"
+            placeholder="••••••••"
+            [class.input-error]="senhaControl?.invalid && senhaControl?.touched"
+          />
+          <button
+            type="button"
+            class="btn-ver-senha"
+            [attr.aria-label]="mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'"
+            (click)="mostrarSenha = !mostrarSenha"
+          >
+            {{ mostrarSenha ? 'Ocultar' : 'Mostrar' }}
+          </button>
+        </div>
         @if (senhaControl?.invalid && senhaControl?.touched) {
           <span class="field-error">
-            @if (senhaControl?.errors?.['required']) { Senha é obrigatória. }
-            @else if (senhaControl?.errors?.['minlength']) { Mínimo de 4 caracteres. }
+            @if (senhaControl?.errors?.['required']) { Informe sua senha. }
+            @else if (senhaControl?.errors?.['minlength']) { A senha tem no mínimo 6 caracteres. }
           </span>
         }
       </div>
 
       <div class="forgot">
-        <a href="#">Esqueci minha senha</a>
+        <a routerLink="/esqueci-senha">Esqueci minha senha</a>
       </div>
 
-      <button type="submit" class="btn-primary" [disabled]="isLoading">
+      <button type="submit" class="btn-entrar" [disabled]="isLoading">
         @if (isLoading) { Entrando... } @else { Entrar }
       </button>
 
       @if (errorMessage) {
-        <div class="error-msg">{{ errorMessage }}</div>
+        <div class="error-msg" role="alert">{{ errorMessage }}</div>
       }
-
-      <div class="divider">
-        <span>ou</span>
-      </div>
-
-      <button type="button" class="btn-secondary">
-        Entrar com SSO corporativo
-      </button>
     </form>
+
+    <div class="divider"><span>acesso de demonstração</span></div>
+
+    <!-- Atalhos do ambiente de demonstração (senha 123456) -->
+    <div class="demo-grid">
+      <button type="button" class="demo-btn" (click)="usarDemo('admin@helpdesk.com')">
+        <strong>Administrador</strong>
+        <span>admin&#64;helpdesk.com</span>
+      </button>
+      <button type="button" class="demo-btn" (click)="usarDemo('tecnico@helpdesk.com')">
+        <strong>Técnico</strong>
+        <span>tecnico&#64;helpdesk.com</span>
+      </button>
+      <button type="button" class="demo-btn" (click)="usarDemo('cliente@helpdesk.com')">
+        <strong>Cliente</strong>
+        <span>cliente&#64;helpdesk.com</span>
+      </button>
+    </div>
 
     <div class="register-link">
       Não tem conta? <a routerLink="/register">Cadastre-se</a>

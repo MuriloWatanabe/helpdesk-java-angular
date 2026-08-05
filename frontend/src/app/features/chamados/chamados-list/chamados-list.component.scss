@@ -317,3 +317,175 @@
     cursor: not-allowed;
   }
 }
+
+/* ==================================================================
+   Adições: filtros avançados, protocolo, SLA e ação de assumir
+   ================================================================== */
+
+.header-left {
+  align-items: flex-start;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.filters-bar {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.busca-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.search-wrap {
+  flex: 1;
+  min-width: 220px;
+}
+
+.search-input {
+  width: 100%;
+}
+
+.btn-limpar {
+  background: transparent;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-radius: 8px;
+
+  &:hover { background: #fef2f2; }
+}
+
+.filtros-avancados {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.filtro-campo {
+  min-width: 170px;
+  flex: 1;
+
+  .form-control {
+    padding: 8px 10px;
+    font-size: 13.5px;
+  }
+}
+
+.filtro-checks {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  padding-bottom: 4px;
+}
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #475569;
+  cursor: pointer;
+  white-space: nowrap;
+
+  input { cursor: pointer; }
+}
+
+/* Coluna do protocolo */
+.col-id {
+  width: 130px;
+}
+
+.protocolo {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: #475569;
+  font-weight: 600;
+}
+
+.col-titulo {
+  max-width: 320px;
+  white-space: normal;
+}
+
+.titulo-texto {
+  display: block;
+  color: #1e293b;
+}
+
+.meta-linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 3px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.meta-chip {
+  color: #64748b;
+}
+
+.sem-dados {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.sla {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+
+  &.sla-vencido { color: #dc2626; }
+}
+
+.col-acoes {
+  width: 100px;
+  text-align: right;
+}
+
+.btn-assumir {
+  padding: 5px 11px;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 12.5px;
+  font-weight: 600;
+
+  &:hover { background: #dbeafe; }
+}
+
+/* Badges dos status novos (os antigos já estão definidos acima) */
+.badge-aguardando { background: #ede9fe; color: #7c3aed; }
+.badge-resolvido  { background: #d1fae5; color: #059669; }
+.badge-cancelado  { background: #f1f5f9; color: #94a3b8; }
+.badge-urgente    { background: #fecaca; color: #991b1b; }
+.badge-encerrado  { background: #e2e8f0; color: #475569; }
+
+@media (max-width: 900px) {
+  .main-content {
+    padding: 76px 16px 32px;
+  }
+
+  .status-tabs {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  .col-titulo { max-width: 200px; }
+}

@@ -45,13 +45,56 @@ O sistema proposto centraliza e organiza os chamados técnicos internos, proporc
 
 ## 4. Requisitos Funcionais (RF)
 
-- **RF01** – O sistema deve permitir cadastro de usuários.
-- **RF02** – O sistema deve permitir autenticação de usuários.
-- **RF03** – O usuário deve poder abrir um chamado.
-- **RF04** – O administrador deve poder alterar o status do chamado.
-- **RF05** – O sistema deve listar chamados por prioridade.
-- **RF06** – O sistema deve registrar data e responsável pelo atendimento.
-- **RF07** – O sistema deve permitir registrar comentários em chamados.
+| # | Requisito | Situação |
+|---|---|---|
+| **RF01** | Cadastro de usuários (autocadastro e criação pelo administrador) | Implementado |
+| **RF02** | Autenticação de usuários com JWT | Implementado |
+| **RF03** | Abertura de chamado pelo próprio cliente ou pela equipe em nome dele | Implementado |
+| **RF04** | Alteração de status do chamado respeitando o ciclo de vida | Implementado |
+| **RF05** | Listagem de chamados com filtro por prioridade, status, categoria, técnico e busca textual | Implementado |
+| **RF06** | Registro de data e responsável pelo atendimento | Implementado |
+| **RF07** | Comentários no chamado, com notas internas visíveis só para a equipe | Implementado |
+| **RF08** | Anexos no chamado (envio, download e exclusão) | Implementado |
+| **RF09** | Histórico completo de alterações (linha do tempo) | Implementado |
+| **RF10** | Prazo de atendimento (SLA) calculado pela prioridade, com alerta de vencimento | Implementado |
+| **RF11** | Avaliação do atendimento pelo cliente após a resolução | Implementado |
+| **RF12** | Painel e relatórios com indicadores filtrados pelo perfil do usuário | Implementado |
+| **RF13** | Recuperação de senha por link de uso único | Implementado |
+
+### Fluxo do chamado
+
+```
+                  ┌──────────────────────── reabertura ─────────────────────┐
+                  ▼                                                          │
+  ABERTO ──► EM ANDAMENTO ──► AGUARDANDO CLIENTE ──► RESOLVIDO ──► ENCERRADO ┘
+     │             │                   │                 │
+     └─────────────┴───────────────────┴─────────────────┘
+                        CANCELADO
+```
+
+O servidor recusa transições fora desse fluxo (por exemplo, sair de *Aberto*
+direto para *Encerrado*, ou reabrir um chamado cancelado).
+
+### O que cada perfil pode fazer
+
+| Ação | Cliente | Técnico | Admin |
+|---|:---:|:---:|:---:|
+| Abrir chamado para si | ✔ | ✔ | ✔ |
+| Abrir chamado em nome de outro | — | ✔ | ✔ |
+| Ver os próprios chamados | ✔ | ✔ | ✔ |
+| Ver chamados de terceiros | — | ✔ | ✔ |
+| Comentar | ✔ | ✔ | ✔ |
+| Escrever nota interna | — | ✔ | ✔ |
+| Anexar arquivos | ✔ | ✔ | ✔ |
+| Assumir / atribuir técnico | — | ✔ | ✔ |
+| Editar dados do chamado | — | ✔ | ✔ |
+| Marcar como resolvido | — | ✔ | ✔ |
+| Cancelar chamado não atendido | ✔ (o seu) | ✔ | ✔ |
+| Confirmar solução / reabrir | ✔ (o seu) | ✔ | ✔ |
+| Avaliar o atendimento | ✔ (o seu) | — | — |
+| Fila de atendimento e relatórios | — | ✔ | ✔ |
+| Gestão de usuários e perfis | — | — | ✔ |
+| Excluir chamado | — | — | ✔ |
 
 ---
 
@@ -72,7 +115,7 @@ O sistema proposto centraliza e organiza os chamados técnicos internos, proporc
 
 | Tecnologia | Versão | Função |
 |---|---|---|
-| Java | 17 | Linguagem principal |
+| Java | 21 | Linguagem principal |
 | Spring Boot | 4.0.3 | Framework base / REST |
 | Spring Data JPA | — | Persistência / ORM |
 | Spring Security | — | Autenticação e autorização |
@@ -85,11 +128,15 @@ O sistema proposto centraliza e organiza os chamados técnicos internos, proporc
 
 ### Frontend
 
-| Tecnologia | Função |
-|---|---|
-| Angular 18+ | Framework SPA |
-| TypeScript | Tipagem estática |
-| Bootstrap / Material | Componentes de UI |
+| Tecnologia | Versão | Função |
+|---|---|---|
+| Angular | 21 | Framework SPA (componentes standalone e signals) |
+| TypeScript | 5.9 | Tipagem estática |
+| RxJS | 7.8 | Fluxos assíncronos (HTTP, debounce da busca) |
+| Chart.js | 4.5 | Gráficos do painel e dos relatórios |
+| SCSS | — | Estilos, sem framework de UI externo |
+| Vitest | 4 | Testes unitários |
+| nginx | alpine | Serve o build e repassa `/api` para o backend |
 
 ---
 
@@ -97,90 +144,138 @@ O sistema proposto centraliza e organiza os chamados técnicos internos, proporc
 
 ```
 helpdesk-java-angular/
-│
+├── docker-compose.yml
 ├── README.md
 │
-├── backend/
-│   └── helpdesk/
-│       │
-│       ├── src/
-│       │   ├── main/
-│       │   │   ├── java/com/murilo/helpdesk/
-│       │   │   │   ├── HelpdeskApplication.java
-│       │   │   │   │
-│       │   │   │   ├── model/
-│       │   │   │   │   ├── Usuario.java
-│       │   │   │   │   ├── Chamado.java
-│       │   │   │   │   ├── Comentario.java
-│       │   │   │   │   ├── Anexo.java
-│       │   │   │   │   ├── Avaliacao.java
-│       │   │   │   │   ├── HistoricoChamado.java
-│       │   │   │   │   ├── DepartamentoEntity.java
-│       │   │   │   │   └── enums/
-│       │   │   │   │       ├── Perfil.java
-│       │   │   │   │       ├── Status.java
-│       │   │   │   │       ├── Prioridade.java
-│       │   │   │   │       ├── Categoria.java
-│       │   │   │   │       ├── Severidade.java
-│       │   │   │   │       └── Departamento.java
-│       │   │   │   │
-│       │   │   │   ├── repository/
-│       │   │   │   │   ├── UsuarioRepository.java
-│       │   │   │   │   ├── ChamadoRepository.java
-│       │   │   │   │   ├── ComentarioRepository.java
-│       │   │   │   │   ├── AnexoRepository.java
-│       │   │   │   │   ├── AvaliacaoRepository.java
-│       │   │   │   │   ├── DepartamentoRepository.java
-│       │   │   │   │   └── HistoricoChamadoRepository.java
-│       │   │   │   │
-│       │   │   │   ├── service/
-│       │   │   │   │   ├── UsuarioService.java
-│       │   │   │   │   └── ChamadoService.java
-│       │   │   │   │
-│       │   │   │   └── controller/
-│       │   │   │       ├── UsuarioController.java
-│       │   │   │       └── ChamadoController.java
-│       │   │   │
-│       │   │   └── resources/
-│       │   │       └── application.properties
-│       │   │
-│       │   └── test/
-│       │       └── java/com/murilo/helpdesk/
-│       │           └── HelpdeskApplicationTests.java
-│       │
-│       ├── database/
-│       │   ├── schema.sql
-│       │   └── data.sql
-│       │
-│       ├── docs/architecture/
-│       ├── build.gradle
-│       ├── settings.gradle
-│       └── gradlew
+├── backend/helpdesk/
+│   ├── database/
+│   │   ├── schema.sql          # cria o banco do zero
+│   │   ├── data.sql            # massa de demonstração
+│   │   └── migration-v2.sql    # atualiza um banco já existente
+│   │
+│   └── src/main/java/com/murilo/helpdesk/
+│       ├── config/             # SecurityConfig, OpenApiConfig
+│       ├── controller/         # Auth, Chamado, Comentario, Anexo, Avaliacao,
+│       │                       # Usuario, Dashboard, Metadados
+│       ├── dto/
+│       │   ├── request/        # entradas validadas + ChamadoFiltro
+│       │   └── response/       # saídas da API
+│       ├── exception/          # ApiError + GlobalExceptionHandler
+│       ├── model/
+│       │   ├── enums/          # Status, Prioridade, Categoria, Perfil...
+│       │   └── ...             # Usuario, Chamado, Comentario, Anexo,
+│       │                       # Avaliacao, HistoricoChamado, PasswordResetToken
+│       ├── repository/
+│       │   └── spec/           # ChamadoSpecs (filtros dinâmicos)
+│       ├── security/           # JWT, UserDetails, handlers 401/403
+│       ├── service/            # regras de negócio
+│       └── util/Mapper.java    # entidade → DTO
 │
-└── frontend/  (em desenvolvimento)
+└── frontend/
+    ├── nginx.conf              # SPA + proxy /api → backend
+    └── src/app/
+        ├── core/
+        │   ├── guards/         # authGuard, adminGuard, atendenteGuard
+        │   ├── interceptors/   # jwt, auth-error
+        │   ├── models/         # tipos espelhando os DTOs
+        │   └── services/       # auth, chamado, usuario, dashboard,
+        │                       # toast, confirm
+        ├── shared/             # toast, diálogo de confirmação
+        ├── layout/sidebar/     # navegação (com menu mobile)
+        └── features/
+            ├── auth/           # login, cadastro, esqueci/redefinir senha
+            ├── chamados/       # lista, detalhe, novo, edição
+            ├── dashboard/
+            ├── relatorios/
+            ├── usuarios/
+            ├── perfil/
+            └── erros/          # 404 e acesso negado
 ```
 
 ---
 
 ## 8. Endpoints da API
 
-> Base URL: `http://localhost:9090/api/swagger-ui.html`
+> Base: `http://localhost:9090/api` · Documentação interativa em
+> `http://localhost:9090/api/swagger-ui.html` (use o botão **Authorize** com o token do login).
+
+### Autenticação e conta (`/v1/auth`)
+
+| Método | Endpoint | Acesso | Descrição |
+|---|---|---|---|
+| POST | `/v1/auth/login` | Público | Autentica e devolve o token JWT |
+| POST | `/v1/auth/register` | Público | Autocadastro (sempre com perfil CLIENTE) |
+| POST | `/v1/auth/recuperar-senha` | Público | Gera link de redefinição (uso único, 30 min) |
+| POST | `/v1/auth/redefinir-senha` | Público | Define nova senha a partir do token |
+| GET | `/v1/auth/me` | Autenticado | Dados do próprio usuário |
+| PUT | `/v1/auth/me` | Autenticado | Edita os próprios dados |
+| POST | `/v1/auth/alterar-senha` | Autenticado | Troca a senha (exige a senha atual) |
+
+### Chamados (`/v1/chamados`)
+
+| Método | Endpoint | Acesso | Descrição |
+|---|---|---|---|
+| GET | `/v1/chamados` | Autenticado | Lista paginada e filtrada (cliente vê só os seus) |
+| GET | `/v1/chamados/{id}` | Dono ou equipe | Detalhe do chamado |
+| POST | `/v1/chamados` | Autenticado | Abre um chamado |
+| PUT | `/v1/chamados/{id}` | Técnico/Admin | Edita título, descrição, prioridade, categoria |
+| PATCH | `/v1/chamados/{id}/status/{status}` | Conforme o papel | Move o chamado no fluxo |
+| PATCH | `/v1/chamados/{id}/assumir` | Técnico/Admin | Assume o atendimento |
+| PATCH | `/v1/chamados/{id}/tecnico` | Técnico/Admin | Atribui ou remove o responsável |
+| GET | `/v1/chamados/{id}/historico` | Dono ou equipe | Linha do tempo |
+| DELETE | `/v1/chamados/{id}` | Admin | Exclui o chamado e seus dependentes |
+
+Filtros aceitos em `GET /v1/chamados` (todos opcionais, resolvidos no banco):
+`q`, `status`, `prioridade`, `categoria`, `tecnicoId`, `clienteId`, `semTecnico`,
+`slaVencido`, `apenasPendentes`, `dataInicio`, `dataFim`, `page`, `size`, `sort`.
+
+### Conversa, anexos e avaliação
 
 | Método | Endpoint | Descrição |
 |---|---|---|
-| GET | `/v1/usuarios` | Lista todos os usuários |
-| GET | `/v1/usuarios/{id}` | Busca usuário por ID |
-| POST | `/v1/usuarios` | Cria novo usuário |
-| PUT | `/v1/usuarios/{id}` | Atualiza usuário |
-| DELETE | `/v1/usuarios/{id}` | Remove usuário |
-| GET | `/v1/chamados` | Lista chamados (paginado) |
-| GET | `/v1/chamados/{id}` | Busca chamado por ID |
-| POST | `/v1/chamados` | Abre novo chamado |
-| PUT | `/v1/chamados/{id}` | Atualiza chamado |
-| PATCH | `/v1/chamados/{id}/status/{status}` | Altera status do chamado |
-| DELETE | `/v1/chamados/{id}` | Remove chamado |
+| GET / POST | `/v1/chamados/{id}/comentarios` | Lista e cria comentários (notas internas só para a equipe) |
+| PUT / DELETE | `/v1/chamados/{id}/comentarios/{cid}` | Edita o próprio comentário; exclui (autor ou admin) |
+| GET / POST | `/v1/chamados/{id}/anexos` | Lista e envia arquivos (até 10 MB) |
+| GET | `/v1/chamados/{id}/anexos/{aid}/download` | Baixa o arquivo |
+| DELETE | `/v1/chamados/{id}/anexos/{aid}` | Remove o anexo (autor ou admin) |
+| GET / POST | `/v1/chamados/{id}/avaliacao` | Consulta e registra a avaliação (cliente do chamado) |
 
-Documentação interativa disponível em: `http://localhost:9090/api/swagger-ui.html`
+### Usuários, painel e domínio
+
+| Método | Endpoint | Acesso | Descrição |
+|---|---|---|---|
+| GET | `/v1/usuarios` | Técnico/Admin | Lista com filtros `perfil`, `ativo`, `q` |
+| GET | `/v1/usuarios/{id}` | Técnico/Admin | Busca por ID |
+| POST | `/v1/usuarios` | Admin | Cria usuário |
+| PUT | `/v1/usuarios/{id}` | Admin | Atualiza usuário |
+| PATCH | `/v1/usuarios/{id}/perfis` | Admin | Altera perfis de acesso |
+| PATCH | `/v1/usuarios/{id}/situacao?ativo=` | Admin | Ativa/desativa (mantém o histórico) |
+| DELETE | `/v1/usuarios/{id}` | Admin | Exclui — bloqueado se houver chamados vinculados |
+| GET | `/v1/dashboard/stats` | Autenticado | Indicadores já filtrados pelo perfil |
+| GET | `/v1/metadados` | Autenticado | Status, prioridades, categorias e perfis |
+
+### Formato de erro
+
+Toda falha devolve o mesmo corpo, com a mensagem pronta para exibição:
+
+```json
+{
+  "timestamp": "2026-08-05T14:32:10.123",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Chamado não encontrado(a). ID: 99",
+  "path": "/api/v1/chamados/99"
+}
+```
+
+| Código | Quando ocorre |
+|---|---|
+| 400 | Validação de campo ou regra de negócio |
+| 401 | Sem token, token expirado ou credenciais inválidas |
+| 403 | Autenticado, mas sem permissão sobre o recurso |
+| 404 | Recurso inexistente |
+| 409 | Conflito (e-mail duplicado, chamado já avaliado, vínculo existente) |
+| 413 | Arquivo acima de 10 MB |
 
 ---
 
@@ -234,6 +329,33 @@ docker compose up
 | PostgreSQL | `localhost:5433` | Banco de dados (acesso direto via psql/DBeaver) |
 
 > O banco é inicializado automaticamente com `schema.sql` e `data.sql` na primeira vez que o volume é criado.
+
+### Contas de demonstração
+
+O `data.sql` cria três perfis para explorar o sistema. A senha de todas é **`123456`**
+e a tela de login tem atalhos para preenchê-las.
+
+| Perfil | E-mail | O que enxerga |
+|---|---|---|
+| Administrador | `admin@helpdesk.com` | Tudo: gestão de usuários, relatórios e exclusões |
+| Técnico | `tecnico@helpdesk.com` | Fila de atendimento, todos os chamados e relatórios |
+| Cliente | `cliente@helpdesk.com` | Apenas os próprios chamados |
+
+A massa inclui 12 chamados cobrindo todos os status, chamados na fila sem técnico,
+um com prazo estourado, conversas com notas internas, histórico e avaliações —
+o suficiente para o painel e os relatórios já nascerem com conteúdo.
+
+### Atualizando um banco que já existe
+
+Os scripts de `docker-entrypoint-initdb.d` **só rodam com o volume vazio**. Se você
+já tinha o banco da versão anterior, aplique a migração (que preserva os dados):
+
+```bash
+docker compose exec -T db psql -U postgres -d helpdesk \
+  < backend/helpdesk/database/migration-v2.sql
+```
+
+Se preferir recomeçar do zero, use `docker compose down -v` e suba novamente.
 
 ### Parar os serviços
 
@@ -406,6 +528,43 @@ Todos os arquivos foram movidos para o caminho correto:
 | `UsuarioController.java` / `ChamadoController.java` | Path `/api/v1/...` + `context-path=/api` gerava `/api/api/v1/...` | Paths corrigidos para `/v1/...` |
 | Todos os models | `@Data` sem customização em entidades JPA causa problemas de `equals`/`hashCode` com lazy loading | Adicionados `@EqualsAndHashCode(onlyExplicitlyIncluded=true)` e `@ToString(exclude={...})` em todas as entidades |
 
+### Revisão v2 — segurança, regras e telas
+
+#### Falhas de segurança corrigidas
+
+| Problema | Impacto | Correção |
+|---|---|---|
+| `GET /v1/chamados/{id}` não verificava o dono | Qualquer cliente lia o chamado de qualquer outro trocando o ID na URL | `garantirAcessoDeLeitura` aplicado na busca e reaproveitado por comentários, anexos e avaliação |
+| `/v1/dashboard/stats` era global | Cliente via os números da empresa inteira e os 5 chamados mais recentes de terceiros | Indicadores calculados por papel (`GLOBAL`, `TECNICO`, `CLIENTE`) |
+| Requisição sem token respondia 403 | O front não distinguia "sessão caiu" de "sem permissão" e deslogava em ambos | `AuthenticationEntryPoint` devolve 401; o 403 passou a só exibir aviso |
+| `PATCH /usuarios/{id}/perfis` aceitava qualquer inteiro | `Perfil.values()[codigo]` estourava e o usuário ficava sem conseguir logar | Validação por `Perfil.codigoValido` + `CHECK` no banco |
+| Troca de senha não pedia a senha atual | Uma sessão esquecida aberta permitia assumir a conta | `/v1/auth/alterar-senha` exige a senha atual |
+| Anexos não existiam; ao criar, o nome do arquivo do cliente seria usado no disco | Risco de path traversal | Arquivo salvo com nome gerado (UUID) e caminho normalizado |
+
+#### Bugs funcionais corrigidos
+
+| Onde | Problema | Correção |
+|---|---|---|
+| Tela de perfil | Chamava `PUT /v1/usuarios/{id}`, restrito a ADMIN — cliente e técnico tomavam 403 e eram deslogados ao salvar | Passou a usar `/v1/auth/me` (autosserviço) |
+| Cadastro de usuário (admin) | O campo de perfis era montado como `[[[codigos]]]` e enviava `perfis: [[1]]` | Substituído por três checkboxes convertidos em códigos |
+| Lista de chamados | Filtro e busca rodavam só sobre a página carregada: "Encerrados" só achava o que estivesse entre os 10 primeiros | Filtros resolvidos no banco via `Specification` |
+| Sessão | `isLoggedIn()` só checava se havia string no `localStorage` | Passou a validar a expiração do JWT |
+| Rota inexistente | O curinga `**` mandava para o login, parecendo queda de sessão | Telas dedicadas de 404 e 403 |
+| Erros da API | "Não encontrado" e "e-mail duplicado" chegavam como HTTP 500 | `GlobalExceptionHandler` com 400/401/403/404/409/413 |
+| Exclusões | Excluir usuário com chamados ou chamado com dependentes quebrava por FK | Bloqueio com mensagem orientando desativar; exclusão de chamado remove os dependentes |
+| Login | Link "Esqueci minha senha" apontava para `#` e havia um botão de SSO que não fazia nada | Fluxo real de recuperação; botão falso removido |
+
+#### O que passou a existir
+
+- **Ciclo de vida completo** do chamado com transições validadas no servidor
+- **SLA por prioridade** (72h/24h/8h/2h), com prazo, alerta de vencimento e fila
+- **Protocolo** legível (`CH-2026-000001`) e **categoria** do problema
+- **Comentários** com notas internas, **anexos**, **linha do tempo** e **avaliação**
+- **Telas novas:** fila de atendimento, atribuídos a mim, edição de chamado,
+  relatórios com exportação CSV, recuperação/redefinição de senha, 404 e acesso negado
+- **Interface:** menu lateral responsivo, avisos não bloqueantes no lugar de `alert()`,
+  diálogo de confirmação próprio, contraste de texto ajustado e locale pt-BR
+
 ---
 
 ## 13. CI/CD — Integração e Entrega Contínua
@@ -447,67 +606,48 @@ O projeto utiliza **GitHub Actions** com dois pipelines independentes, acionados
 
 ---
 
-## 14. TDD — Testes Unitários
+## 14. Testes
 
-O projeto conta com **16 testes unitários** organizados em três classes, todos rodando sem Spring context (apenas Mockito + AssertJ), o que garante execução rápida.
+### Backend — 39 testes
 
-### Estrutura dos testes
+Todos rodam sem subir o Spring context (Mockito + AssertJ), exceto o teste de
+carga da aplicação, que usa H2 em memória.
 
 ```
 src/test/java/com/murilo/helpdesk/
 ├── service/
-│   ├── UsuarioServiceTest.java   (6 testes)
-│   └── ChamadoServiceTest.java   (6 testes)
-└── security/
-    └── JwtServiceTest.java       (4 testes)
+│   ├── ChamadoServiceTest.java   # acesso, criação, fluxo de status, SLA, exclusão
+│   └── UsuarioServiceTest.java   # perfis, e-mail duplicado, proteções, senha
+├── model/enums/
+│   └── StatusTest.java           # conversão por código e transições válidas
+├── security/
+│   └── JwtServiceTest.java       # geração e validação do token
+└── HelpdeskApplicationTests.java # sobe o contexto completo (H2)
 ```
 
-### UsuarioServiceTest — 5 testes
-
-| Teste | Cenário |
-|---|---|
-| `findById_quandoExiste_retornaUsuario` | Retorna entidade quando ID existe |
-| `findById_quandoNaoExiste_lancaRuntimeException` | Lança exceção quando ID não existe |
-| `create_comDadosValidos_retornaResponse` | Cria usuário e retorna DTO mapeado |
-| `create_comEmailDuplicado_lancaRuntimeException` | Bloqueia cadastro com e-mail duplicado |
-| `delete_quandoExiste_deletaSemExcecao` | Deleta usuário sem lançar exceção |
-| `findAll_retornaListaMapeada` | Retorna lista de UsuarioResponse corretamente mapeada |
-
-### ChamadoServiceTest — 6 testes
-
-| Teste | Cenário |
-|---|---|
-| `findById_quandoNaoExiste_lancaRuntimeException` | Lança exceção quando chamado não existe |
-| `findById_quandoExiste_retornaChamado` | Retorna entidade quando ID existe |
-| `updateStatus_quandoEncerrado_setaDataFechamento` | Status ENCERRADO define `dataFechamento` |
-| `updateStatus_emAndamento_naoSetaDataFechamento` | Status EM_ANDAMENTO não altera `dataFechamento` |
-| `create_adminCriandoChamado_salvaChamado` | Admin cria chamado com status ABERTO |
-| `delete_quandoNaoExiste_lancaRuntimeException` | Lança exceção e não chama `deleteById` |
-
-### JwtServiceTest — 4 testes
-
-| Teste | Cenário |
-|---|---|
-| `generateToken_retornaTokenNaoVazio` | Token gerado é não vazio e tem 3 partes (JWT) |
-| `extractUsername_retornaUsernameCorreto` | Username extraído bate com o do token |
-| `isTokenValid_comTokenCorreto_retornaVerdadeiro` | Validação retorna `true` para token correto |
-| `isTokenValid_comOutroUsuario_retornaFalso` | Validação retorna `false` para usuário diferente |
-
-### Configuração de teste
-
-Os testes de serviço usam `@ExtendWith(MockitoExtension.class)` sem carregar o Spring context.  
-O `JwtService` tem seus campos `@Value` injetados via `ReflectionTestUtils`.  
-O `HelpdeskApplicationTests` (context loading) usa H2 em memória via `src/test/resources/application.properties`.
-
-### Como executar
+Cobrem, entre outros: cliente não acessa chamado de terceiro, cliente não marca
+o próprio chamado como resolvido, transição inválida é recusada, reabertura
+limpa a data de fechamento, o último administrador ativo não pode ser removido,
+e a troca de senha exige a senha atual.
 
 ```bash
 cd backend/helpdesk
-./gradlew test 
-ou
-./gradlew cleanTest test --info
-# Relatório HTML gerado em:
-# build/reports/tests/test/index.html
+./gradlew test
+# Relatório HTML em build/reports/tests/test/index.html
+```
+
+### Frontend — 26 testes
+
+```
+src/app/
+├── app.spec.ts                       # shell da aplicação
+├── core/services/auth.service.spec.ts # expiração do JWT, papéis, logout
+└── features/chamados/chamado-ui.spec.ts # SLA, badges, transições por papel
+```
+
+```bash
+cd frontend
+npm run test:ci
 ```
 
 ---
@@ -516,14 +656,25 @@ ou
 
 | Componente | Status |
 |---|---|
-| Estrutura de pacotes | Corrigida |
-| Dependências (build.gradle) | Corrigidas |
-| Models e Enums | Completos |
-| Repositories | Completos |
-| Services (Usuario, Chamado) | Completos |
-| Controllers (Usuario, Chamado) | Completos |
-| Spring Security + JWT | Completo |
-| DTOs (request/response) | Completos |
-| Testes Unitários (TDD) | **16 testes unitários + 1 context test — Completos** |
-| CI/CD (GitHub Actions) | **2 pipelines — Completos** |
-| Frontend Angular | Em desenvolvimento |
+| Modelo de domínio (entidades, enums, SLA, protocolo) | Completo |
+| Segurança (JWT, papéis, 401/403, autorização por recurso) | Completo |
+| Tratamento de erros da API | Completo |
+| Chamados (ciclo de vida, filtros, atribuição, SLA) | Completo |
+| Comentários, anexos, histórico e avaliação | Completo |
+| Usuários e perfis (com ativação/desativação) | Completo |
+| Painel e relatórios por perfil | Completo |
+| Recuperação de senha | Completo (link no log; sem envio de e-mail) |
+| Frontend Angular — 13 telas | Completo |
+| Testes | 39 no backend · 26 no frontend |
+| CI/CD (GitHub Actions) | 2 pipelines, ambos com testes |
+| Docker Compose (banco + API + web) | Completo |
+
+### Limitações conhecidas
+
+| Item | Situação |
+|---|---|
+| Envio de e-mail | Não há servidor SMTP configurado. O link de redefinição vai para o log da aplicação e, em desenvolvimento, também na resposta (`app.reset-senha.expor-link`). Desligue em produção. |
+| Departamentos | A entidade e a massa de dados existem e os usuários são vinculados a um departamento, mas não há tela de manutenção nem roteamento de chamados por departamento. |
+| Armazenamento de anexos | Os arquivos ficam em disco local (volume `uploads_data`). Para vários nós, trocar por um storage compartilhado (S3 ou equivalente). |
+| Notificações | Não há aviso por e-mail ou push quando o chamado muda de status; o acompanhamento é pelo painel. |
+| `JWT_SECRET` padrão | O valor de desenvolvimento está versionado. Defina a variável de ambiente em qualquer ambiente real. |
