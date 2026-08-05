@@ -14,8 +14,8 @@
       </div>
     </header>
 
-    @if (erro) {
-      <div class="alert-error" role="alert">{{ erro }}</div>
+    @if (erro()) {
+      <div class="alert-error" role="alert">{{ erro() }}</div>
     }
 
     <form class="form-card" [formGroup]="form" (ngSubmit)="submit()">
@@ -52,7 +52,7 @@
             [class.invalido]="hasError('categoria')"
           >
             <option [ngValue]="null">Selecione...</option>
-            @for (c of categorias; track c.codigo) {
+            @for (c of categorias(); track c.codigo) {
               <option [ngValue]="c.codigo">{{ c.rotulo }}</option>
             }
           </select>
@@ -66,7 +66,7 @@
             Prioridade <span class="required">*</span>
           </label>
           <select id="prioridade" class="form-control" formControlName="prioridade">
-            @for (p of prioridades; track p.codigo) {
+            @for (p of prioridades(); track p.codigo) {
               <option [ngValue]="p.codigo">{{ p.rotulo }}</option>
             }
           </select>
@@ -115,7 +115,7 @@
               [class.invalido]="hasError('clienteId')"
             >
               <option [ngValue]="null">Selecione...</option>
-              @for (c of clientes; track c.id) {
+              @for (c of clientes(); track c.id) {
                 <option [ngValue]="c.id">{{ c.nome }} — {{ c.email }}</option>
               }
             </select>
@@ -130,7 +130,7 @@
             </label>
             <select id="tecnicoId" class="form-control" formControlName="tecnicoId">
               <option [ngValue]="null">Deixar na fila</option>
-              @for (t of tecnicos; track t.id) {
+              @for (t of tecnicos(); track t.id) {
                 <option [ngValue]="t.id">{{ t.nome }}</option>
               }
             </select>
@@ -140,8 +140,8 @@
 
       <div class="form-actions">
         <button type="button" class="btn-secondary" (click)="cancelar()">Cancelar</button>
-        <button type="submit" class="btn-primary" [disabled]="loading">
-          @if (loading) { Abrindo... } @else { Abrir chamado }
+        <button type="submit" class="btn-primary" [disabled]="loading()">
+          @if (loading()) { Abrindo... } @else { Abrir chamado }
         </button>
       </div>
     </form>

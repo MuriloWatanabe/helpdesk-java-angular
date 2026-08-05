@@ -11,11 +11,11 @@
       uma nova senha. O link vale por 30 minutos.
     </p>
 
-    @if (mensagem) {
-      <div class="msg-sucesso" role="status">{{ mensagem }}</div>
+    @if (mensagem()) {
+      <div class="msg-sucesso" role="status">{{ mensagem() }}</div>
     }
 
-    @if (linkGerado) {
+    @if (linkGerado()) {
       <div class="msg-link">
         <strong>Ambiente de demonstração</strong>
         Como não há envio de e-mail configurado, use este link:
@@ -23,8 +23,8 @@
       </div>
     }
 
-    @if (erro) {
-      <div class="msg-erro" role="alert">{{ erro }}</div>
+    @if (erro()) {
+      <div class="msg-erro" role="alert">{{ erro() }}</div>
     }
 
     <form [formGroup]="form" (ngSubmit)="enviar()">
@@ -46,8 +46,8 @@
         }
       </div>
 
-      <button type="submit" class="btn-enviar" [disabled]="enviando">
-        @if (enviando) { Enviando... } @else { Enviar instruções }
+      <button type="submit" class="btn-enviar" [disabled]="enviando()">
+        @if (enviando()) { Enviando... } @else { Enviar instruções }
       </button>
     </form>
 

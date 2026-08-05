@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -26,10 +26,11 @@ export class EsqueciSenhaComponent {
     email: ['', [Validators.required, Validators.email]],
   });
 
-  enviando = false;
-  mensagem = '';
-  erro = '';
-  linkGerado = '';
+  // Signals: o app é zoneless — o retorno do HTTP precisa disparar re-render.
+  enviando = signal(false);
+  mensagem = signal('');
+  erro = signal('');
+  linkGerado = signal('');
 
   get emailControl() {
     return this.form.get('email');
@@ -41,20 +42,20 @@ export class EsqueciSenhaComponent {
       return;
     }
 
-    this.enviando = true;
-    this.mensagem = '';
-    this.erro = '';
-    this.linkGerado = '';
+    this.enviando.set(true);
+    this.mensagem.set('');
+    this.erro.set('');
+    this.linkGerado.set('');
 
     this.authService.recuperarSenha(this.form.value.email).subscribe({
       next: (resposta) => {
-        this.enviando = false;
-        this.mensagem = resposta.mensagem;
-        this.linkGerado = resposta.detalhe ?? '';
+        this.enviando.set(false);
+        this.mensagem.set(resposta.mensagem);
+        this.linkGerado.set(resposta.detalhe ?? '');
       },
       error: (err) => {
-        this.enviando = false;
-        this.erro = mensagemDoErro(err, 'Não foi possível processar a solicitação.');
+        this.enviando.set(false);
+        this.erro.set(mensagemDoErro(err, 'Não foi possível processar a solicitação.'));
       },
     });
   }
@@ -62,10 +63,10 @@ export class EsqueciSenhaComponent {
   /** Extrai o caminho relativo para navegar sem recarregar a aplicação. */
   get caminhoDoLink(): string {
     try {
-      const url = new URL(this.linkGerado);
+      const url = new URL(this.linkGerado());
       return url.pathname + url.search;
     } catch {
-      return this.linkGerado;
+      return this.linkGerado();
     }
   }
 }

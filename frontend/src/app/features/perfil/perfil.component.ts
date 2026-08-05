@@ -29,20 +29,21 @@ export class PerfilComponent implements OnInit {
   usuario = signal<Usuario | null>(null);
   carregando = signal(true);
 
-  // Dados pessoais
+  // Dados pessoais (os campos de texto são ngModel — atualizados pelo usuário;
+  // os estados de salvamento são signals porque mudam no retorno do HTTP)
   editNome = '';
   editEmail = '';
   editTelefone = '';
   editCargo = '';
-  salvandoDados = false;
-  erroDados = '';
+  salvandoDados = signal(false);
+  erroDados = signal('');
 
   // Troca de senha
   senhaAtual = '';
   novaSenha = '';
   confirmSenha = '';
-  salvandoSenha = false;
-  erroSenha = '';
+  salvandoSenha = signal(false);
+  erroSenha = signal('');
 
   get iniciais(): string {
     return this.authService.getIniciais(this.usuario()?.nome);
@@ -77,19 +78,19 @@ export class PerfilComponent implements OnInit {
   }
 
   salvarDados(): void {
-    if (this.salvandoDados) return;
-    this.erroDados = '';
+    if (this.salvandoDados()) return;
+    this.erroDados.set('');
 
     if (!this.editNome.trim() || !this.editEmail.trim()) {
-      this.erroDados = 'Nome e e-mail são obrigatórios.';
+      this.erroDados.set('Nome e e-mail são obrigatórios.');
       return;
     }
     if (this.editNome.trim().length < 3) {
-      this.erroDados = 'O nome deve ter ao menos 3 caracteres.';
+      this.erroDados.set('O nome deve ter ao menos 3 caracteres.');
       return;
     }
 
-    this.salvandoDados = true;
+    this.salvandoDados.set(true);
     this.authService
       .atualizarMeuPerfil({
         nome: this.editNome.trim(),
@@ -100,34 +101,34 @@ export class PerfilComponent implements OnInit {
       .subscribe({
         next: (atualizado) => {
           this.usuario.set(atualizado);
-          this.salvandoDados = false;
+          this.salvandoDados.set(false);
           this.toast.sucesso('Dados atualizados com sucesso.');
         },
         error: (err) => {
-          this.erroDados = mensagemDoErro(err, 'Não foi possível salvar. Tente novamente.');
-          this.salvandoDados = false;
+          this.erroDados.set(mensagemDoErro(err, 'Não foi possível salvar. Tente novamente.'));
+          this.salvandoDados.set(false);
         },
       });
   }
 
   salvarSenha(): void {
-    if (this.salvandoSenha) return;
-    this.erroSenha = '';
+    if (this.salvandoSenha()) return;
+    this.erroSenha.set('');
 
     if (!this.senhaAtual) {
-      this.erroSenha = 'Informe a senha atual.';
+      this.erroSenha.set('Informe a senha atual.');
       return;
     }
     if (this.novaSenha.length < 6) {
-      this.erroSenha = 'A nova senha deve ter no mínimo 6 caracteres.';
+      this.erroSenha.set('A nova senha deve ter no mínimo 6 caracteres.');
       return;
     }
     if (this.novaSenha !== this.confirmSenha) {
-      this.erroSenha = 'As senhas não coincidem.';
+      this.erroSenha.set('As senhas não coincidem.');
       return;
     }
 
-    this.salvandoSenha = true;
+    this.salvandoSenha.set(true);
     this.authService
       .alterarSenha({ senhaAtual: this.senhaAtual, novaSenha: this.novaSenha })
       .subscribe({
@@ -135,12 +136,12 @@ export class PerfilComponent implements OnInit {
           this.senhaAtual = '';
           this.novaSenha = '';
           this.confirmSenha = '';
-          this.salvandoSenha = false;
+          this.salvandoSenha.set(false);
           this.toast.sucesso('Senha alterada com sucesso.');
         },
         error: (err) => {
-          this.erroSenha = mensagemDoErro(err, 'Não foi possível alterar a senha.');
-          this.salvandoSenha = false;
+          this.erroSenha.set(mensagemDoErro(err, 'Não foi possível alterar a senha.'));
+          this.salvandoSenha.set(false);
         },
       });
   }

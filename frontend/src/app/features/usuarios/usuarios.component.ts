@@ -50,10 +50,11 @@ export class UsuariosComponent implements OnInit {
   filtroPerfil: number | null = null;
   filtroAtivo: boolean | null = null;
 
-  // Formulário
-  showForm = false;
-  formLoading = false;
-  formErro = '';
+  // Formulário — signals porque o app é zoneless e o estado muda em
+  // callbacks de HTTP (o modal precisa fechar/atualizar quando a resposta chega).
+  showForm = signal(false);
+  formLoading = signal(false);
+  formErro = signal('');
   editingId: number | null = null;
   form!: FormGroup;
 
@@ -138,14 +139,14 @@ export class UsuariosComponent implements OnInit {
   abrirForm(usuario?: Usuario): void {
     this.editingId = usuario?.id ?? null;
     this.iniciarForm(usuario);
-    this.formErro = '';
-    this.showForm = true;
+    this.formErro.set('');
+    this.showForm.set(true);
   }
 
   fecharForm(): void {
-    this.showForm = false;
+    this.showForm.set(false);
     this.editingId = null;
-    this.formErro = '';
+    this.formErro.set('');
   }
 
   salvar(): void {
@@ -156,12 +157,12 @@ export class UsuariosComponent implements OnInit {
       return;
     }
     if (perfis.length === 0) {
-      this.formErro = 'Selecione ao menos um perfil de acesso.';
+      this.formErro.set('Selecione ao menos um perfil de acesso.');
       return;
     }
 
-    this.formLoading = true;
-    this.formErro = '';
+    this.formLoading.set(true);
+    this.formErro.set('');
 
     const { nome, email, senha, telefone, cargo, ativo } = this.form.value;
     const payload = {
@@ -181,13 +182,13 @@ export class UsuariosComponent implements OnInit {
     requisicao.subscribe({
       next: () => {
         this.toast.sucesso(this.editingId ? 'Usuário atualizado.' : 'Usuário criado.');
-        this.formLoading = false;
+        this.formLoading.set(false);
         this.fecharForm();
         this.carregarUsuarios();
       },
       error: (err) => {
-        this.formErro = mensagemDoErro(err, 'Não foi possível salvar o usuário.');
-        this.formLoading = false;
+        this.formErro.set(mensagemDoErro(err, 'Não foi possível salvar o usuário.'));
+        this.formLoading.set(false);
       },
     });
   }

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { SidebarComponent } from '../../../layout/sidebar/sidebar.component';
@@ -25,13 +25,16 @@ export class NovoChamadoComponent implements OnInit {
   private readonly router = inject(Router);
 
   form!: FormGroup;
-  loading = false;
-  erro = '';
 
-  clientes: Usuario[] = [];
-  tecnicos: Usuario[] = [];
-  prioridades: Opcao[] = [];
-  categorias: Opcao[] = [];
+  // Signals: o app é zoneless — estado alterado em callback assíncrono
+  // precisa ser signal para a tela re-renderizar.
+  loading = signal(false);
+  erro = signal('');
+
+  clientes = signal<Usuario[]>([]);
+  tecnicos = signal<Usuario[]>([]);
+  prioridades = signal<Opcao[]>([]);
+  categorias = signal<Opcao[]>([]);
 
   readonly isAtendente = this.authService.isAtendente;
 
@@ -50,8 +53,8 @@ export class NovoChamadoComponent implements OnInit {
 
     this.usuarioService.metadados().subscribe({
       next: (meta) => {
-        this.prioridades = meta.prioridades;
-        this.categorias = meta.categorias;
+        this.prioridades.set(meta.prioridades);
+        this.categorias.set(meta.categorias);
       },
     });
 
@@ -62,8 +65,8 @@ export class NovoChamadoComponent implements OnInit {
 
       this.usuarioService.listar({ ativo: true }).subscribe({
         next: (usuarios) => {
-          this.clientes = usuarios.filter((u) => u.perfis.includes('ROLE_CLIENTE'));
-          this.tecnicos = usuarios.filter((u) => u.perfis.includes('ROLE_TECNICO'));
+          this.clientes.set(usuarios.filter((u) => u.perfis.includes('ROLE_CLIENTE')));
+          this.tecnicos.set(usuarios.filter((u) => u.perfis.includes('ROLE_TECNICO')));
         },
       });
     }
@@ -72,7 +75,7 @@ export class NovoChamadoComponent implements OnInit {
   /** Prazo prometido para a prioridade escolhida, exibido antes de enviar. */
   get slaEscolhido(): string {
     const codigo = Number(this.form?.get('prioridade')?.value);
-    const opcao = this.prioridades.find((p) => p.codigo === codigo);
+    const opcao = this.prioridades().find((p) => p.codigo === codigo);
     if (!opcao?.horasSla) return '';
     return opcao.horasSla >= 24
       ? `Prazo de atendimento: ${opcao.horasSla / 24} dia(s)`
@@ -85,8 +88,8 @@ export class NovoChamadoComponent implements OnInit {
       return;
     }
 
-    this.loading = true;
-    this.erro = '';
+    this.loading.set(true);
+    this.erro.set('');
 
     const { titulo, observacoes, prioridade, categoria, clienteId, tecnicoId } = this.form.value;
 
@@ -106,8 +109,8 @@ export class NovoChamadoComponent implements OnInit {
           this.router.navigate(['/chamados', criado.id]);
         },
         error: (err) => {
-          this.erro = mensagemDoErro(err, 'Não foi possível abrir o chamado. Tente novamente.');
-          this.loading = false;
+          this.erro.set(mensagemDoErro(err, 'Não foi possível abrir o chamado. Tente novamente.'));
+          this.loading.set(false);
         },
       });
   }

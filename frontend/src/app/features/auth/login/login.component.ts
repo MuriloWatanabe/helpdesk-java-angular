@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -18,9 +18,10 @@ export class LoginComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
 
   loginForm: FormGroup;
-  errorMessage = '';
-  avisoSessao = '';
-  isLoading = false;
+  // Signals: o app é zoneless — o retorno do HTTP precisa disparar re-render.
+  errorMessage = signal('');
+  avisoSessao = signal('');
+  isLoading = signal(false);
   mostrarSenha = false;
 
   /** Destino original quando o usuário caiu no login por um guard. */
@@ -41,7 +42,7 @@ export class LoginComponent implements OnInit {
       this.retorno = retorno;
     }
     if (params.get('expirado') === '1') {
-      this.avisoSessao = 'Sua sessão expirou. Entre novamente para continuar.';
+      this.avisoSessao.set('Sua sessão expirou. Entre novamente para continuar.');
     }
   }
 
@@ -51,25 +52,25 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    this.isLoading = true;
-    this.errorMessage = '';
-    this.avisoSessao = '';
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.avisoSessao.set('');
 
     const { email, senha } = this.loginForm.value;
 
     this.authService.login(email, senha).subscribe({
       next: () => {
-        this.isLoading = false;
+        this.isLoading.set(false);
         this.router.navigateByUrl(this.retorno);
       },
       error: (err) => {
-        this.isLoading = false;
+        this.isLoading.set(false);
         if (err.status === 0) {
-          this.errorMessage =
-            'Não foi possível conectar ao servidor. Verifique se a API está no ar.';
+          this.errorMessage.set(
+            'Não foi possível conectar ao servidor. Verifique se a API está no ar.');
         } else {
           // O backend já devolve mensagens prontas (credenciais, usuário inativo).
-          this.errorMessage = mensagemDoErro(err, 'E-mail ou senha inválidos.');
+          this.errorMessage.set(mensagemDoErro(err, 'E-mail ou senha inválidos.'));
         }
       },
     });

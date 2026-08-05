@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -41,13 +41,14 @@ export class RedefinirSenhaComponent implements OnInit {
   );
 
   token = '';
-  salvando = false;
-  erro = '';
+  // Signals: o app é zoneless — o retorno do HTTP precisa disparar re-render.
+  salvando = signal(false);
+  erro = signal('');
 
   ngOnInit(): void {
     this.token = this.route.snapshot.queryParamMap.get('token') ?? '';
     if (!this.token) {
-      this.erro = 'Link inválido. Solicite uma nova redefinição de senha.';
+      this.erro.set('Link inválido. Solicite uma nova redefinição de senha.');
     }
   }
 
@@ -65,18 +66,18 @@ export class RedefinirSenhaComponent implements OnInit {
       return;
     }
 
-    this.salvando = true;
-    this.erro = '';
+    this.salvando.set(true);
+    this.erro.set('');
 
     this.authService.redefinirSenha(this.token, this.form.value.novaSenha).subscribe({
       next: () => {
-        this.salvando = false;
+        this.salvando.set(false);
         this.toast.sucesso('Senha redefinida. Faça login com a nova senha.');
         this.router.navigate(['/login']);
       },
       error: (err) => {
-        this.salvando = false;
-        this.erro = mensagemDoErro(err, 'Não foi possível redefinir a senha.');
+        this.salvando.set(false);
+        this.erro.set(mensagemDoErro(err, 'Não foi possível redefinir a senha.'));
       },
     });
   }

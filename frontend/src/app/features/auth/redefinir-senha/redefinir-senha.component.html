@@ -11,8 +11,8 @@
       para entrar no sistema.
     </p>
 
-    @if (erro) {
-      <div class="msg-erro" role="alert">{{ erro }}</div>
+    @if (erro()) {
+      <div class="msg-erro" role="alert">{{ erro() }}</div>
     }
 
     <form [formGroup]="form" (ngSubmit)="salvar()">
@@ -49,8 +49,8 @@
         }
       </div>
 
-      <button type="submit" class="btn-enviar" [disabled]="salvando || !token">
-        @if (salvando) { Salvando... } @else { Salvar nova senha }
+      <button type="submit" class="btn-enviar" [disabled]="salvando() || !token">
+        @if (salvando()) { Salvando... } @else { Salvar nova senha }
       </button>
     </form>
 

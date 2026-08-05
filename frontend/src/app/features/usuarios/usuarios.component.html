@@ -143,7 +143,7 @@
     }
 
     <!-- Modal de cadastro/edição -->
-    @if (showForm) {
+    @if (showForm()) {
       <div class="modal-overlay">
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-usuario">
           <div class="modal-header">
@@ -153,8 +153,8 @@
             <button class="modal-close" type="button" aria-label="Fechar" (click)="fecharForm()">×</button>
           </div>
 
-          @if (formErro) {
-            <div class="alert-error" role="alert">{{ formErro }}</div>
+          @if (formErro()) {
+            <div class="alert-error" role="alert">{{ formErro() }}</div>
           }
 
           <form [formGroup]="form" (ngSubmit)="salvar()">
@@ -262,8 +262,8 @@
 
             <div class="modal-actions">
               <button type="button" class="btn-secondary" (click)="fecharForm()">Cancelar</button>
-              <button type="submit" class="btn-primary" [disabled]="formLoading">
-                @if (formLoading) { Salvando... } @else { Salvar }
+              <button type="submit" class="btn-primary" [disabled]="formLoading()">
+                @if (formLoading()) { Salvando... } @else { Salvar }
               </button>
             </div>
           </form>

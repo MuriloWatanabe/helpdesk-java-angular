@@ -88,16 +88,16 @@
         }
       </div>
 
-      <button type="submit" class="btn-primary" [disabled]="isLoading">
-        @if (isLoading) { Cadastrando... } @else { Cadastrar }
+      <button type="submit" class="btn-primary" [disabled]="isLoading()">
+        @if (isLoading()) { Cadastrando... } @else { Cadastrar }
       </button>
 
-      @if (errorMessage) {
-        <div class="error-msg">{{ errorMessage }}</div>
+      @if (errorMessage()) {
+        <div class="error-msg">{{ errorMessage() }}</div>
       }
 
-      @if (successMessage) {
-        <div class="success-msg">{{ successMessage }}</div>
+      @if (successMessage()) {
+        <div class="success-msg">{{ successMessage() }}</div>
       }
     </form>
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { SidebarComponent } from '../../../layout/sidebar/sidebar.component';
@@ -29,16 +29,18 @@ export class ChamadoEditComponent implements OnInit {
   private readonly router = inject(Router);
 
   form!: FormGroup;
-  chamado: Chamado | null = null;
 
-  carregando = true;
-  salvando = false;
-  erro = '';
+  // Signals: o app é zoneless, então estado alterado em callback assíncrono
+  // precisa ser signal para a tela re-renderizar.
+  chamado = signal<Chamado | null>(null);
+  carregando = signal(true);
+  salvando = signal(false);
+  erro = signal('');
 
-  clientes: Usuario[] = [];
-  tecnicos: Usuario[] = [];
-  prioridades: Opcao[] = [];
-  categorias: Opcao[] = [];
+  clientes = signal<Usuario[]>([]);
+  tecnicos = signal<Usuario[]>([]);
+  prioridades = signal<Opcao[]>([]);
+  categorias = signal<Opcao[]>([]);
 
   private chamadoId = 0;
 
@@ -59,15 +61,15 @@ export class ChamadoEditComponent implements OnInit {
 
     this.usuarioService.metadados().subscribe({
       next: (meta) => {
-        this.prioridades = meta.prioridades;
-        this.categorias = meta.categorias;
+        this.prioridades.set(meta.prioridades);
+        this.categorias.set(meta.categorias);
       },
     });
 
     this.usuarioService.listar({ ativo: true }).subscribe({
       next: (usuarios) => {
-        this.clientes = usuarios.filter((u) => u.perfis.includes('ROLE_CLIENTE'));
-        this.tecnicos = usuarios.filter((u) => u.perfis.includes('ROLE_TECNICO'));
+        this.clientes.set(usuarios.filter((u) => u.perfis.includes('ROLE_CLIENTE')));
+        this.tecnicos.set(usuarios.filter((u) => u.perfis.includes('ROLE_TECNICO')));
       },
     });
 
@@ -77,7 +79,7 @@ export class ChamadoEditComponent implements OnInit {
   private carregar(): void {
     this.chamadoService.buscarPorId(this.chamadoId).subscribe({
       next: (dados) => {
-        this.chamado = dados;
+        this.chamado.set(dados);
         this.form.patchValue({
           titulo: dados.titulo,
           observacoes: dados.observacoes,
@@ -86,11 +88,11 @@ export class ChamadoEditComponent implements OnInit {
           clienteId: dados.cliente?.id ?? null,
           tecnicoId: dados.tecnico?.id ?? null,
         });
-        this.carregando = false;
+        this.carregando.set(false);
       },
       error: (err) => {
-        this.erro = mensagemDoErro(err, 'Não foi possível carregar o chamado.');
-        this.carregando = false;
+        this.erro.set(mensagemDoErro(err, 'Não foi possível carregar o chamado.'));
+        this.carregando.set(false);
       },
     });
   }
@@ -101,8 +103,8 @@ export class ChamadoEditComponent implements OnInit {
       return;
     }
 
-    this.salvando = true;
-    this.erro = '';
+    this.salvando.set(true);
+    this.erro.set('');
 
     const { titulo, observacoes, prioridade, categoria, clienteId, tecnicoId } = this.form.value;
 
@@ -121,8 +123,8 @@ export class ChamadoEditComponent implements OnInit {
           this.router.navigate(['/chamados', this.chamadoId]);
         },
         error: (err) => {
-          this.erro = mensagemDoErro(err, 'Não foi possível salvar as alterações.');
-          this.salvando = false;
+          this.erro.set(mensagemDoErro(err, 'Não foi possível salvar as alterações.'));
+          this.salvando.set(false);
         },
       });
   }
@@ -138,9 +140,10 @@ export class ChamadoEditComponent implements OnInit {
 
   /** Avisa que mudar a prioridade recalcula o prazo prometido ao cliente. */
   get avisoPrazo(): string {
+    const atual = this.chamado();
     const codigo = Number(this.form?.get('prioridade')?.value);
-    if (!this.chamado || codigo === this.chamado.prioridade) return '';
-    const opcao = this.prioridades.find((p) => p.codigo === codigo);
+    if (!atual || codigo === atual.prioridade) return '';
+    const opcao = this.prioridades().find((p) => p.codigo === codigo);
     if (!opcao?.horasSla) return '';
     return `O prazo será recalculado para ${opcao.horasSla}h a partir da abertura.`;
   }

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -18,9 +18,10 @@ function senhasIguais(group: AbstractControl): ValidationErrors | null {
 })
 export class RegisterComponent {
   form: FormGroup;
-  isLoading = false;
-  errorMessage = '';
-  successMessage = '';
+  // Signals: o app é zoneless — o retorno do HTTP precisa disparar re-render.
+  isLoading = signal(false);
+  errorMessage = signal('');
+  successMessage = signal('');
 
   constructor(
     private fb: FormBuilder,
@@ -42,26 +43,26 @@ export class RegisterComponent {
       return;
     }
 
-    this.isLoading = true;
-    this.errorMessage = '';
-    this.successMessage = '';
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.successMessage.set('');
 
     const { nome, email, senha, telefone } = this.form.value;
 
     this.authService.register(nome, email, senha, telefone || undefined).subscribe({
       next: () => {
-        this.isLoading = false;
-        this.successMessage = 'Cadastro realizado! Redirecionando para o login...';
+        this.isLoading.set(false);
+        this.successMessage.set('Cadastro realizado! Redirecionando para o login...');
         setTimeout(() => this.router.navigate(['/login']), 1800);
       },
       error: (err) => {
-        this.isLoading = false;
+        this.isLoading.set(false);
         if (err.status === 409 || err.error?.message?.includes('já cadastrado')) {
-          this.errorMessage = 'Este e-mail já está cadastrado.';
+          this.errorMessage.set('Este e-mail já está cadastrado.');
         } else if (err.status === 0) {
-          this.errorMessage = 'Não foi possível conectar ao servidor.';
+          this.errorMessage.set('Não foi possível conectar ao servidor.');
         } else {
-          this.errorMessage = err.error?.message || 'Ocorreu um erro. Tente novamente.';
+          this.errorMessage.set(err.error?.message || 'Ocorreu um erro. Tente novamente.');
         }
       }
     });

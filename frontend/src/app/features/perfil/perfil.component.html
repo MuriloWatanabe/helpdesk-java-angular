@@ -54,8 +54,8 @@
           <section class="card">
             <h2 class="card-title">Dados pessoais</h2>
 
-            @if (erroDados) {
-              <div class="alert-error" role="alert">{{ erroDados }}</div>
+            @if (erroDados()) {
+              <div class="alert-error" role="alert">{{ erroDados() }}</div>
             }
 
             <div class="form-group">
@@ -92,16 +92,16 @@
               </div>
             </div>
 
-            <button class="btn-salvar" type="button" [disabled]="salvandoDados" (click)="salvarDados()">
-              @if (salvandoDados) { Salvando... } @else { Salvar alterações }
+            <button class="btn-salvar" type="button" [disabled]="salvandoDados()" (click)="salvarDados()">
+              @if (salvandoDados()) { Salvando... } @else { Salvar alterações }
             </button>
           </section>
 
           <section class="card">
             <h2 class="card-title">Alterar senha</h2>
 
-            @if (erroSenha) {
-              <div class="alert-error" role="alert">{{ erroSenha }}</div>
+            @if (erroSenha()) {
+              <div class="alert-error" role="alert">{{ erroSenha() }}</div>
             }
 
             <div class="form-group">
@@ -141,8 +141,8 @@
               </div>
             </div>
 
-            <button class="btn-salvar" type="button" [disabled]="salvandoSenha" (click)="salvarSenha()">
-              @if (salvandoSenha) { Alterando... } @else { Alterar senha }
+            <button class="btn-salvar" type="button" [disabled]="salvandoSenha()" (click)="salvarSenha()">
+              @if (salvandoSenha()) { Alterando... } @else { Alterar senha }
             </button>
           </section>
         </div>

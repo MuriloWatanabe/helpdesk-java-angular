@@ -4,28 +4,28 @@
   <main class="main-content">
     <header class="page-header">
       <div class="header-left">
-        <a [routerLink]="['/chamados', chamado?.id]" class="btn-back">← Voltar</a>
+        <a [routerLink]="['/chamados', chamado()?.id]" class="btn-back">← Voltar</a>
         <div>
           <h1 class="page-title">Editar chamado</h1>
-          @if (chamado) {
-            <p class="page-subtitle">{{ chamado.numero }} · aberto por {{ chamado.cliente.nome }}</p>
+          @if (chamado(); as c) {
+            <p class="page-subtitle">{{ c.numero }} · aberto por {{ c.cliente.nome }}</p>
           }
         </div>
       </div>
     </header>
 
-    @if (carregando) {
+    @if (carregando()) {
       <div class="loading-state">
         <div class="spinner"></div>
         <p>Carregando chamado...</p>
       </div>
     }
 
-    @if (erro) {
-      <div class="alert-error" role="alert">{{ erro }}</div>
+    @if (erro()) {
+      <div class="alert-error" role="alert">{{ erro() }}</div>
     }
 
-    @if (!carregando && chamado) {
+    @if (!carregando() && chamado()) {
       <form class="form-card" [formGroup]="form" (ngSubmit)="salvar()">
         <div class="form-group">
           <label class="form-label" for="titulo">Assunto <span class="required">*</span></label>
@@ -52,7 +52,7 @@
               [class.invalido]="hasError('categoria')"
             >
               <option [ngValue]="null">Selecione...</option>
-              @for (c of categorias; track c.codigo) {
+              @for (c of categorias(); track c.codigo) {
                 <option [ngValue]="c.codigo">{{ c.rotulo }}</option>
               }
             </select>
@@ -64,7 +64,7 @@
           <div class="form-group">
             <label class="form-label" for="prioridade">Prioridade <span class="required">*</span></label>
             <select id="prioridade" class="form-control" formControlName="prioridade">
-              @for (p of prioridades; track p.codigo) {
+              @for (p of prioridades(); track p.codigo) {
                 <option [ngValue]="p.codigo">{{ p.rotulo }}</option>
               }
             </select>
@@ -100,7 +100,7 @@
               formControlName="clienteId"
               [class.invalido]="hasError('clienteId')"
             >
-              @for (c of clientes; track c.id) {
+              @for (c of clientes(); track c.id) {
                 <option [ngValue]="c.id">{{ c.nome }} — {{ c.email }}</option>
               }
             </select>
@@ -115,7 +115,7 @@
             </label>
             <select id="tecnicoId" class="form-control" formControlName="tecnicoId">
               <option [ngValue]="null">Deixar na fila</option>
-              @for (t of tecnicos; track t.id) {
+              @for (t of tecnicos(); track t.id) {
                 <option [ngValue]="t.id">{{ t.nome }}</option>
               }
             </select>
@@ -124,8 +124,8 @@
 
         <div class="form-actions">
           <button type="button" class="btn-secondary" (click)="cancelar()">Cancelar</button>
-          <button type="submit" class="btn-primary" [disabled]="salvando">
-            @if (salvando) { Salvando... } @else { Salvar alterações }
+          <button type="submit" class="btn-primary" [disabled]="salvando()">
+            @if (salvando()) { Salvando... } @else { Salvar alterações }
           </button>
         </div>
       </form>

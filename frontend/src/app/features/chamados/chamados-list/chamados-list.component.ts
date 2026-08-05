@@ -51,10 +51,12 @@ export class ChamadosListComponent implements OnInit {
   soSlaVencido = false;
   soSemTecnico = false;
 
-  statusOpcoes: Opcao[] = [];
-  prioridadeOpcoes: Opcao[] = [];
-  categoriaOpcoes: Opcao[] = [];
-  tecnicos: Usuario[] = [];
+  // Signals: o app é zoneless — listas carregadas por HTTP precisam ser
+  // signals para as abas e selects aparecerem quando a resposta chegar.
+  statusOpcoes = signal<Opcao[]>([]);
+  prioridadeOpcoes = signal<Opcao[]>([]);
+  categoriaOpcoes = signal<Opcao[]>([]);
+  tecnicos = signal<Usuario[]>([]);
 
   modo: Modo = 'todos';
   mostrarFiltrosAvancados = false;
@@ -108,16 +110,16 @@ export class ChamadosListComponent implements OnInit {
   private carregarOpcoes(): void {
     this.usuarioService.metadados().subscribe({
       next: (meta) => {
-        this.statusOpcoes = meta.status;
-        this.prioridadeOpcoes = meta.prioridades;
-        this.categoriaOpcoes = meta.categorias;
+        this.statusOpcoes.set(meta.status);
+        this.prioridadeOpcoes.set(meta.prioridades);
+        this.categoriaOpcoes.set(meta.categorias);
       },
     });
 
     // A lista de técnicos só está disponível para quem atende.
     if (this.isAtendente()) {
       this.usuarioService.listar({ perfil: 2, ativo: true }).subscribe({
-        next: (lista) => (this.tecnicos = lista),
+        next: (lista) => this.tecnicos.set(lista),
       });
     }
   }

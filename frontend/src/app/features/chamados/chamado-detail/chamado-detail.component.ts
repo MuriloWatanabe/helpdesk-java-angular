@@ -74,9 +74,9 @@ export class ChamadoDetailComponent implements OnInit {
 
   // Ações
   processando = signal(false);
-  tecnicos: Usuario[] = [];
+  tecnicos = signal<Usuario[]>([]);
   tecnicoSelecionadoId: number | null = null;
-  statusOpcoes: Opcao[] = [];
+  statusOpcoes = signal<Opcao[]>([]);
 
   // Avaliação
   readonly aspectosDisponiveis = ASPECTOS_AVALIACAO;
@@ -86,7 +86,7 @@ export class ChamadoDetailComponent implements OnInit {
   enviandoAvaliacao = signal(false);
 
   abaLateral: 'acoes' | 'historico' = 'acoes';
-  linkCopiado = false;
+  linkCopiado = signal(false);
 
   readonly classeStatus = classeStatus;
   readonly classePrioridade = classePrioridade;
@@ -105,7 +105,7 @@ export class ChamadoDetailComponent implements OnInit {
       ? transicoesPermitidas(atual.status)
       : transicoesDoCliente(atual.status);
 
-    return this.statusOpcoes.filter((o) => permitidas.includes(o.codigo));
+    return this.statusOpcoes().filter((o) => permitidas.includes(o.codigo));
   });
 
   readonly ehMeuChamado = computed(() => this.chamado()?.cliente?.id === this.meuId);
@@ -130,12 +130,12 @@ export class ChamadoDetailComponent implements OnInit {
     this.carregarChamado(id);
 
     this.usuarioService.metadados().subscribe({
-      next: (meta) => (this.statusOpcoes = meta.status),
+      next: (meta) => this.statusOpcoes.set(meta.status),
     });
 
     if (this.isAtendente()) {
       this.usuarioService.listar({ perfil: 2, ativo: true }).subscribe({
-        next: (lista) => (this.tecnicos = lista),
+        next: (lista) => this.tecnicos.set(lista),
       });
     }
   }
@@ -439,8 +439,8 @@ export class ChamadoDetailComponent implements OnInit {
     navigator.clipboard
       .writeText(globalThis.location.href)
       .then(() => {
-        this.linkCopiado = true;
-        setTimeout(() => (this.linkCopiado = false), 2000);
+        this.linkCopiado.set(true);
+        setTimeout(() => this.linkCopiado.set(false), 2000);
       })
       .catch(() => this.toast.erro('Não foi possível copiar o link.'));
   }

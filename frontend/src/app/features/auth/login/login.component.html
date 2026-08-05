@@ -11,8 +11,8 @@
     </div>
     <p class="subtitle">Sistema de chamados internos</p>
 
-    @if (avisoSessao) {
-      <div class="aviso-msg" role="status">{{ avisoSessao }}</div>
+    @if (avisoSessao()) {
+      <div class="aviso-msg" role="status">{{ avisoSessao() }}</div>
     }
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
@@ -66,12 +66,12 @@
         <a routerLink="/esqueci-senha">Esqueci minha senha</a>
       </div>
 
-      <button type="submit" class="btn-entrar" [disabled]="isLoading">
-        @if (isLoading) { Entrando... } @else { Entrar }
+      <button type="submit" class="btn-entrar" [disabled]="isLoading()">
+        @if (isLoading()) { Entrando... } @else { Entrar }
       </button>
 
-      @if (errorMessage) {
-        <div class="error-msg" role="alert">{{ errorMessage }}</div>
+      @if (errorMessage()) {
+        <div class="error-msg" role="alert">{{ errorMessage() }}</div>
       }
     </form>
 

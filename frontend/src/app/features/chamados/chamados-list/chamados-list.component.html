@@ -28,7 +28,7 @@
           [class.active]="filtroStatus === null"
           (click)="filtrarStatus(null)"
         >Todos</button>
-        @for (opt of statusOpcoes; track opt.codigo) {
+        @for (opt of statusOpcoes(); track opt.codigo) {
           <button
             class="tab-btn"
             [class.active]="filtroStatus === opt.codigo"
@@ -81,7 +81,7 @@
               (ngModelChange)="filtrar()"
             >
               <option [ngValue]="null">Todas</option>
-              @for (p of prioridadeOpcoes; track p.codigo) {
+              @for (p of prioridadeOpcoes(); track p.codigo) {
                 <option [ngValue]="p.codigo">{{ p.rotulo }}</option>
               }
             </select>
@@ -96,7 +96,7 @@
               (ngModelChange)="filtrar()"
             >
               <option [ngValue]="null">Todas</option>
-              @for (c of categoriaOpcoes; track c.codigo) {
+              @for (c of categoriaOpcoes(); track c.codigo) {
                 <option [ngValue]="c.codigo">{{ c.rotulo }}</option>
               }
             </select>
@@ -112,7 +112,7 @@
                 (ngModelChange)="filtrar()"
               >
                 <option [ngValue]="null">Todos</option>
-                @for (t of tecnicos; track t.id) {
+                @for (t of tecnicos(); track t.id) {
                   <option [ngValue]="t.id">{{ t.nome }}</option>
                 }
               </select>

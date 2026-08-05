@@ -38,8 +38,8 @@
           @if (isAdmin()) {
             <button class="btn-excluir" type="button" (click)="excluirChamado()">Excluir</button>
           }
-          <button class="btn-copiar" (click)="copiarLink()" [class.copiado]="linkCopiado">
-            {{ linkCopiado ? 'Link copiado!' : 'Compartilhar' }}
+          <button class="btn-copiar" (click)="copiarLink()" [class.copiado]="linkCopiado()">
+            {{ linkCopiado() ? 'Link copiado!' : 'Compartilhar' }}
           </button>
         </div>
       </header>
@@ -406,7 +406,7 @@
                     [disabled]="processando()"
                   >
                     <option [ngValue]="null">— Não atribuído —</option>
-                    @for (t of tecnicos; track t.id) {
+                    @for (t of tecnicos(); track t.id) {
                       <option [ngValue]="t.id">{{ t.nome }}</option>
                     }
                   </select>
