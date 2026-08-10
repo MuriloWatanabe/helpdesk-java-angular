@@ -138,7 +138,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ApiError> handleUploadSize(MaxUploadSizeExceededException ex,
                                                       HttpServletRequest request) {
-        return build(HttpStatus.PAYLOAD_TOO_LARGE,
+        // CONTENT_TOO_LARGE é o nome atual do 413 (RFC 9110);
+        // PAYLOAD_TOO_LARGE está depreciado e gerava aviso no build.
+        return build(HttpStatus.CONTENT_TOO_LARGE,
                 "Arquivo maior que o limite permitido (10 MB).", request);
     }
 

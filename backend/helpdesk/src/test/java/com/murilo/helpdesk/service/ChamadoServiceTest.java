@@ -368,7 +368,10 @@ class ChamadoServiceTest {
         assertThatThrownBy(() -> chamadoService.excluir(1L, EMAIL_TECNICO))
                 .isInstanceOf(OperacaoNaoPermitidaException.class);
 
-        verify(chamadoRepository, never()).delete(any());
+        // any(Chamado.class) e não any(): ChamadoRepository também estende
+        // JpaSpecificationExecutor, que passou a expor delete(DeleteSpecification),
+        // e sem o tipo o compilador não sabe qual sobrecarga verificar.
+        verify(chamadoRepository, never()).delete(any(Chamado.class));
     }
 
     @Test
@@ -381,7 +384,7 @@ class ChamadoServiceTest {
         assertThatThrownBy(() -> chamadoService.excluir(99L, EMAIL_ADMIN))
                 .isInstanceOf(ResourceNotFoundException.class);
 
-        verify(chamadoRepository, never()).delete(any());
+        verify(chamadoRepository, never()).delete(any(Chamado.class));
     }
 
     // ──────────────────────────────────────────────────────────
