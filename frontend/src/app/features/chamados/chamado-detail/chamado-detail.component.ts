@@ -108,6 +108,24 @@ export class ChamadoDetailComponent implements OnInit {
     return this.statusOpcoes().filter((o) => permitidas.includes(o.codigo));
   });
 
+  /** O chamado está atribuído a quem está vendo a tela. */
+  readonly souOResponsavel = computed(() => {
+    const tecnico = this.chamado()?.tecnico;
+    return !!tecnico && tecnico.id === this.meuId;
+  });
+
+  /**
+   * A lista da API traz apenas o perfil TÉCNICO. Quando um administrador assume
+   * o chamado ele não aparece entre as opções e o select ficava em branco, dando
+   * a impressão de que não havia responsável — por isso ele é incluído aqui.
+   */
+  readonly tecnicosDisponiveis = computed<{ id: number; nome: string }[]>(() => {
+    const lista: { id: number; nome: string }[] = this.tecnicos();
+    const atual = this.chamado()?.tecnico;
+    if (!atual || lista.some((t) => t.id === atual.id)) return lista;
+    return [...lista, { id: atual.id, nome: atual.nome }];
+  });
+
   readonly ehMeuChamado = computed(() => this.chamado()?.cliente?.id === this.meuId);
 
   /** A avaliação só faz sentido para o cliente do chamado já resolvido. */
@@ -348,6 +366,37 @@ export class ChamadoDetailComponent implements OnInit {
       error: (err) => {
         this.processando.set(false);
         this.toast.erroDaApi(err, 'Não foi possível assumir o chamado.');
+      },
+    });
+  }
+
+  /** Devolve o chamado para a fila, removendo o técnico responsável. */
+  async desassumir(): Promise<void> {
+    const atual = this.chamado();
+    if (!atual?.tecnico || this.processando()) return;
+
+    const proprio = this.souOResponsavel();
+    const confirmado = await this.confirmService.perguntar({
+      titulo: proprio ? 'Desassumir este chamado?' : `Liberar o chamado ${atual.numero}?`,
+      mensagem: proprio
+        ? 'O chamado volta para a fila, sem responsável, até que alguém o assuma.'
+        : `${atual.tecnico.nome} deixa de ser o responsável e o chamado volta para a fila.`,
+      confirmar: proprio ? 'Desassumir' : 'Liberar',
+    });
+    if (!confirmado) return;
+
+    this.processando.set(true);
+    this.chamadoService.atribuirTecnico(atual.id, null).subscribe({
+      next: (atualizado) => {
+        this.chamado.set(atualizado);
+        this.tecnicoSelecionadoId = null;
+        this.processando.set(false);
+        this.toast.sucesso('Chamado devolvido para a fila.');
+        this.carregarRelacionados(atualizado.id);
+      },
+      error: (err) => {
+        this.processando.set(false);
+        this.toast.erroDaApi(err, 'Não foi possível liberar o chamado.');
       },
     });
   }

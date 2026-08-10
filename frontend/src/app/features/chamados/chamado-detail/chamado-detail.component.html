@@ -346,11 +346,18 @@
               }
             </div>
 
-            @if (isAtendente() && !c.tecnico && !c.encerrado) {
-              <button class="btn-primary largura-total" type="button"
-                      [disabled]="processando()" (click)="assumir()">
-                Assumir este chamado
-              </button>
+            @if (isAtendente() && !c.encerrado) {
+              @if (!c.tecnico) {
+                <button class="btn-primary largura-total" type="button"
+                        [disabled]="processando()" (click)="assumir()">
+                  Assumir este chamado
+                </button>
+              } @else {
+                <button class="btn-secondary largura-total" type="button"
+                        [disabled]="processando()" (click)="desassumir()">
+                  {{ souOResponsavel() ? 'Desassumir chamado' : 'Liberar chamado' }}
+                </button>
+              }
             }
           </section>
 
@@ -406,7 +413,7 @@
                     [disabled]="processando()"
                   >
                     <option [ngValue]="null">— Não atribuído —</option>
-                    @for (t of tecnicos(); track t.id) {
+                    @for (t of tecnicosDisponiveis(); track t.id) {
                       <option [ngValue]="t.id">{{ t.nome }}</option>
                     }
                   </select>

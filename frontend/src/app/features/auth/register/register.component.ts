@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { LogoComponent } from '../../../shared/logo/logo.component';
 
 function senhasIguais(group: AbstractControl): ValidationErrors | null {
   const senha = group.get('senha')?.value;
@@ -12,7 +13,7 @@ function senhasIguais(group: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, LogoComponent],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss'
 })

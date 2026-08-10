@@ -23,19 +23,10 @@
 .auth-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
   margin-bottom: 4px;
 
-  .logo-icon {
-    font-size: 26px;
-    color: #1d4ed8;
-  }
-
-  .logo-text {
+  app-logo {
     font-size: 22px;
-    font-weight: 700;
-    color: #1e293b;
-    letter-spacing: -0.5px;
   }
 }
 

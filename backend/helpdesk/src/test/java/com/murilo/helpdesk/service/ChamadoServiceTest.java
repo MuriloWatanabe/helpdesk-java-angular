@@ -355,6 +355,39 @@ class ChamadoServiceTest {
                 .isInstanceOf(OperacaoNaoPermitidaException.class);
     }
 
+    @Test
+    @DisplayName("atribuirTecnico — admin desassume e o chamado volta para a fila")
+    void adminDesassumeChamado() {
+        Usuario admin = usuario(1L, EMAIL_ADMIN, Perfil.ADMIN);
+        Usuario cliente = usuario(10L, EMAIL_CLIENTE, Perfil.CLIENTE);
+
+        Chamado alvo = chamado(1L, Status.EM_ANDAMENTO, cliente);
+        alvo.setTecnico(admin);
+
+        when(usuarioService.findByEmail(EMAIL_ADMIN)).thenReturn(admin);
+        when(chamadoRepository.findById(1L)).thenReturn(Optional.of(alvo));
+        when(chamadoRepository.save(any(Chamado.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        chamadoService.atribuirTecnico(1L, null, EMAIL_ADMIN);
+
+        assertThat(alvo.getTecnico()).isNull();
+        verify(historicoService).registrarAtribuicaoTecnico(eq(alvo), eq(admin),
+                eq(admin.getNome()), eq("—"));
+    }
+
+    @Test
+    @DisplayName("atribuirTecnico — cliente não pode mexer no responsável")
+    void clienteNaoAlteraResponsavel() {
+        Usuario cliente = usuario(10L, EMAIL_CLIENTE, Perfil.CLIENTE);
+        Chamado alvo = chamado(1L, Status.EM_ANDAMENTO, cliente);
+
+        when(usuarioService.findByEmail(EMAIL_CLIENTE)).thenReturn(cliente);
+        when(chamadoRepository.findById(1L)).thenReturn(Optional.of(alvo));
+
+        assertThatThrownBy(() -> chamadoService.atribuirTecnico(1L, null, EMAIL_CLIENTE))
+                .isInstanceOf(OperacaoNaoPermitidaException.class);
+    }
+
     // ──────────────────────────────────────────────────────────
     // Exclusão
     // ──────────────────────────────────────────────────────────

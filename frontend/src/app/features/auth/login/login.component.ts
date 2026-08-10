@@ -3,11 +3,12 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { mensagemDoErro } from '../../../core/services/toast.service';
+import { LogoComponent } from '../../../shared/logo/logo.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, LogoComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })

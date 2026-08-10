@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { mensagemDoErro } from '../../../core/services/toast.service';
+import { LogoComponent } from '../../../shared/logo/logo.component';
 
 /**
  * "Esqueci minha senha" — a tela existia como link morto (href="#").
@@ -14,7 +15,7 @@ import { mensagemDoErro } from '../../../core/services/toast.service';
 @Component({
   selector: 'app-esqueci-senha',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, LogoComponent],
   templateUrl: './esqueci-senha.component.html',
   styleUrl: '../auth-card.scss',
 })

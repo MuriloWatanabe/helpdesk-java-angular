@@ -14,19 +14,19 @@ export const routes: Routes = [
   // ---------------------------------------------------------------
   {
     path: 'login',
-    title: 'Entrar · HelpDesk',
+    title: 'Entrar · FixLab',
     loadComponent: () =>
       import('./features/auth/login/login.component').then((m) => m.LoginComponent),
   },
   {
     path: 'register',
-    title: 'Criar conta · HelpDesk',
+    title: 'Criar conta · FixLab',
     loadComponent: () =>
       import('./features/auth/register/register.component').then((m) => m.RegisterComponent),
   },
   {
     path: 'esqueci-senha',
-    title: 'Recuperar senha · HelpDesk',
+    title: 'Recuperar senha · FixLab',
     loadComponent: () =>
       import('./features/auth/esqueci-senha/esqueci-senha.component').then(
         (m) => m.EsqueciSenhaComponent,
@@ -34,7 +34,7 @@ export const routes: Routes = [
   },
   {
     path: 'redefinir-senha',
-    title: 'Definir nova senha · HelpDesk',
+    title: 'Definir nova senha · FixLab',
     loadComponent: () =>
       import('./features/auth/redefinir-senha/redefinir-senha.component').then(
         (m) => m.RedefinirSenhaComponent,
@@ -46,14 +46,14 @@ export const routes: Routes = [
   // ---------------------------------------------------------------
   {
     path: 'dashboard',
-    title: 'Painel · HelpDesk',
+    title: 'Painel · FixLab',
     loadComponent: () =>
       import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
     canActivate: [authGuard],
   },
   {
     path: 'chamados',
-    title: 'Chamados · HelpDesk',
+    title: 'Chamados · FixLab',
     loadComponent: () =>
       import('./features/chamados/chamados-list/chamados-list.component').then(
         (m) => m.ChamadosListComponent,
@@ -62,7 +62,7 @@ export const routes: Routes = [
   },
   {
     path: 'chamados/novo',
-    title: 'Novo chamado · HelpDesk',
+    title: 'Novo chamado · FixLab',
     loadComponent: () =>
       import('./features/chamados/novo-chamado/novo-chamado.component').then(
         (m) => m.NovoChamadoComponent,
@@ -72,7 +72,7 @@ export const routes: Routes = [
   {
     // Fila de atendimento: chamados sem técnico e SLA estourado
     path: 'fila',
-    title: 'Fila de atendimento · HelpDesk',
+    title: 'Fila de atendimento · FixLab',
     loadComponent: () =>
       import('./features/chamados/chamados-list/chamados-list.component').then(
         (m) => m.ChamadosListComponent,
@@ -83,7 +83,7 @@ export const routes: Routes = [
   {
     // Atalho para "os que eu atendo" / "os meus"
     path: 'meus-chamados',
-    title: 'Meus chamados · HelpDesk',
+    title: 'Meus chamados · FixLab',
     loadComponent: () =>
       import('./features/chamados/chamados-list/chamados-list.component').then(
         (m) => m.ChamadosListComponent,
@@ -93,7 +93,7 @@ export const routes: Routes = [
   },
   {
     path: 'chamados/:id/editar',
-    title: 'Editar chamado · HelpDesk',
+    title: 'Editar chamado · FixLab',
     loadComponent: () =>
       import('./features/chamados/chamado-edit/chamado-edit.component').then(
         (m) => m.ChamadoEditComponent,
@@ -102,7 +102,7 @@ export const routes: Routes = [
   },
   {
     path: 'chamados/:id',
-    title: 'Chamado · HelpDesk',
+    title: 'Chamado · FixLab',
     loadComponent: () =>
       import('./features/chamados/chamado-detail/chamado-detail.component').then(
         (m) => m.ChamadoDetailComponent,
@@ -111,21 +111,21 @@ export const routes: Routes = [
   },
   {
     path: 'relatorios',
-    title: 'Relatórios · HelpDesk',
+    title: 'Relatórios · FixLab',
     loadComponent: () =>
       import('./features/relatorios/relatorios.component').then((m) => m.RelatoriosComponent),
     canActivate: [atendenteGuard],
   },
   {
     path: 'usuarios',
-    title: 'Usuários · HelpDesk',
+    title: 'Usuários · FixLab',
     loadComponent: () =>
       import('./features/usuarios/usuarios.component').then((m) => m.UsuariosComponent),
     canActivate: [adminGuard],
   },
   {
     path: 'perfil',
-    title: 'Meu perfil · HelpDesk',
+    title: 'Meu perfil · FixLab',
     loadComponent: () =>
       import('./features/perfil/perfil.component').then((m) => m.PerfilComponent),
     canActivate: [authGuard],
@@ -136,7 +136,7 @@ export const routes: Routes = [
   // ---------------------------------------------------------------
   {
     path: 'acesso-negado',
-    title: 'Acesso negado · HelpDesk',
+    title: 'Acesso negado · FixLab',
     loadComponent: () =>
       import('./features/erros/acesso-negado.component').then((m) => m.AcessoNegadoComponent),
   },
@@ -144,7 +144,7 @@ export const routes: Routes = [
     // Antes qualquer rota desconhecida jogava o usuário logado para o login,
     // fazendo parecer que a sessão havia caído.
     path: '**',
-    title: 'Página não encontrada · HelpDesk',
+    title: 'Página não encontrada · FixLab',
     loadComponent: () =>
       import('./features/erros/nao-encontrado.component').then((m) => m.NaoEncontradoComponent),
   },

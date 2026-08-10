@@ -22,18 +22,9 @@
 .sidebar-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
 
-  .logo-icon {
-    font-size: 22px;
-    color: #60a5fa;
-  }
-
-  .logo-text {
+  app-logo {
     font-size: 18px;
-    font-weight: 700;
-    color: #ffffff;
-    letter-spacing: -0.3px;
   }
 }
 

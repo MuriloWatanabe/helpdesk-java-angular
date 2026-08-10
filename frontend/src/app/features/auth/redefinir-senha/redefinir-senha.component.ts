@@ -10,6 +10,7 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService, mensagemDoErro } from '../../../core/services/toast.service';
+import { LogoComponent } from '../../../shared/logo/logo.component';
 
 /** Confere se os dois campos de senha são iguais. */
 function senhasIguais(grupo: AbstractControl): ValidationErrors | null {
@@ -21,7 +22,7 @@ function senhasIguais(grupo: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'app-redefinir-senha',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, LogoComponent],
   templateUrl: './redefinir-senha.component.html',
   styleUrl: '../auth-card.scss',
 })

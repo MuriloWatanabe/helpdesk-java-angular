@@ -492,7 +492,58 @@ Após iniciar:
 
 ---
 
-## 12. Histórico de Melhorias
+## 12. Modo de desenvolvimento (sem rebuild do Docker)
+
+O `docker compose up --build` reconstrói as imagens a cada alteração, o que não
+serve para desenvolver. No dia a dia, deixe **só o banco no Docker** e rode o
+backend e o front direto na máquina — os dois recarregam sozinhos ao salvar.
+
+### 1. Banco (única coisa que fica no Docker)
+
+```bash
+docker compose up -d db
+```
+
+Sobe apenas o PostgreSQL na porta 5433, que é exatamente o que
+`application.properties` espera por padrão. Pode ficar ligado o dia inteiro.
+
+### 2. Backend com reinício automático
+
+```bash
+cd backend/helpdesk
+./gradlew bootRun
+```
+
+O `spring-boot-devtools` reinicia a aplicação sozinho ao salvar um `.java`
+(cerca de 2 s, contra ~1 min de rebuild da imagem). Ele é declarado como
+`developmentOnly`, então **não** entra no JAR de produção.
+
+### 3. Frontend com hot reload
+
+```bash
+cd frontend
+npm start
+```
+
+Abre em `http://localhost:4200` e atualiza o navegador ao salvar, preservando o
+estado da tela. O `environment.ts` de desenvolvimento já aponta para
+`http://localhost:9090/api`, e o backend já libera esse origin via
+`CORS_ORIGINS` — não é preciso configurar mais nada.
+
+### Resumo
+
+| O quê | Onde roda | Recarrega ao salvar |
+|---|---|---|
+| PostgreSQL | Docker (`docker compose up -d db`) | — |
+| Backend | `./gradlew bootRun` | Sim (devtools) |
+| Frontend | `npm start` | Sim (hot reload) |
+
+> Só use `docker compose up --build` para validar o conjunto antes de entregar
+> ou quando mexer em `Dockerfile`, `nginx.conf` ou `docker-compose.yml`.
+
+---
+
+## 13. Histórico de Melhorias
 
 ### build.gradle — Dependências adicionadas
 
@@ -567,7 +618,7 @@ Todos os arquivos foram movidos para o caminho correto:
 
 ---
 
-## 13. CI/CD — Integração e Entrega Contínua
+## 14. CI/CD — Integração e Entrega Contínua
 
 O projeto utiliza **GitHub Actions** com dois pipelines independentes, acionados automaticamente em `push` e `pull_request` para a branch `main`.
 

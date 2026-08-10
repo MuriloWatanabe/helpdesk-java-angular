@@ -19,9 +19,8 @@
 
 <aside class="sidebar" id="menu-lateral" [class.aberta]="aberta()">
   <div class="sidebar-header">
-    <a routerLink="/dashboard" class="sidebar-logo">
-      <span class="logo-icon" aria-hidden="true">&#9830;</span>
-      <span class="logo-text">HelpDesk</span>
+    <a routerLink="/dashboard" class="sidebar-logo" aria-label="FixLab — ir para o painel">
+      <app-logo tema="escuro" />
     </a>
     <button class="menu-fechar" type="button" aria-label="Fechar menu" (click)="fecharMenu()">×</button>
   </div>
