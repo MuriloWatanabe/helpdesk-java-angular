@@ -158,14 +158,12 @@
 }
 
 // ---- Charts Section ----
+// Uma coluna: a barra de situação fica mais precisa quanto mais larga, e a
+// linha de 14 dias estava espremida em 380px, com os rótulos de data colados.
 .charts-section {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: 1fr;
   gap: 16px;
-
-  @media (max-width: 1100px) {
-    grid-template-columns: 1fr;
-  }
 }
 
 .chart-card,
@@ -199,6 +197,68 @@
 .chart-wrapper {
   height: 260px;
   position: relative;
+}
+
+// ---- Situação dos chamados ----
+// Barra de composição + lista. A lista faz as vezes de legenda e de tabela:
+// o valor exato nunca depende de passar o mouse.
+.situacao-barra {
+  display: flex;
+  // O vão de 2px é a cor do card: é ele que separa as faixas, não uma borda.
+  gap: 2px;
+  height: 16px;
+  margin: 4px 0 20px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.situacao-parte {
+  // flex-grow carrega o valor; flex-basis 0 faz a divisão ser proporcional.
+  flex-basis: 0;
+  min-width: 3px;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.82;
+  }
+}
+
+// Cada item ocupa só a largura do próprio conteúdo e quebra a linha quando
+// precisa. Com grid de colunas iguais, nomes curtos ("Resolvidos") ficavam
+// longe do próprio número e o par parava de ser lido junto.
+.situacao-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 26px;
+}
+
+.situacao-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+}
+
+.situacao-chip {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.situacao-nome {
+  color: #374151;
+}
+
+.situacao-valor {
+  font-weight: 700;
+  color: #1e293b;
+  font-variant-numeric: tabular-nums;
+}
+
+.situacao-pct {
+  color: #6b7280;
+  font-variant-numeric: tabular-nums;
 }
 
 // ---- Categories ----
@@ -515,9 +575,5 @@
 @media (max-width: 900px) {
   .dashboard-main {
     padding: 76px 16px 32px;
-  }
-
-  .charts-section {
-    grid-template-columns: 1fr;
   }
 }

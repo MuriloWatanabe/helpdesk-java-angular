@@ -126,10 +126,33 @@
             <article class="chart-card">
               <div class="card-header">
                 <h2 class="card-title">Situação dos chamados</h2>
+                <span class="card-subtitle">{{ totalSituacoes() }} no total</span>
               </div>
-              <div class="chart-wrapper">
-                <canvas #graficoStatus aria-label="Distribuição por situação"></canvas>
+
+              <!-- Barra de composição: a proporção em uma olhada. Fica oculta
+                   para leitores de tela porque a lista abaixo traz os mesmos
+                   dados em texto — anunciar duas vezes só atrapalha. -->
+              <div class="situacao-barra" aria-hidden="true">
+                @for (p of situacoes(); track p.rotulo) {
+                  <span
+                    class="situacao-parte"
+                    [style.flex-grow]="p.valor"
+                    [style.background-color]="p.cor"
+                    [title]="p.rotulo + ': ' + p.valor + ' (' + p.pct + '%)'"
+                  ></span>
+                }
               </div>
+
+              <ul class="situacao-lista">
+                @for (p of situacoes(); track p.rotulo) {
+                  <li class="situacao-item">
+                    <span class="situacao-chip" [style.background-color]="p.cor" aria-hidden="true"></span>
+                    <span class="situacao-nome">{{ p.rotulo }}</span>
+                    <span class="situacao-valor">{{ p.valor }}</span>
+                    <span class="situacao-pct">{{ p.pct }}%</span>
+                  </li>
+                }
+              </ul>
             </article>
 
             @if (isAtendente()) {

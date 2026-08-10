@@ -26,7 +26,6 @@ import { classePrioridade, classeStatus, textoSla } from '../chamados/chamado-ui
   styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('graficoStatus') graficoStatus?: ElementRef<HTMLCanvasElement>;
   @ViewChild('graficoEvolucao') graficoEvolucao?: ElementRef<HTMLCanvasElement>;
 
   private readonly authService = inject(AuthService);
@@ -52,11 +51,43 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return s.totalAbertos + s.totalEmAndamento + s.totalAguardandoCliente;
   });
 
+  /**
+   * Situação dos chamados na ordem do ciclo de vida (e não por tamanho): o
+   * leitor acompanha o caminho do chamado da abertura ao encerramento.
+   *
+   * As cores são os mesmos tokens dos badges usados nas listagens, para que
+   * "laranja = em andamento" valha em todo o sistema.
+   */
+  readonly situacoes = computed(() => {
+    const s = this.stats();
+    if (!s) return [];
+
+    const partes = [
+      { rotulo: 'Abertos', valor: s.totalAbertos, cor: '#2563eb' },
+      { rotulo: 'Em andamento', valor: s.totalEmAndamento, cor: '#d97706' },
+      { rotulo: 'Aguardando cliente', valor: s.totalAguardandoCliente, cor: '#7c3aed' },
+      { rotulo: 'Resolvidos', valor: s.totalResolvidos, cor: '#059669' },
+      { rotulo: 'Encerrados', valor: s.totalEncerrados, cor: '#475569' },
+      { rotulo: 'Cancelados', valor: s.totalCancelados, cor: '#94a3b8' },
+    ].filter((p) => p.valor > 0);
+
+    const total = partes.reduce((soma, p) => soma + p.valor, 0);
+    return partes.map((p) => ({
+      ...p,
+      pct: total > 0 ? Math.round((p.valor / total) * 100) : 0,
+    }));
+  });
+
+  /** Total das situações — base dos percentuais e do texto do gráfico. */
+  readonly totalSituacoes = computed(() =>
+    this.situacoes().reduce((soma, p) => soma + p.valor, 0),
+  );
+
+
   readonly classeStatus = classeStatus;
   readonly classePrioridade = classePrioridade;
   readonly textoSla = textoSla;
 
-  private chartStatus: Chart | null = null;
   private chartEvolucao: Chart | null = null;
   private viewPronta = false;
 
@@ -101,9 +132,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   // ------------------------------------------------------------------
 
   private destruirGraficos(): void {
-    this.chartStatus?.destroy();
     this.chartEvolucao?.destroy();
-    this.chartStatus = null;
     this.chartEvolucao = null;
   }
 
@@ -111,53 +140,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const dados = this.stats();
     if (!this.viewPronta || !dados) return;
 
-    this.desenharStatus(dados);
     this.desenharEvolucao(dados);
-  }
-
-  /**
-   * Distribuição por situação. O gráfico anterior misturava o total com as
-   * partes na mesma escala, o que achatava as barras e induzia a erro.
-   */
-  private desenharStatus(dados: DashboardStats): void {
-    const ctx = this.graficoStatus?.nativeElement.getContext('2d');
-    if (!ctx || this.chartStatus) return;
-
-    const fatias = [
-      { rotulo: 'Abertos', valor: dados.totalAbertos, cor: '#2563eb' },
-      { rotulo: 'Em andamento', valor: dados.totalEmAndamento, cor: '#d97706' },
-      { rotulo: 'Aguardando cliente', valor: dados.totalAguardandoCliente, cor: '#7c3aed' },
-      { rotulo: 'Resolvidos', valor: dados.totalResolvidos, cor: '#059669' },
-      { rotulo: 'Encerrados', valor: dados.totalEncerrados, cor: '#64748b' },
-      { rotulo: 'Cancelados', valor: dados.totalCancelados, cor: '#cbd5e1' },
-    ].filter((f) => f.valor > 0);
-
-    if (fatias.length === 0) return;
-
-    this.chartStatus = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: fatias.map((f) => f.rotulo),
-        datasets: [
-          {
-            data: fatias.map((f) => f.valor),
-            backgroundColor: fatias.map((f) => f.cor),
-            borderWidth: 0,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '62%',
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: { boxWidth: 11, font: { size: 11.5 }, color: '#475569', padding: 12 },
-          },
-        },
-      },
-    });
   }
 
   /** Aberturas por dia nas últimas duas semanas. */
