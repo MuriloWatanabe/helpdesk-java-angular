@@ -15,7 +15,7 @@ public interface PasswordResetTokenRepository extends JpaRepository<PasswordRese
 
     Optional<PasswordResetToken> findByToken(String token);
 
-    /** Invalida pedidos anteriores ao emitir um novo link para o mesmo usuário. */
+
     @Modifying
     @Query("UPDATE PasswordResetToken t SET t.dataUso = :agora " +
            "WHERE t.usuario.id = :usuarioId AND t.dataUso IS NULL")

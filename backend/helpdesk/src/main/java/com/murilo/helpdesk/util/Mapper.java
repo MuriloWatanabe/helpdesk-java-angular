@@ -26,9 +26,6 @@ public final class Mapper {
 
     private Mapper() {}
 
-    // ------------------------------------------------------------------
-    // Chamado
-    // ------------------------------------------------------------------
 
     public static ChamadoResponse toChamadoResponse(Chamado c) {
         return toChamadoResponse(c, false, 0L, 0L);
@@ -66,9 +63,6 @@ public final class Mapper {
                 totalAnexos);
     }
 
-    // ------------------------------------------------------------------
-    // Usuário
-    // ------------------------------------------------------------------
 
     public static UsuarioResponse toUsuarioResponse(Usuario u) {
         Set<Perfil> perfis = u.getPerfis();
@@ -90,7 +84,7 @@ public final class Mapper {
                 u.getUltimoAcesso());
     }
 
-    /** Perfil de maior privilégio — rótulo único exibido na interface. */
+
     public static String perfilPrincipal(Set<Perfil> perfis) {
         if (perfis.contains(Perfil.ADMIN))   return Perfil.ADMIN.getRotulo();
         if (perfis.contains(Perfil.TECNICO)) return Perfil.TECNICO.getRotulo();
@@ -103,9 +97,6 @@ public final class Mapper {
         return new UsuarioResumoResponse(u.getId(), u.getNome(), u.getEmail());
     }
 
-    // ------------------------------------------------------------------
-    // Comentário / Histórico / Anexo / Avaliação
-    // ------------------------------------------------------------------
 
     public static ComentarioResponse toComentarioResponse(Comentario c) {
         return new ComentarioResponse(

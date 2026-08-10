@@ -11,7 +11,7 @@
   min-width: 0;
 }
 
-// Header
+
 .page-header {
   display: flex;
   align-items: center;
@@ -61,7 +61,7 @@
   &:hover { background: #1e40af; }
 }
 
-// Filters
+
 .filters-bar {
   display: flex;
   align-items: center;
@@ -128,7 +128,7 @@
   &:focus { border-color: #93c5fd; }
 }
 
-// Alert
+
 .alert-error {
   display: flex;
   align-items: center;
@@ -142,7 +142,7 @@
   margin-bottom: 20px;
 }
 
-// Loading
+
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -167,7 +167,7 @@
   to { transform: rotate(360deg); }
 }
 
-// Table card
+
 .table-card {
   background: #fff;
   border-radius: 12px;
@@ -243,7 +243,7 @@
   white-space: nowrap;
 }
 
-// Badges
+
 .badge {
   display: inline-block;
   padding: 3px 10px;
@@ -261,7 +261,7 @@
 .badge-media { background: #fef3c7; color: #b45309; }
 .badge-alta  { background: #fee2e2; color: #dc2626; }
 
-// Empty state
+
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -280,7 +280,7 @@
   span { font-size: 13px; }
 }
 
-// Pagination
+
 .pagination {
   display: flex;
   align-items: center;
@@ -318,9 +318,6 @@
   }
 }
 
-/* ==================================================================
-   Adições: filtros avançados, protocolo, SLA e ação de assumir
-   ================================================================== */
 
 .header-left {
   align-items: flex-start;
@@ -403,7 +400,7 @@
   input { cursor: pointer; }
 }
 
-/* Coluna do protocolo */
+
 .col-id {
   width: 130px;
 }
@@ -470,7 +467,7 @@
   &:hover { background: #dbeafe; }
 }
 
-/* Badges dos status novos (os antigos já estão definidos acima) */
+
 .badge-aguardando { background: #ede9fe; color: #7c3aed; }
 .badge-resolvido  { background: #d1fae5; color: #059669; }
 .badge-cancelado  { background: #f1f5f9; color: #94a3b8; }

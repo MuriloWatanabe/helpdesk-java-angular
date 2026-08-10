@@ -35,10 +35,7 @@ public class ChamadoController {
     private final ChamadoService chamadoService;
     private final HistoricoService historicoService;
 
-    /**
-     * Listagem com filtros aplicados no banco. O escopo é definido pelo papel do
-     * usuário autenticado — cliente só recebe os próprios chamados.
-     */
+
     @GetMapping
     @Operation(summary = "Listar chamados com filtros e paginação")
     public ResponseEntity<Page<ChamadoResponse>> listar(
@@ -77,7 +74,7 @@ public class ChamadoController {
     @Operation(summary = "Linha do tempo do chamado")
     public ResponseEntity<List<HistoricoResponse>> historico(@PathVariable Long id,
                                                              Authentication auth) {
-        // Valida o acesso antes de expor o histórico.
+
         chamadoService.buscarPorId(id, auth.getName());
         return ResponseEntity.ok(historicoService.listar(id));
     }
@@ -102,10 +99,7 @@ public class ChamadoController {
         return ResponseEntity.ok(chamadoService.atualizar(id, request, auth.getName()));
     }
 
-    /**
-     * Muda o status. Clientes podem cancelar um chamado ainda não atendido,
-     * confirmar a solução ou reabrir; o restante é da equipe de suporte.
-     */
+
     @PatchMapping("/{id}/status/{status}")
     @Operation(summary = "Alterar status do chamado")
     public ResponseEntity<ChamadoResponse> alterarStatus(@PathVariable Long id,

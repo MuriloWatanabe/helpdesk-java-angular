@@ -3,7 +3,7 @@ import { Location } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
-/** Usuário autenticado tentando abrir uma tela fora do seu perfil. */
+
 @Component({
   selector: 'app-acesso-negado',
   standalone: true,

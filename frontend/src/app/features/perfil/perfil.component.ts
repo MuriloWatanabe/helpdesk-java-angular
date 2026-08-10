@@ -7,14 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ToastService, mensagemDoErro } from '../../core/services/toast.service';
 import { Usuario } from '../../core/models/usuario.model';
 
-/**
- * Meus dados e troca de senha.
- *
- * Antes esta tela chamava PUT /v1/usuarios/{id} e POST de senha sem senha
- * atual — endpoints restritos ao administrador. Resultado: cliente e técnico
- * recebiam 403 ao salvar e o interceptor os deslogava. Agora usa os endpoints
- * de autosserviço (/v1/auth/me e /v1/auth/alterar-senha).
- */
+
 @Component({
   selector: 'app-perfil',
   standalone: true,
@@ -29,8 +22,7 @@ export class PerfilComponent implements OnInit {
   usuario = signal<Usuario | null>(null);
   carregando = signal(true);
 
-  // Dados pessoais (os campos de texto são ngModel — atualizados pelo usuário;
-  // os estados de salvamento são signals porque mudam no retorno do HTTP)
+
   editNome = '';
   editEmail = '';
   editTelefone = '';
@@ -38,7 +30,7 @@ export class PerfilComponent implements OnInit {
   salvandoDados = signal(false);
   erroDados = signal('');
 
-  // Troca de senha
+
   senhaAtual = '';
   novaSenha = '';
   confirmSenha = '';

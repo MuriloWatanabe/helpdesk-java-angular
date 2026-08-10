@@ -18,7 +18,7 @@
     }
 
     @if (!loading() && chamado(); as c) {
-      <!-- Cabeçalho -->
+
       <header class="page-header detalhe-header">
         <div class="header-left">
           <button class="btn-voltar" (click)="voltar()">
@@ -44,7 +44,7 @@
         </div>
       </header>
 
-      <!-- Título e situação -->
+
       <div class="titulo-row">
         <h1 class="titulo">{{ c.titulo }}</h1>
         <div class="badges-row">
@@ -60,7 +60,7 @@
       </div>
 
       <div class="detail-grid">
-        <!-- ============================ COLUNA PRINCIPAL ============================ -->
+
         <div class="col-main">
 
           <section class="card">
@@ -68,7 +68,7 @@
             <p class="observacoes">{{ c.observacoes }}</p>
           </section>
 
-          <!-- Conversa -->
+
           <section class="card">
             <h2 class="card-title">
               Conversa
@@ -112,7 +112,7 @@
               }
             </ul>
 
-            <!-- Novo comentário -->
+
             <div class="comentario-form">
               <label class="sr-only" for="novo-comentario">Escrever comentário</label>
               <textarea
@@ -146,7 +146,7 @@
             </div>
           </section>
 
-          <!-- Anexos -->
+
           <section class="card">
             <h2 class="card-title">
               Anexos
@@ -215,7 +215,7 @@
             </span>
           </section>
 
-          <!-- Avaliação -->
+
           @if (avaliacao(); as av) {
             <section class="card">
               <h2 class="card-title">Avaliação do atendimento</h2>
@@ -294,10 +294,10 @@
           }
         </div>
 
-        <!-- ============================ COLUNA LATERAL ============================ -->
+
         <div class="col-side">
 
-          <!-- SLA -->
+
           <section class="card sla-card" [class.vencido]="c.slaVencido">
             <h2 class="card-title">Prazo de atendimento</h2>
             @if (c.prazoSla) {
@@ -314,7 +314,7 @@
             }
           </section>
 
-          <!-- Pessoas -->
+
           <section class="card">
             <h2 class="card-title">Pessoas envolvidas</h2>
 
@@ -361,7 +361,7 @@
             }
           </section>
 
-          <!-- Abas: ações / histórico -->
+
           <section class="card">
             <div class="abas" role="tablist">
               <button
@@ -446,7 +446,7 @@
             }
           </section>
 
-          <!-- Datas -->
+
           <section class="card">
             <h2 class="card-title">Datas</h2>
             <div class="datas-grid">

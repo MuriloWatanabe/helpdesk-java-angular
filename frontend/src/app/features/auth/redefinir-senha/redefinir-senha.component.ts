@@ -12,7 +12,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ToastService, mensagemDoErro } from '../../../core/services/toast.service';
 import { LogoComponent } from '../../../shared/logo/logo.component';
 
-/** Confere se os dois campos de senha são iguais. */
+
 function senhasIguais(grupo: AbstractControl): ValidationErrors | null {
   const nova = grupo.get('novaSenha')?.value;
   const confirmacao = grupo.get('confirmacao')?.value;
@@ -42,7 +42,7 @@ export class RedefinirSenhaComponent implements OnInit {
   );
 
   token = '';
-  // Signals: o app é zoneless — o retorno do HTTP precisa disparar re-render.
+
   salvando = signal(false);
   erro = signal('');
 

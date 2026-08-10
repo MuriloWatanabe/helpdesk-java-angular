@@ -1,18 +1,5 @@
--- ================================================
--- HELPDESK — Dados Iniciais
--- Execute após schema.sql.
---
--- Senha de todos os usuários: 123456
--- Hash BCrypt (strength 10).
---
--- O conjunto cobre todos os status, prioridades e categorias, incluindo
--- chamados com SLA vencido e chamados na fila sem técnico, para que o
--- dashboard e os relatórios tenham conteúdo real logo no primeiro acesso.
--- ================================================
 
--- ================================================
--- DEPARTAMENTOS
--- ================================================
+
 INSERT INTO departamentos (nome, descricao, email_contato, localizacao) VALUES
     ('Tecnologia da Informação', 'Infraestrutura, sistemas e suporte técnico', 'ti@helpdesk.com',      'Sede — 3º andar'),
     ('Financeiro',               'Contas a pagar e receber',                   'financeiro@helpdesk.com', 'Sede — 2º andar'),
@@ -21,9 +8,6 @@ INSERT INTO departamentos (nome, descricao, email_contato, localizacao) VALUES
 ON CONFLICT (nome) DO NOTHING;
 
 
--- ================================================
--- USUÁRIOS
--- ================================================
 INSERT INTO usuarios (nome, email, senha, telefone, cargo, ativo, departamento_id) VALUES
     ('Admin do Sistema', 'admin@helpdesk.com',   '$2b$10$oJoU2XK9Uh.ghqVex/p78umK48wDDMoDMMjo0.2QhJUhXSkkrF9XW', '(11) 3000-0000', 'Coordenador de TI',    TRUE,  (SELECT id FROM departamentos WHERE nome = 'Tecnologia da Informação')),
     ('Carlos Técnico',   'tecnico@helpdesk.com', '$2b$10$oJoU2XK9Uh.ghqVex/p78umK48wDDMoDMMjo0.2QhJUhXSkkrF9XW', '(11) 3000-0001', 'Analista de Suporte',  TRUE,  (SELECT id FROM departamentos WHERE nome = 'Tecnologia da Informação')),
@@ -35,14 +19,11 @@ INSERT INTO usuarios (nome, email, senha, telefone, cargo, ativo, departamento_i
     ('Julia Almeida',    'julia@helpdesk.com',   '$2b$10$oJoU2XK9Uh.ghqVex/p78umK48wDDMoDMMjo0.2QhJUhXSkkrF9XW', '(11) 99000-0003', 'Executiva de Vendas',   TRUE, (SELECT id FROM departamentos WHERE nome = 'Comercial'))
 ON CONFLICT (email) DO NOTHING;
 
--- Gerentes dos departamentos
+
 UPDATE departamentos SET gerente_id = (SELECT id FROM usuarios WHERE email = 'admin@helpdesk.com')
 WHERE nome = 'Tecnologia da Informação';
 
 
--- ================================================
--- PERFIS (0=ADMIN, 1=CLIENTE, 2=TECNICO)
--- ================================================
 INSERT INTO usuario_perfis (usuario_id, perfil) VALUES
     ((SELECT id FROM usuarios WHERE email = 'admin@helpdesk.com'),   0),
     ((SELECT id FROM usuarios WHERE email = 'tecnico@helpdesk.com'), 2),
@@ -55,12 +36,6 @@ INSERT INTO usuario_perfis (usuario_id, perfil) VALUES
 ON CONFLICT DO NOTHING;
 
 
--- ================================================
--- CHAMADOS
--- status:     0=ABERTO | 1=EM_ANDAMENTO | 2=ENCERRADO
---             3=AGUARDANDO_CLIENTE | 4=RESOLVIDO | 5=CANCELADO
--- prioridade: 0=BAIXA | 1=MEDIA | 2=ALTA | 3=URGENTE
--- ================================================
 INSERT INTO chamados (numero, titulo, observacoes, status, prioridade, categoria,
                       tecnico_id, cliente_id, data_abertura) VALUES
     ('CH-2026-000001',
@@ -79,7 +54,7 @@ INSERT INTO chamados (numero, titulo, observacoes, status, prioridade, categoria
         (SELECT id FROM usuarios WHERE email = 'pedro@helpdesk.com'),
         NOW() - INTERVAL '3 days'),
 
-    -- Na fila, sem técnico atribuído
+
     ('CH-2026-000003',
         'Redefinição de senha do Active Directory',
         'Esqueci minha senha do AD e o portal de autoatendimento não está funcionando. Não consigo fazer login no Windows.',
@@ -104,7 +79,7 @@ INSERT INTO chamados (numero, titulo, observacoes, status, prioridade, categoria
         (SELECT id FROM usuarios WHERE email = 'pedro@helpdesk.com'),
         NOW() - INTERVAL '7 days'),
 
-    -- Na fila, sem técnico atribuído
+
     ('CH-2026-000006',
         'Instalação do Microsoft Teams',
         'Preciso instalar o Microsoft Teams no meu computador. Não tenho permissão de administrador para instalar programas.',
@@ -113,7 +88,7 @@ INSERT INTO chamados (numero, titulo, observacoes, status, prioridade, categoria
         (SELECT id FROM usuarios WHERE email = 'julia@helpdesk.com'),
         NOW() - INTERVAL '6 hours'),
 
-    -- SLA estourado: prioridade URGENTE (2h) aberto há 4 dias e ainda em andamento
+
     ('CH-2026-000007',
         'VPN não conecta ao trabalhar em home office',
         'Estou em home office e o cliente VPN Cisco fica conectando e caindo a cada poucos minutos. Isso impede o acesso a todos os sistemas internos.',
@@ -130,7 +105,7 @@ INSERT INTO chamados (numero, titulo, observacoes, status, prioridade, categoria
         (SELECT id FROM usuarios WHERE email = 'pedro@helpdesk.com'),
         NOW() - INTERVAL '10 days'),
 
-    -- Aguardando o cliente confirmar a solução (habilita a avaliação)
+
     ('CH-2026-000009',
         'E-mails de clientes indo para a caixa de spam',
         'Vários e-mails de clientes estão sendo classificados como spam automaticamente. Já perdi dois prazos por causa disso.',
@@ -164,7 +139,7 @@ INSERT INTO chamados (numero, titulo, observacoes, status, prioridade, categoria
         NOW() - INTERVAL '15 days')
 ON CONFLICT (numero) DO NOTHING;
 
--- Prazo de SLA conforme a prioridade
+
 UPDATE chamados
 SET prazo_sla = data_abertura + (
         CASE prioridade
@@ -175,16 +150,12 @@ SET prazo_sla = data_abertura + (
         END)
 WHERE prazo_sla IS NULL;
 
--- Fechamento e primeira resposta dos chamados já atendidos
+
 UPDATE chamados SET data_fechamento = data_abertura + INTERVAL '2 days' WHERE status IN (2, 5) AND data_fechamento IS NULL;
 UPDATE chamados SET data_primeira_resposta = data_abertura + INTERVAL '3 hours' WHERE tecnico_id IS NOT NULL;
 UPDATE chamados SET data_atualizacao = COALESCE(data_fechamento, NOW());
 
 
--- ================================================
--- COMENTÁRIOS (conversa cliente ↔ suporte)
--- interno = TRUE aparece somente para ADMIN/TECNICO
--- ================================================
 INSERT INTO comentarios (chamado_id, autor_id, texto, interno, data_criacao) VALUES
     ((SELECT id FROM chamados WHERE numero = 'CH-2026-000001'),
      (SELECT id FROM usuarios WHERE email = 'tecnico@helpdesk.com'),
@@ -228,9 +199,6 @@ INSERT INTO comentarios (chamado_id, autor_id, texto, interno, data_criacao) VAL
 ON CONFLICT DO NOTHING;
 
 
--- ================================================
--- HISTÓRICO (linha do tempo)
--- ================================================
 INSERT INTO historico_chamados (chamado_id, usuario_id, tipo_alteracao, descricao, valor_anterior, valor_novo, data_alteracao)
 SELECT c.id, c.cliente_id, 'CRIACAO', 'Chamado criado', NULL, NULL, c.data_abertura
 FROM chamados c
@@ -259,9 +227,6 @@ WHERE c.status = 2 AND c.data_fechamento IS NOT NULL
 ON CONFLICT DO NOTHING;
 
 
--- ================================================
--- AVALIAÇÕES (somente chamados encerrados)
--- ================================================
 INSERT INTO avaliacoes (chamado_id, nota, comentario, usuario_id, data_avaliacao) VALUES
     ((SELECT id FROM chamados WHERE numero = 'CH-2026-000005'), 5,
      'Atendimento muito rápido, o monitor foi trocado no mesmo dia. Excelente!',

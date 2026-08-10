@@ -16,6 +16,6 @@ public record AvaliacaoRequest(
         @Size(max = 1000, message = "O comentário deve ter no máximo 1000 caracteres")
         String comentario,
 
-        /** Pontos destacados pelo cliente (ex.: "Rapidez", "Cordialidade"). */
+
         Set<String> aspectos
 ) {}

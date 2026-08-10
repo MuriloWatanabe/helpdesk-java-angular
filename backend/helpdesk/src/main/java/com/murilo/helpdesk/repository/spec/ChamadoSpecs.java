@@ -10,17 +10,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Monta a consulta de chamados a partir dos filtros da tela. */
+
 public final class ChamadoSpecs {
 
     private ChamadoSpecs() {}
 
-    /**
-     * @param filtro          filtros informados pelo usuário (pode ser nulo)
-     * @param restringirCliente quando informado, limita aos chamados desse cliente
-     *                          (usado para o perfil CLIENTE, que nunca enxerga
-     *                          chamados de terceiros)
-     */
+
     public static Specification<Chamado> montar(ChamadoFiltro filtro, Long restringirCliente) {
         return (root, query, cb) -> {
             List<Predicate> predicados = new ArrayList<>();

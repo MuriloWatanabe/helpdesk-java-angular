@@ -8,6 +8,6 @@ public record ComentarioRequest(
         @Size(min = 2, max = 2000, message = "O comentário deve ter entre 2 e 2000 caracteres")
         String texto,
 
-        /** Nota interna: só técnicos e administradores enxergam. */
+
         Boolean interno
 ) {}

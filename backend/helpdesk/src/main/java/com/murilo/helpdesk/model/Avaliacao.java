@@ -63,7 +63,7 @@ public class Avaliacao implements Serializable {
         dataAvaliacao = LocalDateTime.now();
     }
 
-    /** Retorna interpretação textual da nota. */
+
     public String getInterpretacaoNota() {
         if (nota == null) return "Indefinida";
         return switch (nota) {
@@ -76,7 +76,7 @@ public class Avaliacao implements Serializable {
         };
     }
 
-    /** Indica se foi uma avaliação positiva (nota 4 ou 5). */
+
     public boolean ehPositiva() {
         return nota != null && nota >= 4;
     }

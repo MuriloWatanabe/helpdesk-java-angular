@@ -16,10 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Expõe os enums do domínio para que as telas montem selects e badges a partir
- * de uma única fonte de verdade, em vez de duplicar os códigos no front.
- */
+
 @RestController
 @RequestMapping("/v1/metadados")
 @Tag(name = "Metadados", description = "Listas de domínio (status, prioridades, categorias)")

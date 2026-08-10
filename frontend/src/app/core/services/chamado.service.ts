@@ -20,15 +20,7 @@ export class ChamadoService {
   private readonly http = inject(HttpClient);
   private readonly url = `${environment.apiUrl}/v1/chamados`;
 
-  // ------------------------------------------------------------------
-  // Chamados
-  // ------------------------------------------------------------------
 
-  /**
-   * Filtro e busca são resolvidos no servidor. Antes eram aplicados apenas
-   * sobre a página já carregada, então "Encerrados" só encontrava o que
-   * estivesse entre os 10 primeiros resultados.
-   */
   listar(filtro: ChamadoFiltro = {}, page = 0, size = 10): Observable<PageResponse<Chamado>> {
     let params = new HttpParams().set('page', page).set('size', size);
 
@@ -53,7 +45,7 @@ export class ChamadoService {
     return this.http.put<Chamado>(`${this.url}/${id}`, request);
   }
 
-  /** Aceita o código numérico ou o nome do status. */
+
   alterarStatus(id: number, status: number | string): Observable<Chamado> {
     const nome = typeof status === 'number' ? STATUS_ENUM_NOME[status] : status;
     return this.http.patch<Chamado>(`${this.url}/${id}/status/${nome}`, {});
@@ -75,9 +67,6 @@ export class ChamadoService {
     return this.http.get<HistoricoItem[]>(`${this.url}/${id}/historico`);
   }
 
-  // ------------------------------------------------------------------
-  // Comentários
-  // ------------------------------------------------------------------
 
   listarComentarios(chamadoId: number): Observable<Comentario[]> {
     return this.http.get<Comentario[]>(`${this.url}/${chamadoId}/comentarios`);
@@ -100,9 +89,6 @@ export class ChamadoService {
     return this.http.delete<void>(`${this.url}/${chamadoId}/comentarios/${comentarioId}`);
   }
 
-  // ------------------------------------------------------------------
-  // Anexos
-  // ------------------------------------------------------------------
 
   listarAnexos(chamadoId: number): Observable<Anexo[]> {
     return this.http.get<Anexo[]>(`${this.url}/${chamadoId}/anexos`);
@@ -115,7 +101,7 @@ export class ChamadoService {
     return this.http.post<Anexo>(`${this.url}/${chamadoId}/anexos`, form);
   }
 
-  /** Baixa via blob para que o header Authorization seja enviado. */
+
   baixarAnexo(chamadoId: number, anexoId: number): Observable<Blob> {
     return this.http.get(`${this.url}/${chamadoId}/anexos/${anexoId}/download`, {
       responseType: 'blob',
@@ -126,11 +112,7 @@ export class ChamadoService {
     return this.http.delete<void>(`${this.url}/${chamadoId}/anexos/${anexoId}`);
   }
 
-  // ------------------------------------------------------------------
-  // Avaliação
-  // ------------------------------------------------------------------
 
-  /** Responde 204 (corpo vazio) quando o chamado ainda não foi avaliado. */
   buscarAvaliacao(chamadoId: number): Observable<Avaliacao | null> {
     return this.http.get<Avaliacao | null>(`${this.url}/${chamadoId}/avaliacao`);
   }

@@ -9,10 +9,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Configura o botão "Authorize" do Swagger. Sem isso era preciso montar o
- * header Authorization manualmente para testar qualquer endpoint protegido.
- */
+
 @Configuration
 public class OpenApiConfig {
 

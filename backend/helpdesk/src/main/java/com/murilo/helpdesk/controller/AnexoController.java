@@ -53,7 +53,7 @@ public class AnexoController {
                                            Authentication auth) {
         var arquivo = anexoService.baixar(anexoId, auth.getName());
 
-        // filename* garante acentos corretos no nome sugerido pelo navegador.
+
         String nomeCodificado = java.net.URLEncoder.encode(arquivo.nomeArquivo(),
                 StandardCharsets.UTF_8).replace("+", "%20");
 

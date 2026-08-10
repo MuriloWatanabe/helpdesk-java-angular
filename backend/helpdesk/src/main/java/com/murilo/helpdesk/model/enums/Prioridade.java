@@ -2,10 +2,7 @@ package com.murilo.helpdesk.model.enums;
 
 import java.util.Arrays;
 
-/**
- * Prioridade do chamado. Cada nível define o prazo de SLA usado para calcular
- * a data limite de atendimento.
- */
+
 public enum Prioridade {
 
     BAIXA(0,   "Baixa",   72),
@@ -26,7 +23,7 @@ public enum Prioridade {
     public Integer getCodigo() { return codigo; }
     public String getDescricao() { return descricao; }
 
-    /** Prazo máximo de resolução, em horas, a partir da abertura. */
+
     public int getHorasSla() { return horasSla; }
 
     public static Prioridade fromCodigo(Integer codigo) {

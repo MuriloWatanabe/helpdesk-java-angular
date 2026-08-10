@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-/** Usuário autenticado sem permissão para o recurso responde 403 em JSON. */
+
 @Component
 @RequiredArgsConstructor
 public class JsonAccessDeniedHandler implements AccessDeniedHandler {

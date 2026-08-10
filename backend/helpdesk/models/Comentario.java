@@ -7,10 +7,7 @@ import lombok.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/**
- * Entidade que representa um comentário/nota em um chamado.
- * Permite rastrear a evolução e discussão de um chamado.
- */
+
 @Entity
 @Table(name = "comentarios", indexes = {
     @Index(name = "idx_chamado", columnList = "chamado_id"),
@@ -47,9 +44,7 @@ public class Comentario implements Serializable {
     @Column(nullable = true)
     private LocalDateTime dataAtualizacao;
 
-    /**
-     * Indica se o comentário foi editado
-     */
+
     @Column(nullable = false)
     private Boolean editado = false;
 

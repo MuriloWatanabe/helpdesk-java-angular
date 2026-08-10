@@ -20,7 +20,7 @@ public enum Severidade {
     public String getDescricao() { return descricao; }
     public String getDetalhe() { return detalhe; }
 
-    /** Retorna as horas máximas de resposta (SLA) baseado na severidade. */
+
     public int getHorasResposta() {
         return switch (this) {
             case BAIXA   -> 48;

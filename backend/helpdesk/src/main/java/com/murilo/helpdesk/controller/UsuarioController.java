@@ -25,10 +25,7 @@ public class UsuarioController {
 
     private final UsuarioService usuarioService;
 
-    /**
-     * Técnicos precisam da lista para atribuir chamados e escolher o cliente ao
-     * abrir um chamado em nome de terceiros; a manutenção é só do admin.
-     */
+
     @GetMapping
     @Operation(summary = "Listar usuários com filtros opcionais")
     @PreAuthorize("hasAnyRole('ADMIN','TECNICO')")
@@ -73,7 +70,7 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.updatePerfis(id, perfis));
     }
 
-    /** Alternativa à exclusão para quem já possui chamados no histórico. */
+
     @PatchMapping("/{id}/situacao")
     @Operation(summary = "Ativar ou desativar usuário")
     @PreAuthorize("hasRole('ADMIN')")

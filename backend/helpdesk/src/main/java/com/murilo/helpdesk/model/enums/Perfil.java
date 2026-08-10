@@ -20,16 +20,13 @@ public enum Perfil {
 
     public Integer getCodigo() { return codigo; }
 
-    /** Authority usada pelo Spring Security (ROLE_*). */
+
     public String getDescricao() { return descricao; }
 
-    /** Nome amigável para exibição. */
+
     public String getRotulo() { return rotulo; }
 
-    /**
-     * Conversão segura: um código inválido gravado no banco derrubava o login
-     * com ArrayIndexOutOfBounds em {@code values()[codigo]}.
-     */
+
     public static Perfil fromCodigo(Integer codigo) {
         if (codigo == null) return null;
         return Arrays.stream(values())

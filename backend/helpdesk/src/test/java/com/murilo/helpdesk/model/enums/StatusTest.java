@@ -11,7 +11,7 @@ class StatusTest {
     @Test
     @DisplayName("fromCodigo respeita os códigos gravados, não a ordem de declaração")
     void fromCodigoUsaCodigoNaoOrdinal() {
-        // ENCERRADO é o 5º declarado, mas continua sendo o código 2 no banco.
+
         assertThat(Status.fromCodigo(2)).isEqualTo(Status.ENCERRADO);
         assertThat(Status.fromCodigo(3)).isEqualTo(Status.AGUARDANDO_CLIENTE);
         assertThat(Status.fromCodigo(0)).isEqualTo(Status.ABERTO);
@@ -46,7 +46,7 @@ class StatusTest {
         assertThat(Status.RESOLVIDO.podeIrPara(Status.ENCERRADO)).isTrue();
         assertThat(Status.ENCERRADO.podeIrPara(Status.EM_ANDAMENTO)).isTrue();
 
-        // Cancelado é terminal e chamado aberto não pula direto para encerrado.
+
         assertThat(Status.CANCELADO.podeIrPara(Status.EM_ANDAMENTO)).isFalse();
         assertThat(Status.ABERTO.podeIrPara(Status.ENCERRADO)).isFalse();
     }

@@ -85,15 +85,15 @@ describe('chamado-ui', () => {
 
   describe('transições de status', () => {
     it('espelha as regras do backend para a equipe', () => {
-      expect(transicoesPermitidas(0)).toContain(1); // Aberto → Em andamento
-      expect(transicoesPermitidas(4)).toContain(2); // Resolvido → Encerrado
-      expect(transicoesPermitidas(5)).toHaveLength(0); // Cancelado é terminal
+      expect(transicoesPermitidas(0)).toContain(1);
+      expect(transicoesPermitidas(4)).toContain(2);
+      expect(transicoesPermitidas(5)).toHaveLength(0);
     });
 
     it('limita o cliente a cancelar, confirmar e reabrir', () => {
-      expect(transicoesDoCliente(0)).toEqual([5]); // cancelar o que ninguém atendeu
-      expect(transicoesDoCliente(4)).toEqual([2, 1]); // confirmar ou reabrir
-      expect(transicoesDoCliente(1)).toEqual([]); // nada durante o atendimento
+      expect(transicoesDoCliente(0)).toEqual([5]);
+      expect(transicoesDoCliente(4)).toEqual([2, 1]);
+      expect(transicoesDoCliente(1)).toEqual([]);
     });
   });
 

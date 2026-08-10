@@ -42,7 +42,7 @@ export class ChamadosListComponent implements OnInit {
   totalElements = 0;
   readonly pageSize = 10;
 
-  // Filtros — todos resolvidos no servidor
+
   busca = '';
   filtroStatus: number | null = null;
   filtroPrioridade: number | null = null;
@@ -51,8 +51,7 @@ export class ChamadosListComponent implements OnInit {
   soSlaVencido = false;
   soSemTecnico = false;
 
-  // Signals: o app é zoneless — listas carregadas por HTTP precisam ser
-  // signals para as abas e selects aparecerem quando a resposta chegar.
+
   statusOpcoes = signal<Opcao[]>([]);
   prioridadeOpcoes = signal<Opcao[]>([]);
   categoriaOpcoes = signal<Opcao[]>([]);
@@ -71,7 +70,7 @@ export class ChamadosListComponent implements OnInit {
     this.modo = (this.route.snapshot.data['modo'] as Modo) ?? 'todos';
     this.aplicarPreDefinicoesDoModo();
 
-    // Digitar não dispara uma requisição por tecla.
+
     this.buscaSubject
       .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
@@ -97,7 +96,7 @@ export class ChamadosListComponent implements OnInit {
       : 'Todos os chamados registrados no sistema';
   }
 
-  /** A fila e "atribuídos a mim" são a mesma tela com filtros pré-aplicados. */
+
   private aplicarPreDefinicoesDoModo(): void {
     if (this.modo === 'fila') {
       this.soSemTecnico = true;
@@ -116,7 +115,7 @@ export class ChamadosListComponent implements OnInit {
       },
     });
 
-    // A lista de técnicos só está disponível para quem atende.
+
     if (this.isAtendente()) {
       this.usuarioService.listar({ perfil: 2, ativo: true }).subscribe({
         next: (lista) => this.tecnicos.set(lista),
@@ -191,7 +190,7 @@ export class ChamadosListComponent implements OnInit {
     );
   }
 
-  /** Técnico assume o chamado direto da lista, sem abrir o detalhe. */
+
   assumir(chamado: Chamado, evento: Event): void {
     evento.stopPropagation();
     evento.preventDefault();
@@ -205,9 +204,6 @@ export class ChamadosListComponent implements OnInit {
     });
   }
 
-  // ------------------------------------------------------------------
-  // Paginação
-  // ------------------------------------------------------------------
 
   paginaAnterior(): void {
     if (this.currentPage > 0) {
@@ -228,7 +224,7 @@ export class ChamadosListComponent implements OnInit {
     this.carregar();
   }
 
-  /** Janela de no máximo 7 páginas centrada na atual. */
+
   get paginas(): number[] {
     const maximo = Math.min(this.totalPages, 7);
     let inicio = Math.max(0, this.currentPage - 3);

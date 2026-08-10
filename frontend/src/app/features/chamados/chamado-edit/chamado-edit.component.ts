@@ -8,11 +8,7 @@ import { ToastService, mensagemDoErro } from '../../../core/services/toast.servi
 import { Chamado } from '../../../core/models/chamado.model';
 import { Opcao, Usuario } from '../../../core/models/usuario.model';
 
-/**
- * Edição do chamado pela equipe de suporte. Antes só era possível trocar o
- * status e o técnico: título, descrição, prioridade e categoria ficavam
- * congelados depois da abertura, mesmo com a API já suportando a alteração.
- */
+
 @Component({
   selector: 'app-chamado-edit',
   standalone: true,
@@ -30,8 +26,7 @@ export class ChamadoEditComponent implements OnInit {
 
   form!: FormGroup;
 
-  // Signals: o app é zoneless, então estado alterado em callback assíncrono
-  // precisa ser signal para a tela re-renderizar.
+
   chamado = signal<Chamado | null>(null);
   carregando = signal(true);
   salvando = signal(false);
@@ -138,7 +133,7 @@ export class ChamadoEditComponent implements OnInit {
     return !!(c && c.invalid && c.touched);
   }
 
-  /** Avisa que mudar a prioridade recalcula o prazo prometido ao cliente. */
+
   get avisoPrazo(): string {
     const atual = this.chamado();
     const codigo = Number(this.form?.get('prioridade')?.value);

@@ -14,7 +14,7 @@ public interface HistoricoChamadoRepository extends JpaRepository<HistoricoChama
 
     List<HistoricoChamado> findByChamadoOrderByDataAlteracaoDesc(Chamado chamado);
 
-    /** Linha do tempo do chamado, do evento mais recente para o mais antigo. */
+
     List<HistoricoChamado> findByChamadoIdOrderByDataAlteracaoDesc(Long chamadoId);
 
     List<HistoricoChamado> findByChamadoAndTipoAlteracao(

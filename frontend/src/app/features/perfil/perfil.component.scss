@@ -23,7 +23,7 @@
   margin: 0;
 }
 
-// Grid: identity card + forms
+
 .perfil-grid {
   display: grid;
   grid-template-columns: 260px 1fr;
@@ -42,7 +42,7 @@
   gap: 20px;
 }
 
-// Cards
+
 .card {
   background: #fff;
   border-radius: 12px;
@@ -50,7 +50,7 @@
   padding: 24px;
 }
 
-// Identity card
+
 .identity-card {
   display: flex;
   flex-direction: column;
@@ -113,7 +113,7 @@
   svg { flex-shrink: 0; }
 }
 
-// Form cards
+
 .card-title {
   display: flex;
   align-items: center;
@@ -182,7 +182,7 @@
   &:disabled { opacity: 0.6; cursor: not-allowed; }
 }
 
-/* Adições: subtítulo, dados de contato e alertas */
+
 .page-subtitle {
   font-size: 13px;
   color: #64748b;

@@ -9,9 +9,7 @@ export const routes: Routes = [
     pathMatch: 'full',
   },
 
-  // ---------------------------------------------------------------
-  // Público
-  // ---------------------------------------------------------------
+
   {
     path: 'login',
     title: 'Entrar · FixLab',
@@ -41,9 +39,7 @@ export const routes: Routes = [
       ),
   },
 
-  // ---------------------------------------------------------------
-  // Área autenticada
-  // ---------------------------------------------------------------
+
   {
     path: 'dashboard',
     title: 'Painel · FixLab',
@@ -70,7 +66,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    // Fila de atendimento: chamados sem técnico e SLA estourado
+
     path: 'fila',
     title: 'Fila de atendimento · FixLab',
     loadComponent: () =>
@@ -81,7 +77,7 @@ export const routes: Routes = [
     data: { modo: 'fila' },
   },
   {
-    // Atalho para "os que eu atendo" / "os meus"
+
     path: 'meus-chamados',
     title: 'Meus chamados · FixLab',
     loadComponent: () =>
@@ -131,9 +127,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
 
-  // ---------------------------------------------------------------
-  // Erros
-  // ---------------------------------------------------------------
+
   {
     path: 'acesso-negado',
     title: 'Acesso negado · FixLab',
@@ -141,8 +135,8 @@ export const routes: Routes = [
       import('./features/erros/acesso-negado.component').then((m) => m.AcessoNegadoComponent),
   },
   {
-    // Antes qualquer rota desconhecida jogava o usuário logado para o login,
-    // fazendo parecer que a sessão havia caído.
+
+
     path: '**',
     title: 'Página não encontrada · FixLab',
     loadComponent: () =>

@@ -20,7 +20,7 @@ public class AvaliacaoController {
 
     private final AvaliacaoService avaliacaoService;
 
-    /** Retorna 204 quando o chamado ainda não foi avaliado. */
+
     @GetMapping
     @Operation(summary = "Consultar avaliação do chamado")
     public ResponseEntity<AvaliacaoResponse> buscar(@PathVariable Long chamadoId,

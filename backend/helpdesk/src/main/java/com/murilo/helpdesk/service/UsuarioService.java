@@ -34,9 +34,6 @@ public class UsuarioService {
     private final ChamadoRepository chamadoRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // ------------------------------------------------------------------
-    // Consultas
-    // ------------------------------------------------------------------
 
     @Transactional(readOnly = true)
     public Usuario findById(Long id) {
@@ -56,10 +53,7 @@ public class UsuarioService {
         return Mapper.toUsuarioResponse(findById(id));
     }
 
-    /**
-     * Lista com filtros opcionais de perfil, situação e busca textual.
-     * A ordenação por nome deixa a tela de gestão previsível.
-     */
+
     @Transactional(readOnly = true)
     public List<UsuarioResponse> listar(Integer perfil, Boolean ativo, String busca) {
         String termo = busca == null ? null : busca.trim().toLowerCase();
@@ -80,9 +74,6 @@ public class UsuarioService {
         return listar(null, null, null);
     }
 
-    // ------------------------------------------------------------------
-    // Escrita (administração)
-    // ------------------------------------------------------------------
 
     @Transactional
     public UsuarioResponse create(UsuarioRequest request) {
@@ -119,7 +110,7 @@ public class UsuarioService {
         }
         validarPerfis(request.perfis());
 
-        // Impede que o sistema fique sem nenhum administrador ativo.
+
         if (existente.ehAdmin() && !request.perfis().contains(Perfil.ADMIN.getCodigo())) {
             garantirOutroAdminAtivo(existente.getId());
         }
@@ -157,7 +148,7 @@ public class UsuarioService {
         return Mapper.toUsuarioResponse(usuarioRepository.save(usuario));
     }
 
-    /** Ativa/desativa sem perder o histórico de chamados do usuário. */
+
     @Transactional
     public UsuarioResponse alterarSituacao(Long id, boolean ativo, String emailSolicitante) {
         Usuario solicitante = findByEmail(emailSolicitante);
@@ -175,10 +166,7 @@ public class UsuarioService {
         return Mapper.toUsuarioResponse(usuarioRepository.save(alvo));
     }
 
-    /**
-     * Exclusão definitiva. Usuário com chamados vinculados não é removido —
-     * a alternativa correta é desativá-lo, preservando o histórico.
-     */
+
     @Transactional
     public void delete(Long id, String emailSolicitante) {
         Usuario solicitante = findByEmail(emailSolicitante);
@@ -200,7 +188,7 @@ public class UsuarioService {
         log.info("Usuário {} excluído por {}", alvo.getEmail(), solicitante.getEmail());
     }
 
-    /** Compatibilidade com chamadas antigas sem contexto de solicitante. */
+
     @Transactional
     public void delete(Long id) {
         Usuario alvo = findById(id);
@@ -211,9 +199,6 @@ public class UsuarioService {
         usuarioRepository.delete(alvo);
     }
 
-    // ------------------------------------------------------------------
-    // Autosserviço (o próprio usuário)
-    // ------------------------------------------------------------------
 
     @Transactional
     public UsuarioResponse atualizarMeuPerfil(String emailAtual, AtualizarPerfilRequest request) {
@@ -256,18 +241,12 @@ public class UsuarioService {
         });
     }
 
-    // ------------------------------------------------------------------
-    // Internos
-    // ------------------------------------------------------------------
 
     private String normalizarEmail(String email) {
         return email == null ? null : email.trim().toLowerCase();
     }
 
-    /**
-     * Rejeita códigos de perfil desconhecidos. Antes qualquer inteiro era aceito
-     * e o usuário ficava impossibilitado de logar.
-     */
+
     private void validarPerfis(Set<Integer> perfis) {
         if (perfis == null || perfis.isEmpty()) {
             throw new BusinessException("Selecione ao menos um perfil.");
@@ -292,7 +271,7 @@ public class UsuarioService {
         }
     }
 
-    /** Usado no fluxo de recuperação de senha. */
+
     @Transactional
     public void definirSenha(Usuario usuario, String novaSenha) {
         usuario.setSenha(passwordEncoder.encode(novaSenha));
@@ -304,7 +283,7 @@ public class UsuarioService {
         return usuarioRepository.findByEmail(normalizarEmail(email));
     }
 
-    /** Regra usada pelo controller para negar acesso a dados de terceiros. */
+
     public void garantirPodeVerUsuario(Usuario solicitante, Long idAlvo) {
         if (solicitante.ehAtendente() || solicitante.getId().equals(idAlvo)) return;
         throw new OperacaoNaoPermitidaException("Você só pode consultar os próprios dados.");

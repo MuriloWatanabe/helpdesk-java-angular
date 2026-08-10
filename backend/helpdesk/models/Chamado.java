@@ -10,10 +10,7 @@ import lombok.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/**
- * Entidade que representa um chamado técnico do sistema.
- * Contém informações sobre o ticket, responsáveis e status.
- */
+
 @Entity
 @Table(name = "chamados", indexes = {
     @Index(name = "idx_cliente", columnList = "cliente_id"),
@@ -25,7 +22,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Chamado implements Serializable {
-    
+
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -78,7 +75,7 @@ public class Chamado implements Serializable {
         dataAtualizacao = LocalDateTime.now();
     }
 
-    // Métodos auxiliares para trabalhar com enums
+
     public Status getStatusEnum() {
         return Status.values()[this.status];
     }

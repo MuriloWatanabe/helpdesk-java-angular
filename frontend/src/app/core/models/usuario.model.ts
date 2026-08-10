@@ -30,7 +30,7 @@ export interface CriarUsuarioRequest {
 
 export type AtualizarUsuarioRequest = CriarUsuarioRequest;
 
-/** Edição dos próprios dados — não inclui perfis nem situação. */
+
 export interface AtualizarPerfilRequest {
   nome: string;
   email: string;
@@ -43,7 +43,7 @@ export interface AlterarSenhaRequest {
   novaSenha: string;
 }
 
-/** Item de enum devolvido por /v1/metadados. */
+
 export interface Opcao {
   codigo: number;
   nome: string;

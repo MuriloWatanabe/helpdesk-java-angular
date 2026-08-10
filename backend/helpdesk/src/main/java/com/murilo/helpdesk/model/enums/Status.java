@@ -4,14 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Ciclo de vida do chamado.
- *
- * Os códigos 0/1/2 são os originais e permanecem estáveis para não invalidar
- * dados já gravados; os estados novos usam códigos a partir de 3. Por isso a
- * conversão é feita por {@link #fromCodigo(Integer)} e nunca por
- * {@code values()[codigo]}, que dependia da ordem de declaração.
- */
+
 public enum Status {
 
     ABERTO(0, "Aberto"),
@@ -40,25 +33,22 @@ public enum Status {
                 .orElseThrow(() -> new IllegalArgumentException("Status inválido: " + codigo));
     }
 
-    /** Estado final: não conta como pendente e libera a avaliação do atendimento. */
+
     public boolean ehFinal() {
         return this == ENCERRADO || this == CANCELADO;
     }
 
-    /** Chamado ainda em aberto do ponto de vista do cliente. */
+
     public boolean ehPendente() {
         return !ehFinal() && this != RESOLVIDO;
     }
 
-    /** O relógio do SLA só corre enquanto o chamado não foi resolvido. */
+
     public boolean contaParaSla() {
         return this == ABERTO || this == EM_ANDAMENTO;
     }
 
-    /**
-     * Transições permitidas. Impede saltos incoerentes, como reabrir um chamado
-     * cancelado ou "resolver" um chamado que nunca foi atendido.
-     */
+
     public Set<Status> proximosPermitidos() {
         return switch (this) {
             case ABERTO             -> Set.of(EM_ANDAMENTO, AGUARDANDO_CLIENTE, RESOLVIDO, CANCELADO);
@@ -74,7 +64,7 @@ public enum Status {
         return destino != null && proximosPermitidos().contains(destino);
     }
 
-    /** Estados considerados "em aberto" nas consultas de dashboard. */
+
     public static List<Integer> codigosPendentes() {
         return Arrays.stream(values())
                 .filter(Status::ehPendente)

@@ -14,7 +14,7 @@
   --color-card: #ffffff;
   --color-text-primary: #1e293b;
   --color-text-secondary: #64748b;
-  /* #94a3b8 ficava em ~2.8:1 sobre o branco; este tom passa no AA para texto pequeno */
+
   --color-text-muted: #6b7280;
   --color-border: #e2e8f0;
 
@@ -83,18 +83,13 @@ ul {
   list-style: none;
 }
 
-/* Indicador de foco visível para navegação por teclado */
+
 :focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
-/* ==================================================================
-   ESTRUTURA COMPARTILHADA
-   Estas classes são usadas por todas as telas internas; ficam aqui
-   para não repetir o mesmo bloco em cada SCSS de componente.
-   ================================================================== */
 
 .layout {
   display: flex;
@@ -109,13 +104,10 @@ ul {
 
 @media (max-width: 900px) {
   .main-content {
-    padding: 76px 16px 32px; /* espaço para o botão de menu fixo */
+    padding: 76px 16px 32px;
   }
 }
 
-/* ==================================================================
-   BADGES DE STATUS E PRIORIDADE
-   ================================================================== */
 
 .badge {
   display: inline-flex;
@@ -151,9 +143,6 @@ ul {
   color: #7c3aed;
 }
 
-/* ==================================================================
-   BOTÕES
-   ================================================================== */
 
 .btn-primary,
 .btn-secondary,
@@ -195,9 +184,6 @@ ul {
   cursor: not-allowed;
 }
 
-/* ==================================================================
-   CARTÕES, FORMULÁRIOS E ESTADOS
-   ================================================================== */
 
 .card {
   background: var(--color-card);
@@ -344,7 +330,7 @@ ul {
   .spinner { animation-duration: 2s; }
 }
 
-/* Acessibilidade: conteúdo lido por leitores de tela, invisível na tela */
+
 .sr-only {
   position: absolute;
   width: 1px;

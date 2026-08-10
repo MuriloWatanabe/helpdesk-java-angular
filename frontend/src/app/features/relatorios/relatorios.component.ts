@@ -16,10 +16,7 @@ import { DashboardService } from '../../core/services/dashboard.service';
 import { ToastService } from '../../core/services/toast.service';
 import { DashboardStats } from '../../core/models/dashboard.model';
 
-/**
- * Relatórios da operação: volume por prioridade e categoria, carga por técnico
- * e indicadores de SLA/satisfação. Exporta em CSV para uso fora do sistema.
- */
+
 @Component({
   selector: 'app-relatorios',
   standalone: true,
@@ -73,9 +70,6 @@ export class RelatoriosComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  // ------------------------------------------------------------------
-  // Gráficos
-  // ------------------------------------------------------------------
 
   private destruir(): void {
     this.chartPrioridade?.destroy();
@@ -98,7 +92,7 @@ export class RelatoriosComponent implements OnInit, AfterViewInit, OnDestroy {
             {
               label: 'Chamados',
               data: dados.porPrioridade.map((p) => p.total),
-              // Ordem BAIXA → URGENTE, seguindo a escala de urgência
+
               backgroundColor: ['#059669', '#d97706', '#dc2626', '#991b1b'],
               borderRadius: 5,
             },
@@ -153,11 +147,7 @@ export class RelatoriosComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // ------------------------------------------------------------------
-  // Exportação
-  // ------------------------------------------------------------------
 
-  /** Gera um CSV com os indicadores consolidados (separador ; para o Excel pt-BR). */
   exportarCsv(): void {
     const dados = this.stats();
     if (!dados) return;
@@ -189,7 +179,7 @@ export class RelatoriosComponent implements OnInit, AfterViewInit, OnDestroy {
     ];
 
     const csv = linhas.map((linha) => linha.join(';')).join('\n');
-    // BOM para o Excel reconhecer os acentos como UTF-8
+
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
 
     const url = URL.createObjectURL(blob);

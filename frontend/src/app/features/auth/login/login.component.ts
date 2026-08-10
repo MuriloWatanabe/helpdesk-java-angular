@@ -19,13 +19,13 @@ export class LoginComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
 
   loginForm: FormGroup;
-  // Signals: o app é zoneless — o retorno do HTTP precisa disparar re-render.
+
   errorMessage = signal('');
   avisoSessao = signal('');
   isLoading = signal(false);
   mostrarSenha = false;
 
-  /** Destino original quando o usuário caiu no login por um guard. */
+
   private retorno = '/dashboard';
 
   constructor() {
@@ -70,14 +70,14 @@ export class LoginComponent implements OnInit {
           this.errorMessage.set(
             'Não foi possível conectar ao servidor. Verifique se a API está no ar.');
         } else {
-          // O backend já devolve mensagens prontas (credenciais, usuário inativo).
+
           this.errorMessage.set(mensagemDoErro(err, 'E-mail ou senha inválidos.'));
         }
       },
     });
   }
 
-  /** Preenche as credenciais de demonstração para facilitar a avaliação. */
+
   usarDemo(email: string): void {
     this.loginForm.patchValue({ email, senha: '123456' });
   }

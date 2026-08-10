@@ -12,10 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/**
- * Registra a linha do tempo do chamado. Toda mudança relevante passa por aqui,
- * de modo que o cliente consegue auditar o que aconteceu e quando.
- */
+
 @Service
 @RequiredArgsConstructor
 public class HistoricoService {
@@ -70,7 +67,7 @@ public class HistoricoService {
         historicoRepository.save(HistoricoChamado.criarReabertura(chamado, autor));
     }
 
-    /** Evento livre — usado por anexos e avaliação. */
+
     @Transactional
     public void registrar(Chamado chamado, Usuario autor,
                           HistoricoChamado.TipoAlteracao tipo, String descricao) {

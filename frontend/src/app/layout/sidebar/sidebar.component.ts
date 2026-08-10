@@ -17,7 +17,7 @@ export class SidebarComponent {
   private readonly confirmService = inject(ConfirmService);
   private readonly router = inject(Router);
 
-  /** Em telas estreitas a sidebar vira um painel deslizante. */
+
   readonly aberta = signal(false);
 
   readonly usuario = this.authService.usuario;
@@ -34,7 +34,7 @@ export class SidebarComponent {
   readonly userInitials = computed(() => this.authService.getIniciais(this.userName()));
 
   constructor() {
-    // Navegar em um celular deve fechar o menu.
+
     this.router.events
       .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
       .subscribe(() => this.aberta.set(false));

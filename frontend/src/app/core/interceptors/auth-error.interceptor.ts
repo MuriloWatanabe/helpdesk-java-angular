@@ -5,13 +5,7 @@ import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
 
-/**
- * 401 → sessão inválida: encerra e manda para o login.
- * 403 → autenticado, mas sem permissão: apenas avisa.
- *
- * Antes os dois casos deslogavam o usuário, então qualquer ação sem permissão
- * (um cliente tentando editar um chamado, por exemplo) derrubava a sessão.
- */
+
 export const authErrorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const authService = inject(AuthService);
@@ -20,7 +14,7 @@ export const authErrorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
-        // Evita loop de redirecionamento quando o próprio login falha.
+
         if (!req.url.includes('/v1/auth/login')) {
           authService.logout();
           router.navigate(['/login'], {

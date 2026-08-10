@@ -5,13 +5,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { mensagemDoErro } from '../../../core/services/toast.service';
 import { LogoComponent } from '../../../shared/logo/logo.component';
 
-/**
- * "Esqueci minha senha" — a tela existia como link morto (href="#").
- *
- * O backend gera um token de uso único válido por 30 minutos. Como o projeto
- * não tem servidor de e-mail, em desenvolvimento o link volta na resposta e é
- * mostrado aqui; em produção basta desligar `app.reset-senha.expor-link`.
- */
+
 @Component({
   selector: 'app-esqueci-senha',
   standalone: true,
@@ -27,7 +21,7 @@ export class EsqueciSenhaComponent {
     email: ['', [Validators.required, Validators.email]],
   });
 
-  // Signals: o app é zoneless — o retorno do HTTP precisa disparar re-render.
+
   enviando = signal(false);
   mensagem = signal('');
   erro = signal('');
@@ -61,7 +55,7 @@ export class EsqueciSenhaComponent {
     });
   }
 
-  /** Extrai o caminho relativo para navegar sem recarregar a aplicação. */
+
   get caminhoDoLink(): string {
     try {
       const url = new URL(this.linkGerado());

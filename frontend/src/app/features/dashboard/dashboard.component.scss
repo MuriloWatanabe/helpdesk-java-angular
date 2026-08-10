@@ -12,7 +12,7 @@
   overflow: auto;
 }
 
-// ---- Header ----
+
 .dashboard-header {
   display: flex;
   align-items: center;
@@ -89,7 +89,7 @@
   }
 }
 
-// ---- Content ----
+
 .dashboard-content {
   padding: 24px 28px;
   display: flex;
@@ -97,7 +97,7 @@
   gap: 24px;
 }
 
-// ---- Stat Cards ----
+
 .stats-section {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -157,9 +157,7 @@
   color: #94a3b8;
 }
 
-// ---- Charts Section ----
-// Uma coluna: a barra de situação fica mais precisa quanto mais larga, e a
-// linha de 14 dias estava espremida em 380px, com os rótulos de data colados.
+
 .charts-section {
   display: grid;
   grid-template-columns: 1fr;
@@ -199,12 +197,10 @@
   position: relative;
 }
 
-// ---- Situação dos chamados ----
-// Barra de composição + lista. A lista faz as vezes de legenda e de tabela:
-// o valor exato nunca depende de passar o mouse.
+
 .situacao-barra {
   display: flex;
-  // O vão de 2px é a cor do card: é ele que separa as faixas, não uma borda.
+
   gap: 2px;
   height: 16px;
   margin: 4px 0 20px;
@@ -213,7 +209,7 @@
 }
 
 .situacao-parte {
-  // flex-grow carrega o valor; flex-basis 0 faz a divisão ser proporcional.
+
   flex-basis: 0;
   min-width: 3px;
   transition: opacity 0.15s ease;
@@ -223,9 +219,7 @@
   }
 }
 
-// Cada item ocupa só a largura do próprio conteúdo e quebra a linha quando
-// precisa. Com grid de colunas iguais, nomes curtos ("Resolvidos") ficavam
-// longe do próprio número e o par parava de ser lido junto.
+
 .situacao-lista {
   display: flex;
   flex-wrap: wrap;
@@ -261,7 +255,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-// ---- Categories ----
+
 .categories-list {
   display: flex;
   flex-direction: column;
@@ -310,7 +304,7 @@
   &.bar-green { background: #059669; }
 }
 
-// ---- Table ----
+
 .table-section {
   .table-card {
     overflow: hidden;
@@ -386,7 +380,7 @@
   }
 }
 
-// ---- Badges ----
+
 .badge {
   display: inline-flex;
   align-items: center;
@@ -427,9 +421,6 @@
   color: var(--badge-resolvido-color, #059669);
 }
 
-/* ==================================================================
-   Adições: alerta de operação, novos indicadores, SLA e protocolo
-   ================================================================== */
 
 .page-title {
   font-size: 23px;
@@ -562,7 +553,7 @@
   &.sla-vencido { color: #dc2626; }
 }
 
-/* Badges dos status/prioridades novos */
+
 .badge-aguardando { background: #ede9fe; color: #7c3aed; }
 .badge-encerrado  { background: #e2e8f0; color: #475569; }
 .badge-cancelado  { background: #f1f5f9; color: #64748b; }

@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { AuthService } from './auth.service';
 
-/** Monta um JWT sem assinatura válida — só o payload importa para estes testes. */
+
 function tokenComExpiracao(segundosDesdeEpoch: number | null): string {
   const payload = segundosDesdeEpoch === null ? {} : { exp: segundosDesdeEpoch };
   const base64 = btoa(JSON.stringify(payload)).replaceAll('+', '-').replaceAll('/', '_');
@@ -37,7 +37,7 @@ describe('AuthService', () => {
       localStorage.setItem('helpdesk_token', tokenComExpiracao(umaHoraAtras));
 
       expect(service.isLoggedIn()).toBe(false);
-      // Sem isso o usuário entrava na tela e só descobria na primeira requisição.
+
       expect(localStorage.getItem('helpdesk_token')).toBeNull();
     });
 

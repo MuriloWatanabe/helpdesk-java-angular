@@ -1,18 +1,5 @@
--- ================================================
--- HELPDESK — Schema Principal
--- Compatível com as entidades JPA do backend Java.
---
--- Para recriar do zero em dev:
---   psql -U postgres -d helpdesk -f schema.sql
---   psql -U postgres -d helpdesk -f data.sql
---
--- Para atualizar um banco que já existe sem perder dados,
--- use migration-v2.sql em vez deste arquivo.
--- ================================================
 
--- ================================================
--- DROP (ordem inversa para respeitar FKs)
--- ================================================
+
 DROP TABLE IF EXISTS password_reset_tokens CASCADE;
 DROP TABLE IF EXISTS historico_chamados  CASCADE;
 DROP TABLE IF EXISTS avaliacao_aspectos  CASCADE;
@@ -25,16 +12,11 @@ DROP TABLE IF EXISTS usuarios            CASCADE;
 DROP TABLE IF EXISTS departamentos       CASCADE;
 
 
--- ================================================
--- DEPARTAMENTOS
--- Criado antes de usuarios por causa da FK cruzada.
--- A FK de gerente_id é adicionada via ALTER TABLE depois.
--- ================================================
 CREATE TABLE departamentos (
     id                BIGSERIAL    PRIMARY KEY,
     nome              VARCHAR(100) NOT NULL UNIQUE,
     descricao         TEXT,
-    gerente_id        BIGINT,                        -- FK adicionada após criar usuarios
+    gerente_id        BIGINT,
     email_contato     VARCHAR(100),
     telefone_contato  VARCHAR(20),
     localizacao       VARCHAR(100),
@@ -44,11 +26,6 @@ CREATE TABLE departamentos (
 );
 
 
--- ================================================
--- USUÁRIOS
--- Perfis gerenciados via tabela usuario_perfis.
--- ativo = FALSE bloqueia o login preservando o histórico de chamados.
--- ================================================
 CREATE TABLE usuarios (
     id                BIGSERIAL    PRIMARY KEY,
     nome              VARCHAR(100) NOT NULL,
@@ -57,27 +34,24 @@ CREATE TABLE usuarios (
     telefone          VARCHAR(20),
     cargo             VARCHAR(100),
     ativo             BOOLEAN      NOT NULL DEFAULT TRUE,
-    departamento_id   BIGINT,                        -- FK adicionada após departamentos
+    departamento_id   BIGINT,
     data_criacao      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     data_atualizacao  TIMESTAMP,
     ultimo_acesso     TIMESTAMP
 );
 
--- Tabela de perfis do usuário (ADMIN=0, CLIENTE=1, TECNICO=2)
+
 CREATE TABLE usuario_perfis (
     usuario_id  BIGINT  NOT NULL,
     perfil      INTEGER NOT NULL,
     PRIMARY KEY (usuario_id, perfil),
     CONSTRAINT fk_perfis_usuario
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
-    -- Um código fora da faixa deixava o usuário sem conseguir autenticar.
+
     CONSTRAINT ck_perfil_valido CHECK (perfil BETWEEN 0 AND 2)
 );
 
 
--- ================================================
--- FKs CRUZADAS entre usuarios e departamentos
--- ================================================
 ALTER TABLE departamentos
     ADD CONSTRAINT fk_departamento_gerente
     FOREIGN KEY (gerente_id) REFERENCES usuarios(id) ON DELETE SET NULL;
@@ -87,17 +61,9 @@ ALTER TABLE usuarios
     FOREIGN KEY (departamento_id) REFERENCES departamentos(id) ON DELETE SET NULL;
 
 
--- ================================================
--- CHAMADOS
--- status:     0=ABERTO | 1=EM_ANDAMENTO | 2=ENCERRADO
---             3=AGUARDANDO_CLIENTE | 4=RESOLVIDO | 5=CANCELADO
--- prioridade: 0=BAIXA | 1=MEDIA | 2=ALTA | 3=URGENTE
--- categoria:  0=REDE | 1=HARDWARE | 2=SOFTWARE | 3=ACESSO | 4=EMAIL
---             5=VPN | 6=IMPRESSORA | 7=BACKUP | 8=INSTALACAO | 9=OUTRO
--- ================================================
 CREATE TABLE chamados (
     id                     BIGSERIAL    PRIMARY KEY,
-    numero                 VARCHAR(20)  UNIQUE,      -- protocolo CH-AAAA-NNNNNN
+    numero                 VARCHAR(20)  UNIQUE,
     titulo                 VARCHAR(200) NOT NULL,
     observacoes            TEXT         NOT NULL,
     status                 INTEGER      NOT NULL,
@@ -108,7 +74,7 @@ CREATE TABLE chamados (
     data_abertura          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     data_fechamento        TIMESTAMP,
     data_atualizacao       TIMESTAMP,
-    prazo_sla              TIMESTAMP,                -- limite calculado pela prioridade
+    prazo_sla              TIMESTAMP,
     data_primeira_resposta TIMESTAMP,
 
     CONSTRAINT fk_chamado_cliente
@@ -126,10 +92,6 @@ CREATE INDEX idx_chamado_categoria ON chamados(categoria);
 CREATE INDEX idx_chamado_abertura  ON chamados(data_abertura);
 
 
--- ================================================
--- COMENTÁRIOS
--- interno = TRUE → nota visível apenas para ADMIN/TECNICO
--- ================================================
 CREATE TABLE comentarios (
     id                BIGSERIAL  PRIMARY KEY,
     chamado_id        BIGINT     NOT NULL,
@@ -150,11 +112,6 @@ CREATE INDEX idx_comentario_chamado ON comentarios(chamado_id);
 CREATE INDEX idx_comentario_autor   ON comentarios(autor_id);
 
 
--- ================================================
--- ANEXOS
--- caminho_arquivo guarda o nome gerado em disco, nunca o nome enviado
--- pelo usuário (evita path traversal).
--- ================================================
 CREATE TABLE anexos (
     id               BIGSERIAL    PRIMARY KEY,
     chamado_id       BIGINT       NOT NULL,
@@ -177,11 +134,6 @@ CREATE INDEX idx_anexo_chamado ON anexos(chamado_id);
 CREATE INDEX idx_anexo_usuario ON anexos(usuario_id);
 
 
--- ================================================
--- AVALIAÇÕES
--- nota: 1=Muito Ruim | 2=Ruim | 3=Regular | 4=Bom | 5=Excelente
--- Uma avaliação por chamado (unique em chamado_id).
--- ================================================
 CREATE TABLE avaliacoes (
     id               BIGSERIAL  PRIMARY KEY,
     chamado_id       BIGINT     NOT NULL UNIQUE,
@@ -199,7 +151,7 @@ CREATE TABLE avaliacoes (
 CREATE INDEX idx_avaliacao_chamado ON avaliacoes(chamado_id);
 CREATE INDEX idx_avaliacao_usuario ON avaliacoes(usuario_id);
 
--- Aspectos positivos destacados na avaliação (ElementCollection)
+
 CREATE TABLE avaliacao_aspectos (
     avaliacao_id  BIGINT       NOT NULL,
     aspecto       VARCHAR(100) NOT NULL,
@@ -210,11 +162,6 @@ CREATE TABLE avaliacao_aspectos (
 CREATE INDEX idx_aspecto_avaliacao ON avaliacao_aspectos(avaliacao_id);
 
 
--- ================================================
--- HISTÓRICO DE CHAMADOS
--- tipo_alteracao: STATUS | PRIORIDADE | TECNICO | TITULO |
---                 COMENTARIO | FECHAMENTO | REABERTURA | CRIACAO
--- ================================================
 CREATE TABLE historico_chamados (
     id              BIGSERIAL    PRIMARY KEY,
     chamado_id      BIGINT       NOT NULL,
@@ -237,10 +184,6 @@ CREATE INDEX idx_historico_data    ON historico_chamados(data_alteracao);
 CREATE INDEX idx_historico_tipo    ON historico_chamados(tipo_alteracao);
 
 
--- ================================================
--- TOKENS DE REDEFINIÇÃO DE SENHA
--- Uso único, expiração em 30 minutos.
--- ================================================
 CREATE TABLE password_reset_tokens (
     id              BIGSERIAL    PRIMARY KEY,
     token           VARCHAR(100) NOT NULL UNIQUE,

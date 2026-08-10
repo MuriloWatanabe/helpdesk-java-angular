@@ -8,10 +8,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-/**
- * Entidade que representa um anexo/arquivo em um chamado.
- * Permite compartilhar screenshots, logs, arquivos de diagnóstico, etc.
- */
+
 @Entity
 @Table(name = "anexos", indexes = {
     @Index(name = "idx_chamado", columnList = "chamado_id"),
@@ -59,7 +56,7 @@ public class Anexo implements Serializable {
 
     @NotNull(message = "Tamanho do arquivo é obrigatório")
     @Column(nullable = false)
-    private Long tamanho; // em bytes
+    private Long tamanho;
 
     @NotBlank(message = "Tipo MIME é obrigatório")
     @Column(nullable = false, length = 100)

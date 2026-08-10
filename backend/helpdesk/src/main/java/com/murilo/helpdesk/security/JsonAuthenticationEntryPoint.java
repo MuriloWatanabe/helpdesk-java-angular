@@ -10,12 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-/**
- * Requisição sem token (ou com token inválido/expirado) responde 401 em JSON.
- *
- * Antes o Spring devolvia 403 nesse caso, o que impedia o front de distinguir
- * "preciso logar de novo" de "não tenho permissão para esta ação".
- */
+
 @Component
 @RequiredArgsConstructor
 public class JsonAuthenticationEntryPoint implements AuthenticationEntryPoint {

@@ -10,25 +10,17 @@ import java.util.List;
 
 @Repository
 public interface AnexoRepository extends JpaRepository<Anexo, Long> {
-    
-    /**
-     * Busca todos os anexos de um chamado
-     */
+
+
     List<Anexo> findByChamadoOrderByDataUploadDesc(Chamado chamado);
-    
-    /**
-     * Conta quantos anexos um chamado tem
-     */
+
+
     Long countByChamado(Chamado chamado);
-    
-    /**
-     * Busca anexos por tipo MIME
-     */
+
+
     List<Anexo> findByChamadoAndTipoMimeContaining(Chamado chamado, String tipoMime);
-    
-    /**
-     * Query customizada para buscar anexos públicos de um chamado
-     */
+
+
     @Query("SELECT a FROM Anexo a WHERE a.chamado.id = :chamadoId AND a.publico = true ORDER BY a.dataUpload DESC")
     List<Anexo> findAnexosPublicos(@Param("chamadoId") Long chamadoId);
 }

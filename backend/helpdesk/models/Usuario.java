@@ -12,10 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Entidade que representa um usuário do sistema.
- * Pode ter múltiplos perfis (Admin, Cliente, Técnico).
- */
+
 @Entity
 @Table(name = "usuarios")
 @Data
@@ -23,7 +20,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Builder
 public class Usuario implements Serializable {
-    
+
     private static final long serialVersionUID = 1L;
 
     @Id

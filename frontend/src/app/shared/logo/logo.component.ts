@@ -1,12 +1,6 @@
 import { Component, input } from '@angular/core';
 
-/**
- * Marca do FixLab: símbolo + nome.
- *
- * O símbolo é inline (e não um <img>) para acompanhar o tamanho da fonte e
- * evitar um request extra em cada tela. O arquivo public/logo-fixlab.svg guarda
- * a versão fechada da marca, usada fora da aplicação (README, relatório).
- */
+
 @Component({
   selector: 'app-logo',
   standalone: true,
@@ -66,7 +60,6 @@ import { Component, input } from '@angular/core';
         color: #4f46e5;
       }
 
-      /* Sobre o azul da barra lateral o azul-escuro do "Fix" sumiria. */
       .logo-escuro .logo-fix {
         color: #ffffff;
       }
@@ -78,6 +71,6 @@ import { Component, input } from '@angular/core';
   ],
 })
 export class LogoComponent {
-  /** 'claro' para fundo branco, 'escuro' para a barra lateral. */
+
   readonly tema = input<'claro' | 'escuro'>('claro');
 }

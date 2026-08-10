@@ -57,9 +57,6 @@ class UsuarioServiceTest {
         return new UsuarioRequest(nome, email, senha, null, null, true, perfis);
     }
 
-    // ──────────────────────────────────────────────────────────
-    // Consultas
-    // ──────────────────────────────────────────────────────────
 
     @Test
     @DisplayName("findById — usuário existente é retornado")
@@ -93,9 +90,6 @@ class UsuarioServiceTest {
         assertThat(clientes).extracting("nome").containsExactly("Bruno", "Zeca");
     }
 
-    // ──────────────────────────────────────────────────────────
-    // Criação
-    // ──────────────────────────────────────────────────────────
 
     @Test
     @DisplayName("create — dados válidos são persistidos com a senha codificada")
@@ -161,9 +155,6 @@ class UsuarioServiceTest {
                 .hasMessageContaining("ao menos um perfil");
     }
 
-    // ──────────────────────────────────────────────────────────
-    // Proteções de exclusão / desativação
-    // ──────────────────────────────────────────────────────────
 
     @Test
     @DisplayName("delete — usuário com chamados vinculados não é excluído")
@@ -219,7 +210,7 @@ class UsuarioServiceTest {
 
         when(usuarioRepository.findByEmail("root@test.com")).thenReturn(Optional.of(outroAdmin));
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(admin));
-        // Só existe este administrador ativo no sistema.
+
         when(usuarioRepository.findAll()).thenReturn(List.of(admin));
 
         assertThatThrownBy(() -> usuarioService.alterarSituacao(1L, false, "root@test.com"))
@@ -227,9 +218,6 @@ class UsuarioServiceTest {
                 .hasMessageContaining("último administrador");
     }
 
-    // ──────────────────────────────────────────────────────────
-    // Troca de senha
-    // ──────────────────────────────────────────────────────────
 
     @Test
     @DisplayName("alterarSenha — senha atual incorreta é recusada")

@@ -62,23 +62,23 @@ export class ChamadoDetailComponent implements OnInit {
   loading = signal(true);
   erro = signal('');
 
-  // Comentário
+
   novoComentario = '';
   comentarioInterno = false;
   enviandoComentario = signal(false);
 
-  // Anexo
+
   arquivoSelecionado: File | null = null;
   anexoInterno = false;
   enviandoAnexo = signal(false);
 
-  // Ações
+
   processando = signal(false);
   tecnicos = signal<Usuario[]>([]);
   tecnicoSelecionadoId: number | null = null;
   statusOpcoes = signal<Opcao[]>([]);
 
-  // Avaliação
+
   readonly aspectosDisponiveis = ASPECTOS_AVALIACAO;
   notaEscolhida = 0;
   comentarioAvaliacao = '';
@@ -93,10 +93,10 @@ export class ChamadoDetailComponent implements OnInit {
   readonly textoSla = textoSla;
   readonly iniciais = iniciais;
 
-  /** ID do usuário logado, usado para saber o que ele pode editar. */
+
   private readonly meuId = this.authService.getUsuarioAtual()?.id ?? null;
 
-  /** Ações de status disponíveis para o papel de quem está vendo. */
+
   readonly acoesDeStatus = computed<Opcao[]>(() => {
     const atual = this.chamado();
     if (!atual) return [];
@@ -108,17 +108,13 @@ export class ChamadoDetailComponent implements OnInit {
     return this.statusOpcoes().filter((o) => permitidas.includes(o.codigo));
   });
 
-  /** O chamado está atribuído a quem está vendo a tela. */
+
   readonly souOResponsavel = computed(() => {
     const tecnico = this.chamado()?.tecnico;
     return !!tecnico && tecnico.id === this.meuId;
   });
 
-  /**
-   * A lista da API traz apenas o perfil TÉCNICO. Quando um administrador assume
-   * o chamado ele não aparece entre as opções e o select ficava em branco, dando
-   * a impressão de que não havia responsável — por isso ele é incluído aqui.
-   */
+
   readonly tecnicosDisponiveis = computed<{ id: number; nome: string }[]>(() => {
     const lista: { id: number; nome: string }[] = this.tecnicos();
     const atual = this.chamado()?.tecnico;
@@ -128,7 +124,7 @@ export class ChamadoDetailComponent implements OnInit {
 
   readonly ehMeuChamado = computed(() => this.chamado()?.cliente?.id === this.meuId);
 
-  /** A avaliação só faz sentido para o cliente do chamado já resolvido. */
+
   readonly podeAvaliar = computed(() => {
     const atual = this.chamado();
     if (!atual || this.avaliacao()) return false;
@@ -197,9 +193,6 @@ export class ChamadoDetailComponent implements OnInit {
     if (atual) this.carregarChamado(atual.id);
   }
 
-  // ------------------------------------------------------------------
-  // Comentários
-  // ------------------------------------------------------------------
 
   enviarComentario(): void {
     const atual = this.chamado();
@@ -249,9 +242,6 @@ export class ChamadoDetailComponent implements OnInit {
     });
   }
 
-  // ------------------------------------------------------------------
-  // Anexos
-  // ------------------------------------------------------------------
 
   aoEscolherArquivo(evento: Event): void {
     const input = evento.target as HTMLInputElement;
@@ -281,10 +271,7 @@ export class ChamadoDetailComponent implements OnInit {
       });
   }
 
-  /**
-   * O download passa pelo HttpClient para que o token seja enviado; o arquivo
-   * é então entregue ao navegador por um link temporário.
-   */
+
   baixarAnexo(anexo: Anexo): void {
     const atual = this.chamado();
     if (!atual) return;
@@ -327,9 +314,6 @@ export class ChamadoDetailComponent implements OnInit {
     });
   }
 
-  // ------------------------------------------------------------------
-  // Ações sobre o chamado
-  // ------------------------------------------------------------------
 
   alterarStatus(codigo: number): void {
     const atual = this.chamado();
@@ -370,7 +354,7 @@ export class ChamadoDetailComponent implements OnInit {
     });
   }
 
-  /** Devolve o chamado para a fila, removendo o técnico responsável. */
+
   async desassumir(): Promise<void> {
     const atual = this.chamado();
     if (!atual?.tecnico || this.processando()) return;
@@ -443,9 +427,6 @@ export class ChamadoDetailComponent implements OnInit {
     });
   }
 
-  // ------------------------------------------------------------------
-  // Avaliação
-  // ------------------------------------------------------------------
 
   alternarAspecto(aspecto: string): void {
     if (this.aspectosEscolhidos.has(aspecto)) {
@@ -480,9 +461,6 @@ export class ChamadoDetailComponent implements OnInit {
       });
   }
 
-  // ------------------------------------------------------------------
-  // Utilidades
-  // ------------------------------------------------------------------
 
   copiarLink(): void {
     navigator.clipboard

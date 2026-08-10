@@ -1,9 +1,6 @@
 package com.murilo.helpdesk.exception;
 
-/**
- * Regra de negócio violada — mapeado para HTTP 400 (ou 409 quando é conflito
- * de estado, como e-mail duplicado).
- */
+
 public class BusinessException extends RuntimeException {
 
     private final boolean conflito;
@@ -17,7 +14,7 @@ public class BusinessException extends RuntimeException {
         this.conflito = conflito;
     }
 
-    /** Fábrica para conflitos (HTTP 409): recurso duplicado, estado incompatível. */
+
     public static BusinessException conflito(String message) {
         return new BusinessException(message, true);
     }

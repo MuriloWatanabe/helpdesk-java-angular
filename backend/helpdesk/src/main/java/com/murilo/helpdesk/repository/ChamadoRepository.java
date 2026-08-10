@@ -30,13 +30,10 @@ public interface ChamadoRepository
     long countByTecnicoIdAndStatusIn(Long tecnicoId, Collection<Integer> status);
     boolean existsByClienteIdOrTecnicoId(Long clienteId, Long tecnicoId);
 
-    /** Último protocolo emitido no ano, para gerar o próximo número sequencial. */
+
     @Query("SELECT MAX(c.numero) FROM Chamado c WHERE c.numero LIKE CONCAT(:prefixo, '%')")
     String findUltimoNumeroDoAno(@Param("prefixo") String prefixo);
 
-    // ------------------------------------------------------------------
-    // Agregações do dashboard / relatórios
-    // ------------------------------------------------------------------
 
     @Query("SELECT c.status, COUNT(c) FROM Chamado c GROUP BY c.status")
     List<Object[]> contarPorStatus();
@@ -62,15 +59,11 @@ public interface ChamadoRepository
            """)
     List<Object[]> contarPorTecnico();
 
-    /**
-     * Datas de abertura do período — o agrupamento por dia é feito em memória
-     * para não depender de função de data específica do banco (o teste roda em
-     * H2 e a aplicação em PostgreSQL).
-     */
+
     @Query("SELECT c.dataAbertura FROM Chamado c WHERE c.dataAbertura >= :inicio")
     List<LocalDateTime> buscarAberturasDesde(@Param("inicio") LocalDateTime inicio);
 
-    /** Chamados ainda em atendimento cujo prazo de SLA já venceu. */
+
     @Query("""
            SELECT COUNT(c) FROM Chamado c
            WHERE c.prazoSla IS NOT NULL
@@ -80,7 +73,7 @@ public interface ChamadoRepository
     long contarSlaVencido(@Param("agora") LocalDateTime agora,
                           @Param("statusAtivos") Collection<Integer> statusAtivos);
 
-    /** Chamados que vencem dentro da janela informada (alerta preventivo). */
+
     @Query("""
            SELECT COUNT(c) FROM Chamado c
            WHERE c.prazoSla IS NOT NULL

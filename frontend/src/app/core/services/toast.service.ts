@@ -8,10 +8,7 @@ export interface Toast {
   mensagem: string;
 }
 
-/**
- * Substitui os `alert()` espalhados pelas telas por avisos não bloqueantes,
- * e dá um lugar único para exibir os erros vindos da API.
- */
+
 @Injectable({ providedIn: 'root' })
 export class ToastService {
   private readonly _toasts = signal<Toast[]>([]);
@@ -35,7 +32,7 @@ export class ToastService {
     this.mostrar('info', mensagem);
   }
 
-  /** Extrai a mensagem tratada do backend, com uma alternativa legível. */
+
   erroDaApi(erro: unknown, alternativa = 'Não foi possível concluir a operação.'): void {
     this.erro(mensagemDoErro(erro, alternativa));
   }
@@ -51,7 +48,7 @@ export class ToastService {
   }
 }
 
-/** O backend responde `{ message: "..." }` no corpo de erro. */
+
 export function mensagemDoErro(erro: unknown, alternativa: string): string {
   const corpo = (erro as { error?: { message?: string } } | null)?.error;
   return corpo?.message?.trim() || alternativa;

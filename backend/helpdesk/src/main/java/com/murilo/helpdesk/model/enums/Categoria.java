@@ -2,7 +2,7 @@ package com.murilo.helpdesk.model.enums;
 
 import java.util.Arrays;
 
-/** Categoria do problema — usada para triagem e para os relatórios. */
+
 public enum Categoria {
 
     REDE(0, "Rede e internet"),

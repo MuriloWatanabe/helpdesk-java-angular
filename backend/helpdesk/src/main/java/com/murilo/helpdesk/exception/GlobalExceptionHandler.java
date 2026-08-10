@@ -20,18 +20,12 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.util.List;
 
-/**
- * Converte exceções em respostas HTTP com o código correto e uma mensagem
- * legível em português. Sem isso, "chamado não encontrado" chegava ao front
- * como HTTP 500 e o usuário via apenas "erro interno".
- */
+
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // ---------------------------------------------------------------------
-    // 404 — recurso inexistente
-    // ---------------------------------------------------------------------
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiError> handleNotFound(ResourceNotFoundException ex,
                                                    HttpServletRequest request) {
@@ -44,9 +38,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, "Endpoint não encontrado: " + ex.getRequestURL(), request);
     }
 
-    // ---------------------------------------------------------------------
-    // 400 / 409 — regra de negócio
-    // ---------------------------------------------------------------------
+
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiError> handleBusiness(BusinessException ex,
                                                     HttpServletRequest request) {
@@ -54,9 +46,7 @@ public class GlobalExceptionHandler {
         return build(status, ex.getMessage(), request);
     }
 
-    // ---------------------------------------------------------------------
-    // 403 — autenticado, mas sem permissão sobre o recurso
-    // ---------------------------------------------------------------------
+
     @ExceptionHandler(OperacaoNaoPermitidaException.class)
     public ResponseEntity<ApiError> handleOperacaoNaoPermitida(OperacaoNaoPermitidaException ex,
                                                                 HttpServletRequest request) {
@@ -70,9 +60,7 @@ public class GlobalExceptionHandler {
                 "Você não tem permissão para executar esta ação.", request);
     }
 
-    // ---------------------------------------------------------------------
-    // 401 — credenciais inválidas no login
-    // ---------------------------------------------------------------------
+
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiError> handleBadCredentials(BadCredentialsException ex,
                                                           HttpServletRequest request) {
@@ -92,9 +80,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.UNAUTHORIZED, "Não foi possível autenticar.", request);
     }
 
-    // ---------------------------------------------------------------------
-    // 400 — validação de payload
-    // ---------------------------------------------------------------------
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex,
                                                       HttpServletRequest request) {
@@ -138,15 +124,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ApiError> handleUploadSize(MaxUploadSizeExceededException ex,
                                                       HttpServletRequest request) {
-        // CONTENT_TOO_LARGE é o nome atual do 413 (RFC 9110);
-        // PAYLOAD_TOO_LARGE está depreciado e gerava aviso no build.
+
+
         return build(HttpStatus.CONTENT_TOO_LARGE,
                 "Arquivo maior que o limite permitido (10 MB).", request);
     }
 
-    // ---------------------------------------------------------------------
-    // 409 — integridade referencial (ex.: excluir usuário que possui chamados)
-    // ---------------------------------------------------------------------
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiError> handleDataIntegrity(DataIntegrityViolationException ex,
                                                          HttpServletRequest request) {
@@ -156,9 +140,7 @@ public class GlobalExceptionHandler {
                 request);
     }
 
-    // ---------------------------------------------------------------------
-    // 500 — fallback
-    // ---------------------------------------------------------------------
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneric(Exception ex, HttpServletRequest request) {
         log.error("Erro não tratado em {} {}", request.getMethod(), request.getRequestURI(), ex);

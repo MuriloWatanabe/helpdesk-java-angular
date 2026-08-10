@@ -1,11 +1,5 @@
 import { Chamado } from '../../core/models/chamado.model';
 
-/**
- * Mapas de apresentação compartilhados pelas telas de chamado.
- *
- * Os rótulos (statusLabel, prioridadeLabel, categoriaLabel) já vêm prontos do
- * backend; aqui ficam apenas as classes visuais, que são assunto do front.
- */
 
 const CLASSES_STATUS: Record<number, string> = {
   0: 'badge-aberto',
@@ -31,7 +25,7 @@ export function classePrioridade(prioridade: number): string {
   return CLASSES_PRIORIDADE[prioridade] ?? 'badge-baixa';
 }
 
-/** Texto curto do prazo de SLA: "vencido há 3h", "faltam 5h", etc. */
+
 export function textoSla(chamado: Chamado): string {
   if (!chamado.prazoSla || chamado.encerrado) return '';
 
@@ -49,27 +43,21 @@ export function textoSla(chamado: Chamado): string {
   return `Faltam ${Math.floor(horas / 24)}d`;
 }
 
-/**
- * Transições de status válidas — espelha as regras do backend para que a tela
- * só ofereça ações que serão aceitas. A validação real continua no servidor.
- */
+
 const TRANSICOES: Record<number, number[]> = {
-  0: [1, 3, 4, 5], // Aberto
-  1: [3, 4, 0, 5], // Em andamento
-  3: [1, 4, 5],    // Aguardando cliente
-  4: [2, 1],       // Resolvido
-  2: [1],          // Encerrado (reabertura)
-  5: [],           // Cancelado é terminal
+  0: [1, 3, 4, 5],
+  1: [3, 4, 0, 5],
+  3: [1, 4, 5],
+  4: [2, 1],
+  2: [1],
+  5: [],
 };
 
 export function transicoesPermitidas(status: number): number[] {
   return TRANSICOES[status] ?? [];
 }
 
-/**
- * Ações que o cliente pode executar no próprio chamado: cancelar enquanto
- * ninguém atendeu, confirmar a solução ou reabrir.
- */
+
 export function transicoesDoCliente(status: number): number[] {
   if (status === 0) return [5];
   if (status === 4) return [2, 1];
@@ -77,7 +65,7 @@ export function transicoesDoCliente(status: number): number[] {
   return [];
 }
 
-/** Iniciais para os avatares. */
+
 export function iniciais(nome?: string | null): string {
   if (!nome?.trim()) return '?';
   return nome

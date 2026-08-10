@@ -14,7 +14,7 @@ export class UsuarioService {
   private readonly http = inject(HttpClient);
   private readonly url = `${environment.apiUrl}/v1/usuarios`;
 
-  /** Listas de domínio raramente mudam: uma requisição por sessão basta. */
+
   private metadados$?: Observable<Metadados>;
 
   listar(filtros: { perfil?: number; ativo?: boolean; q?: string } = {}): Observable<Usuario[]> {
@@ -47,7 +47,7 @@ export class UsuarioService {
     return this.http.patch<Usuario>(`${this.url}/${id}/perfis`, perfis);
   }
 
-  /** Alternativa à exclusão para quem já possui chamados no histórico. */
+
   alterarSituacao(id: number, ativo: boolean): Observable<Usuario> {
     const params = new HttpParams().set('ativo', ativo);
     return this.http.patch<Usuario>(`${this.url}/${id}/situacao`, {}, { params });
@@ -57,7 +57,7 @@ export class UsuarioService {
     return this.http.delete<void>(`${this.url}/${id}`);
   }
 
-  /** Status, prioridades, categorias e perfis vindos do backend. */
+
   metadados(): Observable<Metadados> {
     this.metadados$ ??= this.http
       .get<Metadados>(`${environment.apiUrl}/v1/metadados`)

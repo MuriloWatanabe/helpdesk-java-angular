@@ -61,9 +61,6 @@ public class HistoricoChamado implements Serializable {
         dataAlteracao = LocalDateTime.now();
     }
 
-    // -------------------------------------------------------------------------
-    // Factory methods
-    // -------------------------------------------------------------------------
 
     public static HistoricoChamado criarMudancaStatus(
             Chamado chamado, Usuario usuario, String statusAnterior, String statusNovo) {

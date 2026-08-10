@@ -45,13 +45,12 @@ export class UsuariosComponent implements OnInit {
   loading = signal(false);
   erro = signal('');
 
-  // Filtros
+
   busca = '';
   filtroPerfil: number | null = null;
   filtroAtivo: boolean | null = null;
 
-  // Formulário — signals porque o app é zoneless e o estado muda em
-  // callbacks de HTTP (o modal precisa fechar/atualizar quando a resposta chega).
+
   showForm = signal(false);
   formLoading = signal(false);
   formErro = signal('');
@@ -99,17 +98,7 @@ export class UsuariosComponent implements OnInit {
     this.carregarUsuarios();
   }
 
-  // ------------------------------------------------------------------
-  // Formulário
-  // ------------------------------------------------------------------
 
-  /**
-   * Perfis são controles booleanos independentes.
-   *
-   * Antes o campo era montado como `perfis: [[[codigos]]]`, o que fazia o
-   * FormControl guardar um array dentro de outro e enviar `perfis: [[1]]`
-   * para a API — o cadastro de usuário pelo admin nunca gravava o perfil certo.
-   */
   private iniciarForm(usuario?: Usuario): void {
     const codigos = usuario ? usuario.perfisCodigos : [PerfilCodigo.CLIENTE];
 
@@ -126,7 +115,7 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-  /** Converte os três checkboxes na lista de códigos esperada pela API. */
+
   private perfisSelecionados(): number[] {
     const v = this.form.value;
     const perfis: number[] = [];
@@ -193,9 +182,6 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-  // ------------------------------------------------------------------
-  // Ações da lista
-  // ------------------------------------------------------------------
 
   async alternarSituacao(usuario: Usuario): Promise<void> {
     const ativando = !usuario.ativo;
@@ -219,10 +205,7 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-  /**
-   * Exclusão definitiva. Usuário com chamados vinculados é recusado pela API
-   * com uma mensagem orientando a desativação — antes isso virava um 500.
-   */
+
   async excluir(usuario: Usuario): Promise<void> {
     const confirmado = await this.confirmService.perguntar({
       titulo: `Excluir ${usuario.nome}?`,
@@ -243,9 +226,6 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-  // ------------------------------------------------------------------
-  // Apresentação
-  // ------------------------------------------------------------------
 
   perfilLabel(role: string): string {
     return PERFIS_MAP[role] ?? role;

@@ -16,7 +16,7 @@ public record UsuarioRequest(
         @Email(message = "Informe um e-mail válido")
         String email,
 
-        /** Opcional na edição: em branco mantém a senha atual. */
+
         @Size(min = 6, message = "A senha deve ter no mínimo 6 caracteres")
         String senha,
 

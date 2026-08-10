@@ -16,14 +16,7 @@ import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Optional;
 
-/**
- * Fluxo "esqueci minha senha".
- *
- * O projeto não tem servidor de e-mail configurado, então o link é registrado
- * no log da aplicação. Quando {@code app.reset-senha.expor-link} estiver
- * habilitado (padrão em desenvolvimento), o link também volta na resposta para
- * que o fluxo possa ser testado ponta a ponta. Em produção, mantenha desligado.
- */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -41,10 +34,7 @@ public class PasswordResetService {
     @Value("${app.front-url:http://localhost:4200}")
     private String frontUrl;
 
-    /**
-     * Gera o link de redefinição. A resposta é sempre a mesma, exista ou não o
-     * e-mail — caso contrário o endpoint viraria um verificador de cadastros.
-     */
+
     @Transactional
     public Optional<String> solicitar(String email) {
         Optional<Usuario> encontrado = usuarioService.buscarPorEmailOpcional(email);

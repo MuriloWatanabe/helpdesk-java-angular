@@ -32,8 +32,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return User.withUsername(usuario.getEmail())
                 .password(usuario.getSenha())
                 .authorities(authorities)
-                // Usuário desativado pelo admin não autentica mais, e o token que
-                // ele já possuía deixa de valer na requisição seguinte.
+
+
                 .disabled(Boolean.FALSE.equals(usuario.getAtivo()))
                 .build();
     }

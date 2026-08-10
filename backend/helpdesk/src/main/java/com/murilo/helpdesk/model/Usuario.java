@@ -49,10 +49,7 @@ public class Usuario implements Serializable {
     @Column(length = 100)
     private String cargo;
 
-    /**
-     * Usuários não são excluídos quando já possuem chamados: são desativados.
-     * Um usuário inativo não consegue autenticar.
-     */
+
     @Builder.Default
     @Column(nullable = false)
     private Boolean ativo = true;
@@ -63,7 +60,7 @@ public class Usuario implements Serializable {
     @Builder.Default
     private Set<Integer> perfis = new HashSet<>();
 
-    // Departamento ao qual o usuário pertence
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "departamento_id")
     private DepartamentoEntity departamento;
@@ -89,10 +86,7 @@ public class Usuario implements Serializable {
         dataAtualizacao = LocalDateTime.now();
     }
 
-    /**
-     * Códigos desconhecidos são ignorados em vez de derrubar a sessão: antes,
-     * um perfil inválido no banco quebrava o login com ArrayIndexOutOfBounds.
-     */
+
     public Set<Perfil> getPerfis() {
         return perfis.stream()
                 .filter(Perfil::codigoValido)
@@ -116,12 +110,12 @@ public class Usuario implements Serializable {
         return temPerfil(Perfil.TECNICO);
     }
 
-    /** Cliente "puro": sem privilégios de admin nem de técnico. */
+
     public boolean ehSomenteCliente() {
         return temPerfil(Perfil.CLIENTE) && !ehAdmin() && !ehTecnico();
     }
 
-    /** Pode atender chamados de qualquer cliente. */
+
     public boolean ehAtendente() {
         return ehAdmin() || ehTecnico();
     }

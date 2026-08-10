@@ -20,10 +20,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
-/**
- * Controller responsável pelas operações de chamados técnicos.
- * Fornece endpoints para gerenciamento completo do ciclo de vida dos chamados.
- */
+
 @RestController
 @RequestMapping("/api/v1/chamados")
 @Tag(name = "Chamados", description = "API de gerenciamento de chamados técnicos")
@@ -33,11 +30,7 @@ public class ChamadoController {
     @Autowired
     private ChamadoService chamadoService;
 
-    /**
-     * Busca um chamado pelo ID.
-     * @param id ID do chamado
-     * @return Chamado encontrado
-     */
+
     @GetMapping("/{id}")
     @Operation(summary = "Buscar chamado por ID", description = "Retorna os detalhes de um chamado específico")
     public ResponseEntity<Chamado> findById(
@@ -47,11 +40,7 @@ public class ChamadoController {
         return ResponseEntity.ok(chamado);
     }
 
-    /**
-     * Lista todos os chamados do sistema com paginação.
-     * @param pageable Parâmetros de paginação
-     * @return Página de chamados
-     */
+
     @GetMapping
     @Operation(summary = "Listar todos os chamados", description = "Retorna uma página com todos os chamados cadastrados")
     public ResponseEntity<Page<Chamado>> findAll(@PageableDefault(size = 10) Pageable pageable) {
@@ -60,11 +49,7 @@ public class ChamadoController {
         return ResponseEntity.ok(chamados);
     }
 
-    /**
-     * Cria um novo chamado no sistema.
-     * @param chamado Dados do novo chamado
-     * @return Chamado criado com status 201
-     */
+
     @PostMapping
     @Operation(summary = "Criar novo chamado", description = "Abre um novo chamado técnico no sistema")
     public ResponseEntity<Chamado> create(@Valid @RequestBody Chamado chamado) {
@@ -79,12 +64,7 @@ public class ChamadoController {
         return ResponseEntity.created(uri).body(novoChamado);
     }
 
-    /**
-     * Atualiza o status de um chamado.
-     * @param id ID do chamado
-     * @param status Novo status
-     * @return Chamado com status atualizado
-     */
+
     @PatchMapping("/{id}/status/{status}")
     @Operation(summary = "Atualizar status do chamado", description = "Altera o status de um chamado existente")
     public ResponseEntity<Chamado> updateStatus(
@@ -95,12 +75,7 @@ public class ChamadoController {
         return ResponseEntity.ok(chamadoAtualizado);
     }
 
-    /**
-     * Atualiza os dados de um chamado.
-     * @param id ID do chamado
-     * @param chamado Dados atualizados
-     * @return Chamado atualizado
-     */
+
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar chamado", description = "Atualiza os dados de um chamado existente")
     public ResponseEntity<Chamado> update(
@@ -111,11 +86,7 @@ public class ChamadoController {
         return ResponseEntity.ok(chamadoAtualizado);
     }
 
-    /**
-     * Deleta um chamado do sistema.
-     * @param id ID do chamado
-     * @return Status 204 No Content
-     */
+
     @DeleteMapping("/{id}")
     @Operation(summary = "Deletar chamado", description = "Remove um chamado do sistema")
     public ResponseEntity<Void> delete(
@@ -125,33 +96,21 @@ public class ChamadoController {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Trata exceções de entidade não encontrada.
-     * @param ex Exceção lançada
-     * @return Resposta com erro 404
-     */
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<String> handleEntityNotFound(EntityNotFoundException ex) {
         log.error("Entidade não encontrada: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
-    /**
-     * Trata exceções de validação.
-     * @param ex Exceção lançada
-     * @return Resposta com erro 400
-     */
+
     @ExceptionHandler(jakarta.validation.ValidationException.class)
     public ResponseEntity<String> handleValidationException(jakarta.validation.ValidationException ex) {
         log.error("Erro de validação: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
-    /**
-     * Trata exceções gerais.
-     * @param ex Exceção lançada
-     * @return Resposta com erro 500
-     */
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGeneralException(Exception ex) {
         log.error("Erro interno: {}", ex.getMessage(), ex);

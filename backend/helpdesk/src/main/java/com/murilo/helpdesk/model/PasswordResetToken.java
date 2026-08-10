@@ -5,10 +5,7 @@ import lombok.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/**
- * Token de uso único para redefinição de senha ("Esqueci minha senha").
- * Expira em minutos e é invalidado assim que utilizado.
- */
+
 @Entity
 @Table(name = "password_reset_tokens", indexes = {
     @Index(name = "idx_reset_token",   columnList = "token"),

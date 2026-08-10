@@ -1,4 +1,4 @@
-<!-- Botão de menu: aparece somente em telas estreitas -->
+
 <button
   class="menu-toggle"
   type="button"
@@ -78,7 +78,7 @@
       </li>
     </ul>
 
-    <!-- ATENDIMENTO — técnicos e administradores -->
+
     @if (isAtendente()) {
       <div class="nav-section">
         <span class="nav-section-label">ATENDIMENTO</span>
@@ -108,7 +108,7 @@
       </div>
     }
 
-    <!-- GESTÃO — apenas administradores -->
+
     @if (isAdmin()) {
       <div class="nav-section">
         <span class="nav-section-label">GESTÃO</span>
@@ -130,7 +130,7 @@
       </div>
     }
 
-    <!-- CONTA -->
+
     <div class="nav-section">
       <span class="nav-section-label">CONTA</span>
       <ul class="nav-list">

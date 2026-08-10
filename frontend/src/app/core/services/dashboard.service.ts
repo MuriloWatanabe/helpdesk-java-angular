@@ -8,7 +8,7 @@ import { environment } from '../../../environments/environment';
 export class DashboardService {
   private readonly http = inject(HttpClient);
   private readonly url = `${environment.apiUrl}/v1/dashboard`;
-  private readonly TTL = 30_000; // 30 segundos
+  private readonly TTL = 30_000;
 
   private cache: DashboardStats | null = null;
   private cacheAt = 0;

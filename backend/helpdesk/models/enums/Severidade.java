@@ -1,9 +1,6 @@
 package com.murilo.helpdesk.model.enums;
 
-/**
- * Enumeração que define o nível de severidade técnica de um chamado.
- * Diferencia da Prioridade, focando no impacto técnico/quantitativo.
- */
+
 public enum Severidade {
     BAIXA(0, "Baixa", "Problema menor, sem impacto na produtividade"),
     MEDIA(1, "Média", "Problema afeta produtividade de um usuário"),
@@ -32,10 +29,7 @@ public enum Severidade {
         return detalhe;
     }
 
-    /**
-     * Retorna as horas máximas de resposta baseado na severidade
-     * @return Horas para resposta inicial
-     */
+
     public Integer getHorasResposta() {
         return switch (this) {
             case BAIXA -> 48;

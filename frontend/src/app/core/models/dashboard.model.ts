@@ -11,10 +11,7 @@ export interface SerieDiaria {
   total: number;
 }
 
-/**
- * O backend devolve os números já filtrados pelo papel de quem pediu.
- * Para o cliente, os indicadores internos (SLA, fila, ranking) vêm zerados.
- */
+
 export interface DashboardStats {
   escopo: 'GLOBAL' | 'TECNICO' | 'CLIENTE';
 

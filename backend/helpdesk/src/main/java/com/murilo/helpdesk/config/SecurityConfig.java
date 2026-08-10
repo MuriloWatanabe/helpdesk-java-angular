@@ -50,30 +50,30 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                // Pré-flight CORS
+
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                // Endpoints públicos de autenticação — listados um a um para que
-                // /v1/auth/me e /v1/auth/alterar-senha continuem protegidos.
+
+
                 .requestMatchers(
                     "/v1/auth/login",
                     "/v1/auth/register",
                     "/v1/auth/recuperar-senha",
                     "/v1/auth/redefinir-senha"
                 ).permitAll()
-                // Documentação da API
+
                 .requestMatchers(
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html"
                 ).permitAll()
-                // Health check do docker-compose
+
                 .requestMatchers("/actuator/health").permitAll()
-                // Tudo mais requer autenticação (papéis via @PreAuthorize)
+
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex
-                .authenticationEntryPoint(authenticationEntryPoint)   // 401 — sem token / expirado
-                .accessDeniedHandler(accessDeniedHandler)             // 403 — sem permissão
+                .authenticationEntryPoint(authenticationEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler)
             )
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -116,7 +116,7 @@ public class SecurityConfig {
                 .toList());
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        // Necessário para o front ler o nome do arquivo ao baixar um anexo.
+
         config.setExposedHeaders(List.of("Content-Disposition"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);

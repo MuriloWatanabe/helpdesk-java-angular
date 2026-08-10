@@ -36,7 +36,7 @@
     @if (!loading() && stats(); as s) {
       <div class="dashboard-content">
 
-        <!-- Alerta de SLA: só faz sentido para quem atende -->
+
         @if (isAtendente() && (s.totalSlaVencido > 0 || s.totalSemTecnico > 0)) {
           <div class="alerta-operacao">
             <div class="alerta-icone" aria-hidden="true">!</div>
@@ -55,7 +55,7 @@
           </div>
         }
 
-        <!-- Indicadores -->
+
         <section class="stats-section" aria-label="Indicadores">
           <article class="stat-card">
             <div class="stat-card-header">
@@ -120,7 +120,7 @@
           }
         </section>
 
-        <!-- Gráficos -->
+
         @if (s.totalChamados > 0) {
           <section class="charts-section">
             <article class="chart-card">
@@ -129,9 +129,7 @@
                 <span class="card-subtitle">{{ totalSituacoes() }} no total</span>
               </div>
 
-              <!-- Barra de composição: a proporção em uma olhada. Fica oculta
-                   para leitores de tela porque a lista abaixo traz os mesmos
-                   dados em texto — anunciar duas vezes só atrapalha. -->
+
               <div class="situacao-barra" aria-hidden="true">
                 @for (p of situacoes(); track p.rotulo) {
                   <span
@@ -192,7 +190,7 @@
           }
         }
 
-        <!-- Chamados recentes -->
+
         <section class="table-section">
           <article class="table-card">
             <div class="card-header">

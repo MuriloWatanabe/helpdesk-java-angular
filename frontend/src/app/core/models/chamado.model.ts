@@ -4,7 +4,7 @@ export interface UsuarioResumo {
   email: string;
 }
 
-/** Códigos gravados no banco — mantidos estáveis pelo backend. */
+
 export const StatusChamado = {
   ABERTO: 0,
   EM_ANDAMENTO: 1,
@@ -21,7 +21,7 @@ export const PrioridadeChamado = {
   URGENTE: 3,
 } as const;
 
-/** Nome do enum no backend — usado na rota PATCH /status/{status}. */
+
 export const STATUS_ENUM_NOME: Record<number, string> = {
   0: 'ABERTO',
   1: 'EM_ANDAMENTO',
@@ -71,7 +71,7 @@ export interface ChamadoRequest {
   clienteId?: number | null;
 }
 
-/** Filtros enviados como query params — os nulos não são enviados. */
+
 export interface ChamadoFiltro {
   q?: string;
   status?: number | null;

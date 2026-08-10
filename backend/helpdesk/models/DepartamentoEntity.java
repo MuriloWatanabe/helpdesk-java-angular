@@ -9,10 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Entidade que representa um departamento da empresa.
- * Usado para classificar de qual departamento é a solicitação.
- */
+
 @Entity
 @Table(name = "departamentos")
 @Data
@@ -36,28 +33,20 @@ public class DepartamentoEntity implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String descricao;
 
-    /**
-     * Usuário responsável pelo departamento
-     */
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gerente_id")
     private Usuario gerente;
 
-    /**
-     * Email de contato do departamento
-     */
+
     @Column(length = 100)
     private String emailContato;
 
-    /**
-     * Telefone de contato
-     */
+
     @Column(length = 20)
     private String telefoneContato;
 
-    /**
-     * Locação/prédio do departamento
-     */
+
     @Column(length = 100)
     private String localizacao;
 
@@ -70,9 +59,7 @@ public class DepartamentoEntity implements Serializable {
     @Column(nullable = true)
     private LocalDateTime dataAtualizacao;
 
-    /**
-     * Usuários que pertencem a este departamento
-     */
+
     @OneToMany(mappedBy = "departamento")
     @Builder.Default
     private List<Usuario> usuarios = new ArrayList<>();

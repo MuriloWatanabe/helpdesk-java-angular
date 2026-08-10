@@ -26,8 +26,7 @@ export class NovoChamadoComponent implements OnInit {
 
   form!: FormGroup;
 
-  // Signals: o app é zoneless — estado alterado em callback assíncrono
-  // precisa ser signal para a tela re-renderizar.
+
   loading = signal(false);
   erro = signal('');
 
@@ -58,7 +57,7 @@ export class NovoChamadoComponent implements OnInit {
       },
     });
 
-    // Só quem atende pode abrir chamado em nome de outra pessoa.
+
     if (this.isAtendente()) {
       this.form.get('clienteId')?.setValidators(Validators.required);
       this.form.get('clienteId')?.updateValueAndValidity();
@@ -72,7 +71,7 @@ export class NovoChamadoComponent implements OnInit {
     }
   }
 
-  /** Prazo prometido para a prioridade escolhida, exibido antes de enviar. */
+
   get slaEscolhido(): string {
     const codigo = Number(this.form?.get('prioridade')?.value);
     const opcao = this.prioridades().find((p) => p.codigo === codigo);
@@ -105,7 +104,7 @@ export class NovoChamadoComponent implements OnInit {
       .subscribe({
         next: (criado) => {
           this.toast.sucesso(`Chamado ${criado.numero} aberto com sucesso.`);
-          // Leva direto ao detalhe: é onde o usuário acompanha e comenta.
+
           this.router.navigate(['/chamados', criado.id]);
         },
         error: (err) => {

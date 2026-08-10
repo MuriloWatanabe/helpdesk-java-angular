@@ -79,9 +79,6 @@ class ChamadoServiceTest {
         return c;
     }
 
-    // ──────────────────────────────────────────────────────────
-    // Leitura e controle de acesso
-    // ──────────────────────────────────────────────────────────
 
     @Nested
     @DisplayName("Controle de acesso")
@@ -138,9 +135,6 @@ class ChamadoServiceTest {
                 .hasMessageContaining("Chamado");
     }
 
-    // ──────────────────────────────────────────────────────────
-    // Criação
-    // ──────────────────────────────────────────────────────────
 
     @Test
     @DisplayName("create — chamado nasce ABERTO, com protocolo e prazo de SLA")
@@ -174,7 +168,7 @@ class ChamadoServiceTest {
         when(usuarioService.findById(5L)).thenReturn(cliente);
         when(chamadoRepository.save(any(Chamado.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        // Tenta abrir em nome de outra pessoa — o clienteId do corpo é ignorado.
+
         var request = new ChamadoRequest("Problema de rede",
                 "Sem acesso à internet desde hoje cedo",
                 Prioridade.MEDIA.getCodigo(), Categoria.REDE.getCodigo(), null, terceiro.getId());
@@ -199,9 +193,6 @@ class ChamadoServiceTest {
                 .hasMessageContaining("Prioridade inválida");
     }
 
-    // ──────────────────────────────────────────────────────────
-    // Fluxo de status
-    // ──────────────────────────────────────────────────────────
 
     @Nested
     @DisplayName("Alteração de status")
@@ -306,9 +297,6 @@ class ChamadoServiceTest {
         }
     }
 
-    // ──────────────────────────────────────────────────────────
-    // Atendimento
-    // ──────────────────────────────────────────────────────────
 
     @Test
     @DisplayName("assumir — técnico vira responsável e o chamado entra em andamento")
@@ -388,9 +376,6 @@ class ChamadoServiceTest {
                 .isInstanceOf(OperacaoNaoPermitidaException.class);
     }
 
-    // ──────────────────────────────────────────────────────────
-    // Exclusão
-    // ──────────────────────────────────────────────────────────
 
     @Test
     @DisplayName("excluir — apenas administrador")
@@ -401,9 +386,7 @@ class ChamadoServiceTest {
         assertThatThrownBy(() -> chamadoService.excluir(1L, EMAIL_TECNICO))
                 .isInstanceOf(OperacaoNaoPermitidaException.class);
 
-        // any(Chamado.class) e não any(): ChamadoRepository também estende
-        // JpaSpecificationExecutor, que passou a expor delete(DeleteSpecification),
-        // e sem o tipo o compilador não sabe qual sobrecarga verificar.
+
         verify(chamadoRepository, never()).delete(any(Chamado.class));
     }
 
@@ -420,9 +403,6 @@ class ChamadoServiceTest {
         verify(chamadoRepository, never()).delete(any(Chamado.class));
     }
 
-    // ──────────────────────────────────────────────────────────
-    // SLA
-    // ──────────────────────────────────────────────────────────
 
     @Test
     @DisplayName("SLA — chamado urgente aberto há muito tempo aparece como vencido")

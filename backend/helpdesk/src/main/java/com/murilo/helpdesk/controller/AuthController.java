@@ -48,16 +48,13 @@ public class AuthController {
     @Value("${jwt.expiration}")
     private long jwtExpiration;
 
-    // ------------------------------------------------------------------
-    // Público
-    // ------------------------------------------------------------------
 
     @PostMapping("/login")
     @Operation(summary = "Autenticar", description = "Valida as credenciais e devolve o token JWT")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         String email = request.email().trim().toLowerCase();
 
-        // Credenciais inválidas viram 401 no GlobalExceptionHandler.
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, request.senha()));
 
@@ -79,7 +76,7 @@ public class AuthController {
     @PostMapping("/register")
     @Operation(summary = "Criar conta", description = "Autocadastro — sempre com perfil CLIENTE")
     public ResponseEntity<UsuarioResponse> register(@Valid @RequestBody RegisterRequest request) {
-        // O perfil é fixado no servidor: o corpo da requisição não decide privilégio.
+
         var usuarioRequest = new UsuarioRequest(
                 request.nome(), request.email(), request.senha(),
                 request.telefone(), null, true,
@@ -96,7 +93,7 @@ public class AuthController {
 
         var link = passwordResetService.solicitar(request.email());
 
-        // Resposta idêntica exista ou não o e-mail, para não revelar cadastros.
+
         return ResponseEntity.ok(new MensagemResponse(
                 "Se este e-mail estiver cadastrado, enviaremos as instruções de redefinição.",
                 link.orElse(null)));
@@ -110,9 +107,6 @@ public class AuthController {
         return ResponseEntity.ok(MensagemResponse.de("Senha redefinida com sucesso."));
     }
 
-    // ------------------------------------------------------------------
-    // Usuário autenticado (autosserviço)
-    // ------------------------------------------------------------------
 
     @GetMapping("/me")
     @Operation(summary = "Dados do usuário autenticado")
@@ -121,11 +115,7 @@ public class AuthController {
         return ResponseEntity.ok(usuarioService.findByIdAsResponse(usuario.getId()));
     }
 
-    /**
-     * Edição dos próprios dados. Antes a tela de perfil chamava
-     * PUT /v1/usuarios/{id}, restrito a ADMIN: cliente e técnico recebiam 403 e
-     * eram deslogados ao tentar salvar.
-     */
+
     @PutMapping("/me")
     @Operation(summary = "Atualizar os próprios dados")
     public ResponseEntity<UsuarioResponse> atualizarMeuPerfil(

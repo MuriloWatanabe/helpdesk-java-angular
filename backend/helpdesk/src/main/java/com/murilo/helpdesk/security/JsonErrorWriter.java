@@ -8,21 +8,11 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
-/**
- * Escreve o corpo de erro das falhas de autenticação/autorização, que acontecem
- * dentro da cadeia de filtros — antes do Spring MVC e, portanto, fora do alcance
- * do {@code GlobalExceptionHandler}.
- *
- * O JSON é montado à mão de propósito: o Spring Boot 4 usa Jackson 3
- * ({@code tools.jackson.databind}) e não publica um bean do
- * {@code com.fasterxml.jackson.databind.ObjectMapper} do Jackson 2. Como o
- * payload é pequeno e de formato fixo, escrevê-lo diretamente evita depender de
- * qual versão do Jackson está no classpath.
- */
+
 @Component
 public class JsonErrorWriter {
 
-    /** Mesmo formato de {@link com.murilo.helpdesk.exception.ApiError}. */
+
     public void escrever(HttpServletResponse response, HttpStatus status,
                          String mensagem, String path) throws IOException {
 
@@ -42,7 +32,7 @@ public class JsonErrorWriter {
         response.getWriter().write(corpo);
     }
 
-    /** Escapa o texto para uso dentro de uma string JSON (o path vem da requisição). */
+
     private String escapar(String valor) {
         if (valor == null) return "";
 

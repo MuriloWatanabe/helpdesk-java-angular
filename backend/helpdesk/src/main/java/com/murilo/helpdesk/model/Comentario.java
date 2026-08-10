@@ -40,10 +40,7 @@ public class Comentario implements Serializable {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String texto;
 
-    /**
-     * Nota interna: visível apenas para técnicos e administradores.
-     * O cliente nunca recebe esses comentários na listagem.
-     */
+
     @Builder.Default
     @Column(nullable = false)
     private Boolean interno = false;

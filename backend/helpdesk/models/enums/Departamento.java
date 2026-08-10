@@ -1,9 +1,6 @@
 package com.murilo.helpdesk.model.enums;
 
-/**
- * Enumeração que define os departamentos da empresa.
- * Usado para classificar de qual departamento é a solicitação.
- */
+
 public enum Departamento {
     TI(0, "Tecnologia da Informação", "Departamento de TI"),
     FINANCEIRO(1, "Financeiro", "Departamento Financeiro"),

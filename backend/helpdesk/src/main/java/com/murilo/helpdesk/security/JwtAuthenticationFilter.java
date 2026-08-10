@@ -14,13 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-/**
- * Filtro JWT — intercepta cada requisição, valida o token Bearer
- * e popula o SecurityContext quando o token é válido.
- *
- * Não é @Component para evitar registro duplo como servlet filter
- * (é registrado manualmente em SecurityConfig).
- */
+
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -45,7 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             email = jwtService.extractUsername(jwt);
         } catch (JwtException e) {
-            // Token malformado ou expirado — deixa o request prosseguir sem autenticação
+
             filterChain.doFilter(request, response);
             return;
         }

@@ -19,7 +19,7 @@ function senhasIguais(group: AbstractControl): ValidationErrors | null {
 })
 export class RegisterComponent {
   form: FormGroup;
-  // Signals: o app é zoneless — o retorno do HTTP precisa disparar re-render.
+
   isLoading = signal(false);
   errorMessage = signal('');
   successMessage = signal('');

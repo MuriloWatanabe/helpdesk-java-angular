@@ -26,13 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-/**
- * Estatísticas do painel.
- *
- * O escopo depende de quem pergunta: antes o endpoint devolvia os números de
- * toda a empresa — e os 5 chamados mais recentes de qualquer cliente — para
- * qualquer usuário autenticado, inclusive clientes.
- */
+
 @Service
 @RequiredArgsConstructor
 public class DashboardService {
@@ -58,9 +52,6 @@ public class DashboardService {
         return statsDoTecnico(usuario);
     }
 
-    // ------------------------------------------------------------------
-    // Escopos
-    // ------------------------------------------------------------------
 
     private DashboardStatsResponse statsGlobais(Usuario usuario) {
         Map<Integer, Long> porStatus = mapear(chamadoRepository.contarPorStatus());
@@ -104,7 +95,7 @@ public class DashboardService {
                 porStatus.getOrDefault(Status.RESOLVIDO.getCodigo(), 0L),
                 porStatus.getOrDefault(Status.ENCERRADO.getCodigo(), 0L),
                 porStatus.getOrDefault(Status.CANCELADO.getCodigo(), 0L),
-                // O técnico enxerga o SLA da operação inteira: a fila é compartilhada.
+
                 chamadoRepository.contarSlaVencido(agora, ativos),
                 chamadoRepository.contarSlaEmRisco(agora, agora.plusHours(HORAS_ALERTA_SLA), ativos),
                 contarSemTecnico(),
@@ -131,7 +122,7 @@ public class DashboardService {
                 porStatus.getOrDefault(Status.RESOLVIDO.getCodigo(), 0L),
                 porStatus.getOrDefault(Status.ENCERRADO.getCodigo(), 0L),
                 porStatus.getOrDefault(Status.CANCELADO.getCodigo(), 0L),
-                // Indicadores internos (SLA, fila, ranking) não são expostos ao cliente.
+
                 0L, 0L, 0L,
                 null,
                 null,
@@ -143,9 +134,6 @@ public class DashboardService {
                 chamadosRecentes(usuario, usuario.getId(), null));
     }
 
-    // ------------------------------------------------------------------
-    // Blocos reutilizados
-    // ------------------------------------------------------------------
 
     private List<ChamadoResponse> chamadosRecentes(Usuario usuario, Long clienteId, Long tecnicoId) {
         var filtro = new ChamadoFiltro(null, null, null, null, tecnicoId, clienteId,
@@ -162,7 +150,7 @@ public class DashboardService {
                 com.murilo.helpdesk.repository.spec.ChamadoSpecs.montar(filtro, null));
     }
 
-    /** Média de horas entre abertura e fechamento dos chamados já finalizados. */
+
     private Double tempoMedioResolucaoHoras() {
         List<Object[]> datas = chamadoRepository.buscarDatasDeResolucao();
         if (datas.isEmpty()) return null;

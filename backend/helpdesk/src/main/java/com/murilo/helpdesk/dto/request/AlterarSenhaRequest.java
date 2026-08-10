@@ -4,8 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record AlterarSenhaRequest(
-        // Exigir a senha atual evita que uma sessão esquecida aberta permita
-        // o sequestro definitivo da conta.
+
+
         @NotBlank(message = "Informe a senha atual")
         String senhaAtual,
 

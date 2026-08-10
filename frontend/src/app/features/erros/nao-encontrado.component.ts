@@ -3,11 +3,7 @@ import { Location } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
-/**
- * Rota inexistente. Antes o curinga `**` redirecionava para o login, o que
- * fazia um usuário logado achar que a sessão tinha caído por causa de um
- * simples erro de digitação na URL.
- */
+
 @Component({
   selector: 'app-nao-encontrado',
   standalone: true,

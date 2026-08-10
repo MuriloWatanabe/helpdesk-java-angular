@@ -38,7 +38,7 @@ export class AuthService {
   private readonly tokenKey = 'helpdesk_token';
   private readonly userKey = 'helpdesk_user';
 
-  /** Estado reativo: o layout acompanha alterações do perfil sem recarregar a página. */
+
   private readonly _usuario = signal<UsuarioAtual | null>(this.lerUsuarioSalvo());
   readonly usuario = this._usuario.asReadonly();
 
@@ -54,9 +54,6 @@ export class AuthService {
     return 'Usuário';
   });
 
-  // ------------------------------------------------------------------
-  // Autenticação
-  // ------------------------------------------------------------------
 
   login(email: string, senha: string): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { email, senha }).pipe(
@@ -87,11 +84,7 @@ export class AuthService {
     return localStorage.getItem(this.tokenKey);
   }
 
-  /**
-   * Considera logado apenas quem tem um token ainda válido. Antes bastava
-   * existir a string no localStorage: com o token expirado o usuário entrava
-   * nas telas e só descobria o problema quando a primeira chamada falhava.
-   */
+
   isLoggedIn(): boolean {
     const token = this.getToken();
     if (!token) return false;
@@ -105,11 +98,11 @@ export class AuthService {
 
   private tokenExpirado(token: string): boolean {
     const exp = this.lerExpiracao(token);
-    if (exp === null) return false; // token sem exp legível: deixa o servidor decidir
+    if (exp === null) return false;
     return Date.now() >= exp;
   }
 
-  /** Lê o campo `exp` do payload do JWT (em milissegundos). */
+
   private lerExpiracao(token: string): number | null {
     try {
       const payload = token.split('.')[1];
@@ -123,11 +116,7 @@ export class AuthService {
     }
   }
 
-  // ------------------------------------------------------------------
-  // Usuário autenticado
-  // ------------------------------------------------------------------
 
-  /** Dados completos e atualizados do próprio usuário. */
   carregarMeuPerfil(): Observable<Usuario> {
     return this.http.get<Usuario>(`${this.apiUrl}/me`).pipe(
       tap((u) =>
@@ -136,7 +125,7 @@ export class AuthService {
     );
   }
 
-  /** Autosserviço: não exige perfil de administrador. */
+
   atualizarMeuPerfil(request: AtualizarPerfilRequest): Observable<Usuario> {
     return this.http.put<Usuario>(`${this.apiUrl}/me`, request).pipe(
       tap((u) =>
@@ -167,9 +156,6 @@ export class AuthService {
     return this._usuario();
   }
 
-  // ------------------------------------------------------------------
-  // Helpers de apresentação
-  // ------------------------------------------------------------------
 
   getIniciais(nome?: string | null): string {
     if (!nome?.trim()) return '?';
@@ -188,9 +174,6 @@ export class AuthService {
     return 'Cliente';
   }
 
-  // ------------------------------------------------------------------
-  // Internos
-  // ------------------------------------------------------------------
 
   private temPerfil(role: string): boolean {
     return this._usuario()?.perfis?.includes(role) ?? false;

@@ -7,7 +7,7 @@ describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      // O shell monta router-outlet, toasts e diálogo de confirmação.
+
       providers: [provideRouter([]), provideHttpClient()],
     }).compileComponents();
   });

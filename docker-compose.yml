@@ -9,8 +9,8 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # Os scripts só rodam quando o volume está vazio. Para atualizar um banco
-      # já existente use backend/helpdesk/database/migration-v2.sql.
+
+
       - ./backend/helpdesk/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
       - ./backend/helpdesk/database/data.sql:/docker-entrypoint-initdb.d/02-data.sql
     healthcheck:
@@ -28,13 +28,13 @@ services:
       DB_URL: jdbc:postgresql://db:5432/helpdesk
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
-      # Troque em qualquer ambiente que não seja a sua máquina.
+
       JWT_SECRET: ${JWT_SECRET:-helpdesk-secret-key-2024-muito-longa-para-hmac-sha256-minimo-256bits}
       UPLOAD_DIR: /app/uploads
       FRONT_URL: http://localhost:4200
       CORS_ORIGINS: http://localhost:4200,http://localhost:3000
     volumes:
-      # Sem isto os anexos dos chamados sumiriam a cada recriação do contêiner.
+
       - uploads_data:/app/uploads
     depends_on:
       db:

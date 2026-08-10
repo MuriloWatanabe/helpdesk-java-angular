@@ -8,10 +8,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Entidade que representa a avaliação de satisfação de um usuário sobre um chamado.
- * Permite coletar feedback de qualidade do atendimento.
- */
+
 @Entity
 @Table(name = "avaliacoes", indexes = {
     @Index(name = "idx_avaliacao_chamado",  columnList = "chamado_id"),
@@ -46,10 +43,7 @@ public class Avaliacao implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String comentario;
 
-    /**
-     * Aspectos positivos destacados pelo avaliador.
-     * Ex: "Rapidez", "Competência", "Cortesia"
-     */
+
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(
         name = "avaliacao_aspectos",
@@ -71,7 +65,7 @@ public class Avaliacao implements Serializable {
         dataAvaliacao = LocalDateTime.now();
     }
 
-    /** Retorna interpretação textual da nota. */
+
     public String getInterpretacaoNota() {
         if (nota == null) return "Indefinida";
         return switch (nota) {
@@ -84,7 +78,7 @@ public class Avaliacao implements Serializable {
         };
     }
 
-    /** Indica se foi uma avaliação positiva (nota 4 ou 5). */
+
     public boolean ehPositiva() {
         return nota != null && nota >= 4;
     }

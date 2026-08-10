@@ -12,10 +12,7 @@ interface ConfirmState extends ConfirmOptions {
   resolver: (confirmado: boolean) => void;
 }
 
-/**
- * Diálogo de confirmação da aplicação, no lugar do `confirm()` nativo —
- * que não é estilizável e trava a aba inteira.
- */
+
 @Injectable({ providedIn: 'root' })
 export class ConfirmService {
   private readonly _estado = signal<ConfirmState | null>(null);

@@ -18,10 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/**
- * Conversa do chamado (RF07). Notas marcadas como internas ficam restritas à
- * equipe de suporte e nunca são devolvidas para o cliente.
- */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -56,7 +53,7 @@ public class ComentarioService {
             throw new BusinessException("Este chamado foi cancelado e não aceita novos comentários.");
         }
 
-        // Só a equipe pode registrar nota interna.
+
         boolean interno = Boolean.TRUE.equals(request.interno()) && autor.ehAtendente();
 
         Comentario comentario = Comentario.builder()
@@ -69,7 +66,7 @@ public class ComentarioService {
         Comentario salvo = comentarioRepository.save(comentario);
         historicoService.registrarComentario(chamado, autor);
 
-        // Uma resposta pública da equipe conta como primeiro atendimento.
+
         if (autor.ehAtendente() && !interno) {
             chamadoService.registrarPrimeiraResposta(chamado);
             chamadoService.salvar(chamado);

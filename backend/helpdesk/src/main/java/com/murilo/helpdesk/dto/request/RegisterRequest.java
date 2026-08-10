@@ -13,7 +13,7 @@ public record RegisterRequest(
         @Email(message = "Informe um e-mail válido")
         String email,
 
-        // Mesmo mínimo exigido no cadastro pelo admin e na troca de senha.
+
         @NotBlank(message = "Informe uma senha")
         @Size(min = 6, message = "A senha deve ter no mínimo 6 caracteres")
         String senha,

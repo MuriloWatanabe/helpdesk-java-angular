@@ -16,12 +16,12 @@ public interface AnexoRepository extends JpaRepository<Anexo, Long> {
 
     List<Anexo> findByChamadoIdOrderByDataUploadDesc(Long chamadoId);
 
-    /** Anexos visíveis ao cliente (exclui os marcados como internos). */
+
     List<Anexo> findByChamadoIdAndPublicoTrueOrderByDataUploadDesc(Long chamadoId);
 
     long countByChamadoId(Long chamadoId);
 
-    /** Contagem em lote para a listagem, evitando uma consulta por linha. */
+
     @Query("SELECT a.chamado.id, COUNT(a) FROM Anexo a " +
            "WHERE a.chamado.id IN :ids GROUP BY a.chamado.id")
     List<Object[]> contarPorChamados(@Param("ids") Collection<Long> ids);

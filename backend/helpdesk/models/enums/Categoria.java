@@ -1,9 +1,6 @@
 package com.murilo.helpdesk.model.enums;
 
-/**
- * Enumeração que classifica as categorias de problemas técnicos.
- * Cada categoria ajuda na organização e priorização dos chamados.
- */
+
 public enum Categoria {
     REDE(0, "Problemas de Rede", "🌐"),
     HARDWARE(1, "Problemas de Hardware", "🖥️"),

@@ -10,6 +10,6 @@ public record LoginResponse(
         String nome,
         String email,
         Set<String> perfis,
-        /** Momento em que o token deixa de valer — o front usa para deslogar antes da falha. */
+
         LocalDateTime expiraEm
 ) {}

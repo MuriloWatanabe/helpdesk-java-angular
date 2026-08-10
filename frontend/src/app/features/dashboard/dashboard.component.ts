@@ -44,20 +44,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return nome.split(' ')[0] || 'Bem-vindo';
   });
 
-  /** Total ainda em aberto — o número que importa no dia a dia. */
+
   readonly emAberto = computed(() => {
     const s = this.stats();
     if (!s) return 0;
     return s.totalAbertos + s.totalEmAndamento + s.totalAguardandoCliente;
   });
 
-  /**
-   * Situação dos chamados na ordem do ciclo de vida (e não por tamanho): o
-   * leitor acompanha o caminho do chamado da abertura ao encerramento.
-   *
-   * As cores são os mesmos tokens dos badges usados nas listagens, para que
-   * "laranja = em andamento" valha em todo o sistema.
-   */
+
   readonly situacoes = computed(() => {
     const s = this.stats();
     if (!s) return [];
@@ -78,7 +72,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }));
   });
 
-  /** Total das situações — base dos percentuais e do texto do gráfico. */
+
   readonly totalSituacoes = computed(() =>
     this.situacoes().reduce((soma, p) => soma + p.valor, 0),
   );
@@ -113,7 +107,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       next: (dados) => {
         this.stats.set(dados);
         this.loading.set(false);
-        // Aguarda o próximo ciclo para os canvas existirem no DOM.
+
         setTimeout(() => this.desenharGraficos(), 0);
       },
       error: () => {
@@ -127,9 +121,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.carregarDados(true);
   }
 
-  // ------------------------------------------------------------------
-  // Gráficos
-  // ------------------------------------------------------------------
 
   private destruirGraficos(): void {
     this.chartEvolucao?.destroy();
@@ -143,7 +134,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.desenharEvolucao(dados);
   }
 
-  /** Aberturas por dia nas últimas duas semanas. */
+
   private desenharEvolucao(dados: DashboardStats): void {
     const ctx = this.graficoEvolucao?.nativeElement.getContext('2d');
     if (!ctx || this.chartEvolucao || dados.aberturasPorDia.length === 0) return;
@@ -187,11 +178,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return `${dia}/${mes}`;
   }
 
-  // ------------------------------------------------------------------
-  // Apresentação
-  // ------------------------------------------------------------------
 
-  /** Percentual de uma categoria sobre o total, para as barras de proporção. */
   percentual(valor: number): number {
     const total = this.stats()?.totalChamados ?? 0;
     return total === 0 ? 0 : Math.round((valor / total) * 100);

@@ -1,5 +1,4 @@
-/* Estilo compartilhado pelas telas públicas de recuperação de senha,
-   alinhado ao visual da tela de login. */
+
 
 .auth-container {
   min-height: 100vh;
@@ -116,7 +115,7 @@
 .msg-sucesso { background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; }
 .msg-erro    { background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; }
 
-/* Link de redefinição exibido só em ambiente sem envio de e-mail */
+
 .msg-link {
   background: #eff6ff;
   border: 1px solid #bfdbfe;

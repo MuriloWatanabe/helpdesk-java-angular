@@ -186,7 +186,7 @@ form {
   }
 }
 
-/* Aviso de sessão expirada vindo do interceptor */
+
 .aviso-msg {
   margin-bottom: 18px;
   padding: 10px 14px;
@@ -198,7 +198,7 @@ form {
   text-align: center;
 }
 
-/* Campo de senha com botão de exibir/ocultar */
+
 .senha-wrap {
   position: relative;
   display: flex;
@@ -227,7 +227,7 @@ form {
   }
 }
 
-/* Atalhos de credenciais do ambiente de demonstração */
+
 .demo-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

@@ -12,7 +12,7 @@ import { routes } from './app.routes';
 import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
 import { authErrorInterceptor } from './core/interceptors/auth-error.interceptor';
 
-// Sem isso, datas e números eram formatados em inglês pelos pipes do Angular.
+
 registerLocaleData(localePt, 'pt-BR');
 
 export const appConfig: ApplicationConfig = {
@@ -20,7 +20,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(
       routes,
-      // Trocar de tela volta ao topo, em vez de manter a rolagem da anterior.
+
       withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' }),
     ),
     provideHttpClient(withInterceptors([jwtInterceptor, authErrorInterceptor])),

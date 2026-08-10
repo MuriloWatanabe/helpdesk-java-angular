@@ -14,10 +14,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
-/**
- * Controller responsável pelas operações de usuários do sistema.
- * Fornece endpoints para CRUD de usuários e gerenciamento de perfis.
- */
+
 @RestController
 @RequestMapping("/api/v1/usuarios")
 @Tag(name = "Usuários", description = "API de gerenciamento de usuários")
@@ -26,11 +23,7 @@ public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
 
-    /**
-     * Busca um usuário pelo ID.
-     * @param id ID do usuário
-     * @return Usuário encontrado
-     */
+
     @GetMapping("/{id}")
     @Operation(summary = "Buscar usuário por ID", description = "Retorna os detalhes de um usuário específico")
     public ResponseEntity<Usuario> findById(
@@ -39,10 +32,7 @@ public class UsuarioController {
         return ResponseEntity.ok(usuario);
     }
 
-    /**
-     * Lista todos os usuários do sistema.
-     * @return Lista de usuários
-     */
+
     @GetMapping
     @Operation(summary = "Listar todos os usuários", description = "Retorna uma lista com todos os usuários cadastrados")
     public ResponseEntity<List<Usuario>> findAll() {
@@ -50,11 +40,7 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarios);
     }
 
-    /**
-     * Cria um novo usuário no sistema.
-     * @param usuario Dados do novo usuário
-     * @return Usuário criado com status 201
-     */
+
     @PostMapping
     @Operation(summary = "Criar novo usuário", description = "Cadastra um novo usuário no sistema")
     public ResponseEntity<Usuario> create(@Valid @RequestBody Usuario usuario) {
@@ -67,12 +53,7 @@ public class UsuarioController {
         return ResponseEntity.created(uri).body(novoUsuario);
     }
 
-    /**
-     * Atualiza um usuário existente.
-     * @param id ID do usuário
-     * @param usuario Dados atualizados
-     * @return Usuário atualizado
-     */
+
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar usuário", description = "Atualiza os dados de um usuário existente")
     public ResponseEntity<Usuario> update(
@@ -82,11 +63,7 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioAtualizado);
     }
 
-    /**
-     * Deleta um usuário do sistema.
-     * @param id ID do usuário
-     * @return Status 204 No Content
-     */
+
     @DeleteMapping("/{id}")
     @Operation(summary = "Deletar usuário", description = "Remove um usuário do sistema")
     public ResponseEntity<Void> delete(

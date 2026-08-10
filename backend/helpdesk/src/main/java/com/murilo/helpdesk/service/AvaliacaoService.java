@@ -19,10 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.util.Optional;
 
-/**
- * Pesquisa de satisfação: o cliente avalia o atendimento depois que o chamado
- * é resolvido/encerrado. Uma avaliação por chamado.
- */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -48,7 +45,7 @@ public class AvaliacaoService {
         Usuario solicitante = usuarioService.findByEmail(emailSolicitante);
         Chamado chamado = chamadoService.findById(chamadoId);
 
-        // Quem avalia é quem abriu o chamado — nem o técnico nem outro cliente.
+
         if (chamado.getCliente() == null
                 || !chamado.getCliente().getId().equals(solicitante.getId())) {
             throw new OperacaoNaoPermitidaException(

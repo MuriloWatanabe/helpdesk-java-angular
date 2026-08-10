@@ -35,7 +35,7 @@ public class Chamado implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Número de protocolo exibido ao cliente (ex.: CH-2026-000042). */
+
     @Column(name = "numero", unique = true, length = 20)
     private String numero;
 
@@ -57,7 +57,7 @@ public class Chamado implements Serializable {
     @Column(nullable = false)
     private Integer prioridade;
 
-    /** Código de {@link Categoria} — usado na triagem e nos relatórios. */
+
     @Column(name = "categoria")
     private Integer categoria;
 
@@ -78,11 +78,11 @@ public class Chamado implements Serializable {
     @Column
     private LocalDateTime dataAtualizacao;
 
-    /** Prazo limite calculado a partir da prioridade no momento da abertura. */
+
     @Column(name = "prazo_sla")
     private LocalDateTime prazoSla;
 
-    /** Momento do primeiro retorno de um técnico — métrica de tempo de resposta. */
+
     @Column(name = "data_primeira_resposta")
     private LocalDateTime dataPrimeiraResposta;
 
@@ -101,9 +101,6 @@ public class Chamado implements Serializable {
         dataAtualizacao = LocalDateTime.now();
     }
 
-    // ------------------------------------------------------------------
-    // Conversões de enum (por código, nunca por ordinal)
-    // ------------------------------------------------------------------
 
     public Status getStatusEnum() {
         return Status.fromCodigo(this.status);
@@ -129,11 +126,7 @@ public class Chamado implements Serializable {
         this.categoria = categoria == null ? null : categoria.getCodigo();
     }
 
-    // ------------------------------------------------------------------
-    // SLA
-    // ------------------------------------------------------------------
 
-    /** Recalcula o prazo a partir da abertura e da prioridade atual. */
     public void calcularPrazoSla() {
         Prioridade p = getPrioridadeEnum();
         if (p == null) return;
@@ -141,7 +134,7 @@ public class Chamado implements Serializable {
         this.prazoSla = base.plusHours(p.getHorasSla());
     }
 
-    /** True quando o prazo estourou e o chamado ainda não foi resolvido. */
+
     public boolean isSlaVencido() {
         if (prazoSla == null) return false;
         Status s = getStatusEnum();
@@ -149,7 +142,7 @@ public class Chamado implements Serializable {
         return LocalDateTime.now().isAfter(prazoSla);
     }
 
-    /** Horas restantes até o prazo (negativo quando já venceu). */
+
     public Long getHorasRestantesSla() {
         if (prazoSla == null) return null;
         Status s = getStatusEnum();

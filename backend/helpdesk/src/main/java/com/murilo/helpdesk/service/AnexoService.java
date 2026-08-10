@@ -29,17 +29,13 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Anexos do chamado gravados em disco. O nome enviado pelo cliente é usado
- * apenas para exibição/download: o arquivo é salvo com um nome gerado, de modo
- * que nomes como "../../etc/passwd" não conseguem escapar do diretório.
- */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AnexoService {
 
-    /** 10 MB — alinhado ao limite configurado no multipart do Spring. */
+
     private static final long TAMANHO_MAXIMO = 10L * 1024 * 1024;
 
     private final AnexoRepository anexoRepository;
@@ -88,7 +84,7 @@ public class AnexoService {
                 .tamanho(arquivo.getSize())
                 .tipoMime(arquivo.getContentType())
                 .descricao(descricao)
-                // Anexo interno só existe para a equipe de suporte.
+
                 .publico(!(Boolean.TRUE.equals(interno) && solicitante.ehAtendente()))
                 .build();
 
@@ -100,7 +96,7 @@ public class AnexoService {
         return Mapper.toAnexoResponse(salvo);
     }
 
-    /** Recupera o arquivo já validando se o solicitante pode vê-lo. */
+
     @Transactional(readOnly = true)
     public ArquivoBaixado baixar(Long anexoId, String emailSolicitante) {
         Usuario solicitante = usuarioService.findByEmail(emailSolicitante);
@@ -142,15 +138,12 @@ public class AnexoService {
         try {
             Files.deleteIfExists(diretorioBase().resolve(anexo.getCaminhoArquivo()).normalize());
         } catch (IOException e) {
-            // O registro sai do sistema mesmo se o arquivo físico já não existir.
+
             log.warn("Não foi possível remover o arquivo do anexo {}: {}", anexoId, e.getMessage());
         }
         anexoRepository.delete(anexo);
     }
 
-    // ------------------------------------------------------------------
-    // Internos
-    // ------------------------------------------------------------------
 
     private void validar(MultipartFile arquivo) {
         if (arquivo == null || arquivo.isEmpty()) {
@@ -207,6 +200,6 @@ public class AnexoService {
                 .orElseThrow(() -> ResourceNotFoundException.of("Anexo", id));
     }
 
-    /** Arquivo pronto para ser transmitido pelo controller. */
+
     public record ArquivoBaixado(Resource recurso, String nomeArquivo, String tipoMime) {}
 }

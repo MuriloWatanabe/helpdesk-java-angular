@@ -2,12 +2,9 @@ package com.murilo.helpdesk.dto.response;
 
 import java.util.List;
 
-/**
- * Estatísticas já filtradas pelo papel de quem pediu: o cliente recebe apenas
- * números dos próprios chamados, o técnico dos que atende e o admin de todos.
- */
+
 public record DashboardStatsResponse(
-        String escopo,              // "GLOBAL" | "TECNICO" | "CLIENTE"
+        String escopo,
 
         long totalChamados,
         long totalAbertos,

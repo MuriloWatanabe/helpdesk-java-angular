@@ -14,7 +14,7 @@ class JwtServiceTest {
 
     private static final String SECRET =
             "helpdesk-secret-key-2024-muito-longa-para-hmac-sha256-minimo-256bits";
-    private static final long EXPIRATION = 86_400_000L; // 24 h
+    private static final long EXPIRATION = 86_400_000L;
 
     private JwtService jwtService;
 
@@ -32,9 +32,6 @@ class JwtServiceTest {
                 .build();
     }
 
-    // ──────────────────────────────────────────────────────────
-    // generateToken
-    // ──────────────────────────────────────────────────────────
 
     @Test
     @DisplayName("generateToken — deve retornar token JWT não vazio")
@@ -42,13 +39,10 @@ class JwtServiceTest {
         var token = jwtService.generateToken(user("user@test.com"));
 
         assertThat(token).isNotBlank();
-        // JWT tem exatamente 3 partes separadas por ponto
+
         assertThat(token.split("\\.")).hasSize(3);
     }
 
-    // ──────────────────────────────────────────────────────────
-    // extractUsername
-    // ──────────────────────────────────────────────────────────
 
     @Test
     @DisplayName("extractUsername — deve extrair o e-mail correto do token")
@@ -59,9 +53,6 @@ class JwtServiceTest {
         assertThat(jwtService.extractUsername(token)).isEqualTo("user@test.com");
     }
 
-    // ──────────────────────────────────────────────────────────
-    // isTokenValid
-    // ──────────────────────────────────────────────────────────
 
     @Test
     @DisplayName("isTokenValid — token do próprio usuário deve ser válido")

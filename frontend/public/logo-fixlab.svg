@@ -6,8 +6,8 @@
     <path d="M46.5 42.5h7v25l-3.5 11-3.5-11z"
           stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="round"/>
   </g>
-  <!-- A fonte vem do sistema: sem webfont embutido o SVG continua leve e
-       funciona offline. O peso 800 mantém o traço grosso do original. -->
+
+
   <text x="118" y="69"
         font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
         font-size="56" font-weight="800" letter-spacing="-2">
