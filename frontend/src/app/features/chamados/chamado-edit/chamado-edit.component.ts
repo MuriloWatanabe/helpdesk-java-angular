@@ -8,7 +8,6 @@ import { ToastService, mensagemDoErro } from '../../../core/services/toast.servi
 import { Chamado } from '../../../core/models/chamado.model';
 import { Opcao, Usuario } from '../../../core/models/usuario.model';
 
-
 @Component({
   selector: 'app-chamado-edit',
   standalone: true,
@@ -25,7 +24,6 @@ export class ChamadoEditComponent implements OnInit {
   private readonly router = inject(Router);
 
   form!: FormGroup;
-
 
   chamado = signal<Chamado | null>(null);
   carregando = signal(true);
@@ -64,9 +62,19 @@ export class ChamadoEditComponent implements OnInit {
     this.usuarioService.listar({ ativo: true }).subscribe({
       next: (usuarios) => {
         this.clientes.set(usuarios.filter((u) => u.perfis.includes('ROLE_CLIENTE')));
-        this.tecnicos.set(usuarios.filter((u) => u.perfis.includes('ROLE_TECNICO')));
+        this.tecnicos.set(
+          usuarios.filter(
+            (u) => u.perfis.includes('ROLE_TECNICO') || u.perfis.includes('ROLE_ADMIN'),
+          ),
+        );
       },
     });
+
+    if (!Number.isInteger(this.chamadoId) || this.chamadoId <= 0) {
+      this.erro.set('Chamado inválido.');
+      this.carregando.set(false);
+      return;
+    }
 
     this.carregar();
   }
@@ -132,7 +140,6 @@ export class ChamadoEditComponent implements OnInit {
     const c = this.form.get(campo);
     return !!(c && c.invalid && c.touched);
   }
-
 
   get avisoPrazo(): string {
     const atual = this.chamado();

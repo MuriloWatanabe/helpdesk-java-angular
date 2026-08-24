@@ -2,7 +2,6 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { AuthService } from './auth.service';
 
-
 function tokenComExpiracao(segundosDesdeEpoch: number | null): string {
   const payload = segundosDesdeEpoch === null ? {} : { exp: segundosDesdeEpoch };
   const base64 = btoa(JSON.stringify(payload)).replaceAll('+', '-').replaceAll('/', '_');
@@ -51,6 +50,8 @@ describe('AuthService', () => {
       localStorage.setItem('helpdesk_token', 'isto-nao-e-um-jwt');
 
       expect(() => service.isLoggedIn()).not.toThrow();
+      expect(service.isLoggedIn()).toBe(false);
+      expect(localStorage.getItem('helpdesk_token')).toBeNull();
     });
   });
 

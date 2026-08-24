@@ -5,7 +5,6 @@ import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
 
-
 export const authErrorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const authService = inject(AuthService);
@@ -14,8 +13,7 @@ export const authErrorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
-
-        if (!req.url.includes('/v1/auth/login')) {
+        if (!req.url.includes('/v1/auth/login') && authService.getToken()) {
           authService.logout();
           router.navigate(['/login'], {
             queryParams: { retorno: router.url, expirado: '1' },

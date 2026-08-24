@@ -3,10 +3,12 @@
   width: 100%;
   background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 50%, #1d4ed8 100%);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 24px 16px;
 }
 
 .circles {
@@ -44,6 +46,7 @@
   padding: 40px 36px;
   width: 100%;
   max-width: 420px;
+  margin: auto 0;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
@@ -88,7 +91,9 @@ form {
     font-size: 14px;
     color: #1e293b;
     background: #f8fafc;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
 
     &:focus {
       border-color: #1d4ed8;
@@ -141,7 +146,9 @@ form {
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.3px;
-  transition: background 0.2s, transform 0.1s;
+  transition:
+    background 0.2s,
+    transform 0.1s;
 
   &:hover:not(:disabled) {
     background: #1e40af;
@@ -186,7 +193,6 @@ form {
   }
 }
 
-
 .aviso-msg {
   margin-bottom: 18px;
   padding: 10px 14px;
@@ -197,7 +203,6 @@ form {
   font-size: 13px;
   text-align: center;
 }
-
 
 .senha-wrap {
   position: relative;
@@ -227,7 +232,6 @@ form {
   }
 }
 
-
 .demo-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -243,7 +247,9 @@ form {
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   text-align: center;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 
   strong {
     font-size: 12px;

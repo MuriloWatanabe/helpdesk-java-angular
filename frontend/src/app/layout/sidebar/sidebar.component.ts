@@ -1,4 +1,5 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
@@ -16,7 +17,7 @@ export class SidebarComponent {
   private readonly authService = inject(AuthService);
   private readonly confirmService = inject(ConfirmService);
   private readonly router = inject(Router);
-
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly aberta = signal(false);
 
@@ -34,9 +35,11 @@ export class SidebarComponent {
   readonly userInitials = computed(() => this.authService.getIniciais(this.userName()));
 
   constructor() {
-
     this.router.events
-      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe(() => this.aberta.set(false));
   }
 

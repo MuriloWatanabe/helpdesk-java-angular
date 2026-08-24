@@ -16,14 +16,19 @@
         <input
           id="nome"
           type="text"
+          maxlength="100"
+          autocomplete="name"
           formControlName="nome"
           placeholder="Seu nome"
           [class.input-error]="nomeControl?.invalid && nomeControl?.touched"
         />
         @if (nomeControl?.invalid && nomeControl?.touched) {
           <span class="field-error">
-            @if (nomeControl?.errors?.['required']) { Nome é obrigatório. }
-            @else if (nomeControl?.errors?.['minlength']) { Mínimo de 3 caracteres. }
+            @if (nomeControl?.errors?.['required']) {
+              Nome é obrigatório.
+            } @else if (nomeControl?.errors?.['minlength']) {
+              Mínimo de 3 caracteres.
+            }
           </span>
         }
       </div>
@@ -33,14 +38,19 @@
         <input
           id="email"
           type="email"
+          maxlength="254"
+          autocomplete="email"
           formControlName="email"
           placeholder="seu@email.com"
           [class.input-error]="emailControl?.invalid && emailControl?.touched"
         />
         @if (emailControl?.invalid && emailControl?.touched) {
           <span class="field-error">
-            @if (emailControl?.errors?.['required']) { E-mail é obrigatório. }
-            @else if (emailControl?.errors?.['email']) { Informe um e-mail válido. }
+            @if (emailControl?.errors?.['required']) {
+              E-mail é obrigatório.
+            } @else if (emailControl?.errors?.['email']) {
+              Informe um e-mail válido.
+            }
           </span>
         }
       </div>
@@ -50,9 +60,14 @@
         <input
           id="telefone"
           type="tel"
+          maxlength="20"
+          autocomplete="tel"
           formControlName="telefone"
           placeholder="(11) 99999-0000"
         />
+        @if (telefoneControl?.invalid && telefoneControl?.touched) {
+          <span class="field-error">Use no máximo 20 caracteres.</span>
+        }
       </div>
 
       <div class="form-group">
@@ -60,14 +75,18 @@
         <input
           id="senha"
           type="password"
+          autocomplete="new-password"
           formControlName="senha"
           placeholder="••••••••"
           [class.input-error]="senhaControl?.invalid && senhaControl?.touched"
         />
         @if (senhaControl?.invalid && senhaControl?.touched) {
           <span class="field-error">
-            @if (senhaControl?.errors?.['required']) { Senha é obrigatória. }
-            @else if (senhaControl?.errors?.['minlength']) { Mínimo de 6 caracteres. }
+            @if (senhaControl?.errors?.['required']) {
+              Senha é obrigatória.
+            } @else if (senhaControl?.errors?.['minlength']) {
+              Mínimo de 6 caracteres.
+            }
           </span>
         }
       </div>
@@ -77,10 +96,13 @@
         <input
           id="confirmarSenha"
           type="password"
+          autocomplete="new-password"
           formControlName="confirmarSenha"
           placeholder="••••••••"
-          [class.input-error]="(confirmarSenhaControl?.touched && form.errors?.['senhasDiferentes'])
-                                || (confirmarSenhaControl?.invalid && confirmarSenhaControl?.touched)"
+          [class.input-error]="
+            (confirmarSenhaControl?.touched && form.errors?.['senhasDiferentes']) ||
+            (confirmarSenhaControl?.invalid && confirmarSenhaControl?.touched)
+          "
         />
         @if (confirmarSenhaControl?.touched && form.errors?.['senhasDiferentes']) {
           <span class="field-error">As senhas não coincidem.</span>
@@ -88,20 +110,22 @@
       </div>
 
       <button type="submit" class="btn-primary" [disabled]="isLoading()">
-        @if (isLoading()) { Cadastrando... } @else { Cadastrar }
+        @if (isLoading()) {
+          Cadastrando...
+        } @else {
+          Cadastrar
+        }
       </button>
 
       @if (errorMessage()) {
-        <div class="error-msg">{{ errorMessage() }}</div>
+        <div class="error-msg" role="alert">{{ errorMessage() }}</div>
       }
 
       @if (successMessage()) {
-        <div class="success-msg">{{ successMessage() }}</div>
+        <div class="success-msg" role="status">{{ successMessage() }}</div>
       }
     </form>
 
-    <div class="register-link">
-      Já tem uma conta? <a routerLink="/login">Entrar</a>
-    </div>
+    <div class="register-link">Já tem uma conta? <a routerLink="/login">Entrar</a></div>
   </div>
 </div>

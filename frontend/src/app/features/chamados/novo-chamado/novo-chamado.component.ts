@@ -26,7 +26,6 @@ export class NovoChamadoComponent implements OnInit {
 
   form!: FormGroup;
 
-
   loading = signal(false);
   erro = signal('');
 
@@ -57,7 +56,6 @@ export class NovoChamadoComponent implements OnInit {
       },
     });
 
-
     if (this.isAtendente()) {
       this.form.get('clienteId')?.setValidators(Validators.required);
       this.form.get('clienteId')?.updateValueAndValidity();
@@ -65,12 +63,15 @@ export class NovoChamadoComponent implements OnInit {
       this.usuarioService.listar({ ativo: true }).subscribe({
         next: (usuarios) => {
           this.clientes.set(usuarios.filter((u) => u.perfis.includes('ROLE_CLIENTE')));
-          this.tecnicos.set(usuarios.filter((u) => u.perfis.includes('ROLE_TECNICO')));
+          this.tecnicos.set(
+            usuarios.filter(
+              (u) => u.perfis.includes('ROLE_TECNICO') || u.perfis.includes('ROLE_ADMIN'),
+            ),
+          );
         },
       });
     }
   }
-
 
   get slaEscolhido(): string {
     const codigo = Number(this.form?.get('prioridade')?.value);

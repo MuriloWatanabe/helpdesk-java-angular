@@ -1,5 +1,12 @@
 import { Component, signal } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { LogoComponent } from '../../../shared/logo/logo.component';
@@ -15,7 +22,7 @@ function senhasIguais(group: AbstractControl): ValidationErrors | null {
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, LogoComponent],
   templateUrl: './register.component.html',
-  styleUrl: './register.component.scss'
+  styleUrl: './register.component.scss',
 })
 export class RegisterComponent {
   form: FormGroup;
@@ -27,15 +34,18 @@ export class RegisterComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
   ) {
-    this.form = this.fb.group({
-      nome: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
-      email: ['', [Validators.required, Validators.email]],
-      senha: ['', [Validators.required, Validators.minLength(6)]],
-      confirmarSenha: ['', Validators.required],
-      telefone: ['']
-    }, { validators: senhasIguais });
+    this.form = this.fb.group(
+      {
+        nome: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
+        email: ['', [Validators.required, Validators.email]],
+        senha: ['', [Validators.required, Validators.minLength(6)]],
+        confirmarSenha: ['', Validators.required],
+        telefone: ['', Validators.maxLength(20)],
+      },
+      { validators: senhasIguais },
+    );
   }
 
   onSubmit(): void {
@@ -65,13 +75,23 @@ export class RegisterComponent {
         } else {
           this.errorMessage.set(err.error?.message || 'Ocorreu um erro. Tente novamente.');
         }
-      }
+      },
     });
   }
 
-  get nomeControl() { return this.form.get('nome'); }
-  get emailControl() { return this.form.get('email'); }
-  get senhaControl() { return this.form.get('senha'); }
-  get confirmarSenhaControl() { return this.form.get('confirmarSenha'); }
-  get telefoneControl() { return this.form.get('telefone'); }
+  get nomeControl() {
+    return this.form.get('nome');
+  }
+  get emailControl() {
+    return this.form.get('email');
+  }
+  get senhaControl() {
+    return this.form.get('senha');
+  }
+  get confirmarSenhaControl() {
+    return this.form.get('confirmarSenha');
+  }
+  get telefoneControl() {
+    return this.form.get('telefone');
+  }
 }

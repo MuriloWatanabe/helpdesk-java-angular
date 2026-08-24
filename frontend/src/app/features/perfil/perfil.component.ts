@@ -1,12 +1,11 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { DatePipe, NgClass } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { FormControl, FormsModule, Validators } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { SidebarComponent } from '../../layout/sidebar/sidebar.component';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService, mensagemDoErro } from '../../core/services/toast.service';
 import { Usuario } from '../../core/models/usuario.model';
-
 
 @Component({
   selector: 'app-perfil',
@@ -18,10 +17,10 @@ import { Usuario } from '../../core/models/usuario.model';
 export class PerfilComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly toast = inject(ToastService);
+  private readonly router = inject(Router);
 
   usuario = signal<Usuario | null>(null);
   carregando = signal(true);
-
 
   editNome = '';
   editEmail = '';
@@ -29,7 +28,6 @@ export class PerfilComponent implements OnInit {
   editCargo = '';
   salvandoDados = signal(false);
   erroDados = signal('');
-
 
   senhaAtual = '';
   novaSenha = '';
@@ -73,27 +71,55 @@ export class PerfilComponent implements OnInit {
     if (this.salvandoDados()) return;
     this.erroDados.set('');
 
-    if (!this.editNome.trim() || !this.editEmail.trim()) {
+    const nome = this.editNome.trim();
+    const email = this.editEmail.trim().toLowerCase();
+    const telefone = this.editTelefone.trim();
+    const cargo = this.editCargo.trim();
+
+    if (!nome || !email) {
       this.erroDados.set('Nome e e-mail são obrigatórios.');
       return;
     }
-    if (this.editNome.trim().length < 3) {
-      this.erroDados.set('O nome deve ter ao menos 3 caracteres.');
+    if (nome.length < 3 || nome.length > 100) {
+      this.erroDados.set('O nome deve ter entre 3 e 100 caracteres.');
+      return;
+    }
+    if (Validators.email(new FormControl(email))) {
+      this.erroDados.set('Informe um e-mail válido.');
+      return;
+    }
+    if (telefone.length > 20) {
+      this.erroDados.set('O telefone deve ter no máximo 20 caracteres.');
+      return;
+    }
+    if (cargo.length > 100) {
+      this.erroDados.set('O cargo deve ter no máximo 100 caracteres.');
       return;
     }
 
+    const emailAnterior = this.usuario()?.email.trim().toLowerCase();
     this.salvandoDados.set(true);
     this.authService
       .atualizarMeuPerfil({
-        nome: this.editNome.trim(),
-        email: this.editEmail.trim(),
-        telefone: this.editTelefone.trim() || null,
-        cargo: this.editCargo.trim() || null,
+        nome,
+        email,
+        telefone: telefone || null,
+        cargo: cargo || null,
       })
       .subscribe({
         next: (atualizado) => {
           this.usuario.set(atualizado);
           this.salvandoDados.set(false);
+          if (atualizado.email.trim().toLowerCase() !== emailAnterior) {
+            this.authService.logout();
+            this.router.navigate(['/login'], { queryParams: { emailAlterado: '1' } });
+            return;
+          }
+
+          this.editNome = atualizado.nome;
+          this.editEmail = atualizado.email;
+          this.editTelefone = atualizado.telefone ?? '';
+          this.editCargo = atualizado.cargo ?? '';
           this.toast.sucesso('Dados atualizados com sucesso.');
         },
         error: (err) => {

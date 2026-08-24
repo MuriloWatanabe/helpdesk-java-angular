@@ -22,7 +22,11 @@ const PERFIS_MAP: Record<string, string> = {
 };
 
 const PERFIS_OPTIONS = [
-  { label: 'Administrador', value: PerfilCodigo.ADMIN, desc: 'Acesso total, incluindo gestão de usuários' },
+  {
+    label: 'Administrador',
+    value: PerfilCodigo.ADMIN,
+    desc: 'Acesso total, incluindo gestão de usuários',
+  },
   { label: 'Técnico', value: PerfilCodigo.TECNICO, desc: 'Atende chamados e vê a fila completa' },
   { label: 'Cliente', value: PerfilCodigo.CLIENTE, desc: 'Abre e acompanha os próprios chamados' },
 ];
@@ -45,11 +49,9 @@ export class UsuariosComponent implements OnInit {
   loading = signal(false);
   erro = signal('');
 
-
   busca = '';
   filtroPerfil: number | null = null;
   filtroAtivo: boolean | null = null;
-
 
   showForm = signal(false);
   formLoading = signal(false);
@@ -98,23 +100,27 @@ export class UsuariosComponent implements OnInit {
     this.carregarUsuarios();
   }
 
-
   private iniciarForm(usuario?: Usuario): void {
     const codigos = usuario ? usuario.perfisCodigos : [PerfilCodigo.CLIENTE];
 
     this.form = this.fb.group({
-      nome: [usuario?.nome ?? '', [Validators.required, Validators.minLength(3)]],
+      nome: [
+        usuario?.nome ?? '',
+        [Validators.required, Validators.minLength(3), Validators.maxLength(100)],
+      ],
       email: [usuario?.email ?? '', [Validators.required, Validators.email]],
-      senha: ['', usuario ? [Validators.minLength(6)] : [Validators.required, Validators.minLength(6)]],
-      telefone: [usuario?.telefone ?? ''],
-      cargo: [usuario?.cargo ?? ''],
+      senha: [
+        '',
+        usuario ? [Validators.minLength(6)] : [Validators.required, Validators.minLength(6)],
+      ],
+      telefone: [usuario?.telefone ?? '', Validators.maxLength(20)],
+      cargo: [usuario?.cargo ?? '', Validators.maxLength(100)],
       ativo: [usuario ? usuario.ativo : true],
       perfilAdmin: [codigos.includes(PerfilCodigo.ADMIN)],
       perfilTecnico: [codigos.includes(PerfilCodigo.TECNICO)],
       perfilCliente: [codigos.includes(PerfilCodigo.CLIENTE)],
     });
   }
-
 
   private perfisSelecionados(): number[] {
     const v = this.form.value;
@@ -182,7 +188,6 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-
   async alternarSituacao(usuario: Usuario): Promise<void> {
     const ativando = !usuario.ativo;
 
@@ -205,7 +210,6 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-
   async excluir(usuario: Usuario): Promise<void> {
     const confirmado = await this.confirmService.perguntar({
       titulo: `Excluir ${usuario.nome}?`,
@@ -225,7 +229,6 @@ export class UsuariosComponent implements OnInit {
       error: (err) => this.toast.erroDaApi(err, 'Não foi possível excluir o usuário.'),
     });
   }
-
 
   perfilLabel(role: string): string {
     return PERFIS_MAP[role] ?? role;

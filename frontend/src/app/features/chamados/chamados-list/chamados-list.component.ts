@@ -42,7 +42,6 @@ export class ChamadosListComponent implements OnInit {
   totalElements = 0;
   readonly pageSize = 10;
 
-
   busca = '';
   filtroStatus: number | null = null;
   filtroPrioridade: number | null = null;
@@ -50,7 +49,6 @@ export class ChamadosListComponent implements OnInit {
   filtroTecnico: number | null = null;
   soSlaVencido = false;
   soSemTecnico = false;
-
 
   statusOpcoes = signal<Opcao[]>([]);
   prioridadeOpcoes = signal<Opcao[]>([]);
@@ -61,6 +59,7 @@ export class ChamadosListComponent implements OnInit {
   mostrarFiltrosAvancados = false;
 
   private readonly buscaSubject = new Subject<string>();
+  private ultimaRequisicao = 0;
 
   readonly classeStatus = classeStatus;
   readonly classePrioridade = classePrioridade;
@@ -69,7 +68,6 @@ export class ChamadosListComponent implements OnInit {
   ngOnInit(): void {
     this.modo = (this.route.snapshot.data['modo'] as Modo) ?? 'todos';
     this.aplicarPreDefinicoesDoModo();
-
 
     this.buscaSubject
       .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
@@ -96,7 +94,6 @@ export class ChamadosListComponent implements OnInit {
       : 'Todos os chamados registrados no sistema';
   }
 
-
   private aplicarPreDefinicoesDoModo(): void {
     if (this.modo === 'fila') {
       this.soSemTecnico = true;
@@ -115,26 +112,34 @@ export class ChamadosListComponent implements OnInit {
       },
     });
 
-
     if (this.isAtendente()) {
-      this.usuarioService.listar({ perfil: 2, ativo: true }).subscribe({
-        next: (lista) => this.tecnicos.set(lista),
+      this.usuarioService.listar({ ativo: true }).subscribe({
+        next: (lista) =>
+          this.tecnicos.set(
+            lista.filter(
+              (usuario) =>
+                usuario.perfis.includes('ROLE_TECNICO') || usuario.perfis.includes('ROLE_ADMIN'),
+            ),
+          ),
       });
     }
   }
 
   carregar(): void {
+    const requisicao = ++this.ultimaRequisicao;
     this.loading.set(true);
     this.error.set('');
 
     this.chamadoService.listar(this.montarFiltro(), this.currentPage, this.pageSize).subscribe({
       next: (page) => {
+        if (requisicao !== this.ultimaRequisicao) return;
         this.chamados.set(page.content);
         this.totalPages = page.totalPages;
         this.totalElements = page.totalElements;
         this.loading.set(false);
       },
       error: () => {
+        if (requisicao !== this.ultimaRequisicao) return;
         this.error.set('Não foi possível carregar os chamados. Tente novamente.');
         this.loading.set(false);
       },
@@ -185,11 +190,11 @@ export class ChamadosListComponent implements OnInit {
       this.filtroStatus !== null ||
       this.filtroPrioridade !== null ||
       this.filtroCategoria !== null ||
+      (this.filtroTecnico !== null && this.modo !== 'meus') ||
       this.soSlaVencido ||
       (this.soSemTecnico && this.modo !== 'fila')
     );
   }
-
 
   assumir(chamado: Chamado, evento: Event): void {
     evento.stopPropagation();
@@ -203,7 +208,6 @@ export class ChamadosListComponent implements OnInit {
       error: (err) => this.toast.erroDaApi(err, 'Não foi possível assumir o chamado.'),
     });
   }
-
 
   paginaAnterior(): void {
     if (this.currentPage > 0) {
@@ -223,7 +227,6 @@ export class ChamadosListComponent implements OnInit {
     this.currentPage = p;
     this.carregar();
   }
-
 
   get paginas(): number[] {
     const maximo = Math.min(this.totalPages, 7);

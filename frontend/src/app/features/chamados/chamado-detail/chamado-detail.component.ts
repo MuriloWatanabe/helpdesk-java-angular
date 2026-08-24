@@ -62,22 +62,18 @@ export class ChamadoDetailComponent implements OnInit {
   loading = signal(true);
   erro = signal('');
 
-
   novoComentario = '';
   comentarioInterno = false;
   enviandoComentario = signal(false);
-
 
   arquivoSelecionado: File | null = null;
   anexoInterno = false;
   enviandoAnexo = signal(false);
 
-
   processando = signal(false);
   tecnicos = signal<Usuario[]>([]);
   tecnicoSelecionadoId: number | null = null;
   statusOpcoes = signal<Opcao[]>([]);
-
 
   readonly aspectosDisponiveis = ASPECTOS_AVALIACAO;
   notaEscolhida = 0;
@@ -93,9 +89,7 @@ export class ChamadoDetailComponent implements OnInit {
   readonly textoSla = textoSla;
   readonly iniciais = iniciais;
 
-
   private readonly meuId = this.authService.getUsuarioAtual()?.id ?? null;
-
 
   readonly acoesDeStatus = computed<Opcao[]>(() => {
     const atual = this.chamado();
@@ -108,12 +102,10 @@ export class ChamadoDetailComponent implements OnInit {
     return this.statusOpcoes().filter((o) => permitidas.includes(o.codigo));
   });
 
-
   readonly souOResponsavel = computed(() => {
     const tecnico = this.chamado()?.tecnico;
     return !!tecnico && tecnico.id === this.meuId;
   });
-
 
   readonly tecnicosDisponiveis = computed<{ id: number; nome: string }[]>(() => {
     const lista: { id: number; nome: string }[] = this.tecnicos();
@@ -123,7 +115,6 @@ export class ChamadoDetailComponent implements OnInit {
   });
 
   readonly ehMeuChamado = computed(() => this.chamado()?.cliente?.id === this.meuId);
-
 
   readonly podeAvaliar = computed(() => {
     const atual = this.chamado();
@@ -135,7 +126,7 @@ export class ChamadoDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    if (!id) {
+    if (!Number.isInteger(id) || id <= 0) {
       this.erro.set('Chamado inválido.');
       this.loading.set(false);
       return;
@@ -148,8 +139,14 @@ export class ChamadoDetailComponent implements OnInit {
     });
 
     if (this.isAtendente()) {
-      this.usuarioService.listar({ perfil: 2, ativo: true }).subscribe({
-        next: (lista) => this.tecnicos.set(lista),
+      this.usuarioService.listar({ ativo: true }).subscribe({
+        next: (lista) =>
+          this.tecnicos.set(
+            lista.filter(
+              (usuario) =>
+                usuario.perfis.includes('ROLE_TECNICO') || usuario.perfis.includes('ROLE_ADMIN'),
+            ),
+          ),
       });
     }
   }
@@ -164,9 +161,7 @@ export class ChamadoDetailComponent implements OnInit {
       },
       error: (err) => {
         this.erro.set(
-          err.status === 403
-            ? 'Você não tem acesso a este chamado.'
-            : 'Chamado não encontrado.',
+          err.status === 403 ? 'Você não tem acesso a este chamado.' : 'Chamado não encontrado.',
         );
         this.loading.set(false);
       },
@@ -192,7 +187,6 @@ export class ChamadoDetailComponent implements OnInit {
     const atual = this.chamado();
     if (atual) this.carregarChamado(atual.id);
   }
-
 
   enviarComentario(): void {
     const atual = this.chamado();
@@ -242,7 +236,6 @@ export class ChamadoDetailComponent implements OnInit {
     });
   }
 
-
   aoEscolherArquivo(evento: Event): void {
     const input = evento.target as HTMLInputElement;
     this.arquivoSelecionado = input.files?.[0] ?? null;
@@ -270,7 +263,6 @@ export class ChamadoDetailComponent implements OnInit {
         },
       });
   }
-
 
   baixarAnexo(anexo: Anexo): void {
     const atual = this.chamado();
@@ -314,7 +306,6 @@ export class ChamadoDetailComponent implements OnInit {
     });
   }
 
-
   alterarStatus(codigo: number): void {
     const atual = this.chamado();
     if (!atual || this.processando()) return;
@@ -353,7 +344,6 @@ export class ChamadoDetailComponent implements OnInit {
       },
     });
   }
-
 
   async desassumir(): Promise<void> {
     const atual = this.chamado();
@@ -427,7 +417,6 @@ export class ChamadoDetailComponent implements OnInit {
     });
   }
 
-
   alternarAspecto(aspecto: string): void {
     if (this.aspectosEscolhidos.has(aspecto)) {
       this.aspectosEscolhidos.delete(aspecto);
@@ -460,7 +449,6 @@ export class ChamadoDetailComponent implements OnInit {
         },
       });
   }
-
 
   copiarLink(): void {
     navigator.clipboard

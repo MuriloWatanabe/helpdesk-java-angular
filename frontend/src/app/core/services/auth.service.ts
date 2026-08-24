@@ -2,11 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import {
-  AlterarSenhaRequest,
-  AtualizarPerfilRequest,
-  Usuario,
-} from '../models/usuario.model';
+import { AlterarSenhaRequest, AtualizarPerfilRequest, Usuario } from '../models/usuario.model';
 
 export interface LoginResponse {
   id: number;
@@ -38,7 +34,6 @@ export class AuthService {
   private readonly tokenKey = 'helpdesk_token';
   private readonly userKey = 'helpdesk_user';
 
-
   private readonly _usuario = signal<UsuarioAtual | null>(this.lerUsuarioSalvo());
   readonly usuario = this._usuario.asReadonly();
 
@@ -53,7 +48,6 @@ export class AuthService {
     if (this.temPerfil('ROLE_CLIENTE')) return 'Cliente';
     return 'Usuário';
   });
-
 
   login(email: string, senha: string): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { email, senha }).pipe(
@@ -84,54 +78,56 @@ export class AuthService {
     return localStorage.getItem(this.tokenKey);
   }
 
-
   isLoggedIn(): boolean {
     const token = this.getToken();
     if (!token) return false;
 
-    if (this.tokenExpirado(token)) {
+    if (!this.tokenValido(token)) {
       this.logout();
       return false;
     }
     return true;
   }
 
-  private tokenExpirado(token: string): boolean {
-    const exp = this.lerExpiracao(token);
-    if (exp === null) return false;
-    return Date.now() >= exp;
-  }
-
-
-  private lerExpiracao(token: string): number | null {
+  private tokenValido(token: string): boolean {
     try {
-      const payload = token.split('.')[1];
-      if (!payload) return null;
-      const json = JSON.parse(
-        atob(payload.replaceAll('-', '+').replaceAll('_', '/')),
-      ) as { exp?: number };
-      return json.exp ? json.exp * 1000 : null;
+      const partes = token.split('.');
+      if (partes.length !== 3 || !partes[1]) return false;
+
+      const base64 = partes[1].replaceAll('-', '+').replaceAll('_', '/');
+      const payload = JSON.parse(atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, '='))) as {
+        exp?: unknown;
+      };
+
+      if (payload.exp === undefined) return true;
+      return (
+        typeof payload.exp === 'number' &&
+        Number.isFinite(payload.exp) &&
+        Date.now() < payload.exp * 1000
+      );
     } catch {
-      return null;
+      return false;
     }
   }
 
-
   carregarMeuPerfil(): Observable<Usuario> {
-    return this.http.get<Usuario>(`${this.apiUrl}/me`).pipe(
-      tap((u) =>
-        this.salvarUsuario({ id: u.id, nome: u.nome, email: u.email, perfis: u.perfis }),
-      ),
-    );
+    return this.http
+      .get<Usuario>(`${this.apiUrl}/me`)
+      .pipe(
+        tap((u) =>
+          this.salvarUsuario({ id: u.id, nome: u.nome, email: u.email, perfis: u.perfis }),
+        ),
+      );
   }
 
-
   atualizarMeuPerfil(request: AtualizarPerfilRequest): Observable<Usuario> {
-    return this.http.put<Usuario>(`${this.apiUrl}/me`, request).pipe(
-      tap((u) =>
-        this.salvarUsuario({ id: u.id, nome: u.nome, email: u.email, perfis: u.perfis }),
-      ),
-    );
+    return this.http
+      .put<Usuario>(`${this.apiUrl}/me`, request)
+      .pipe(
+        tap((u) =>
+          this.salvarUsuario({ id: u.id, nome: u.nome, email: u.email, perfis: u.perfis }),
+        ),
+      );
   }
 
   alterarSenha(request: AlterarSenhaRequest): Observable<{ mensagem: string }> {
@@ -156,7 +152,6 @@ export class AuthService {
     return this._usuario();
   }
 
-
   getIniciais(nome?: string | null): string {
     if (!nome?.trim()) return '?';
     return nome
@@ -174,7 +169,6 @@ export class AuthService {
     return 'Cliente';
   }
 
-
   private temPerfil(role: string): boolean {
     return this._usuario()?.perfis?.includes(role) ?? false;
   }
@@ -188,8 +182,20 @@ export class AuthService {
     const bruto = localStorage.getItem(this.userKey);
     if (!bruto) return null;
     try {
-      return JSON.parse(bruto) as UsuarioAtual;
+      const usuario = JSON.parse(bruto) as Partial<UsuarioAtual>;
+      if (
+        typeof usuario.id !== 'number' ||
+        typeof usuario.nome !== 'string' ||
+        typeof usuario.email !== 'string' ||
+        !Array.isArray(usuario.perfis) ||
+        !usuario.perfis.every((perfil) => typeof perfil === 'string')
+      ) {
+        localStorage.removeItem(this.userKey);
+        return null;
+      }
+      return usuario as UsuarioAtual;
     } catch {
+      localStorage.removeItem(this.userKey);
       return null;
     }
   }

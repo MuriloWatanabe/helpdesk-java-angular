@@ -3,10 +3,12 @@
   width: 100%;
   background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 50%, #1d4ed8 100%);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 24px 16px;
 }
 
 .circles {
@@ -44,7 +46,14 @@
   padding: 40px 36px;
   width: 100%;
   max-width: 420px;
+  margin: auto 0;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 30px 22px;
+  }
 }
 
 .logo {
@@ -88,7 +97,9 @@ form {
     font-size: 14px;
     color: #1e293b;
     background: #f8fafc;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
 
     &:focus {
       border-color: #1d4ed8;
@@ -125,7 +136,9 @@ form {
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.3px;
-  transition: background 0.2s, transform 0.1s;
+  transition:
+    background 0.2s,
+    transform 0.1s;
 
   &:hover:not(:disabled) {
     background: #1e40af;

@@ -25,7 +25,6 @@ export class LoginComponent implements OnInit {
   isLoading = signal(false);
   mostrarSenha = false;
 
-
   private retorno = '/dashboard';
 
   constructor() {
@@ -44,6 +43,8 @@ export class LoginComponent implements OnInit {
     }
     if (params.get('expirado') === '1') {
       this.avisoSessao.set('Sua sessão expirou. Entre novamente para continuar.');
+    } else if (params.get('emailAlterado') === '1') {
+      this.avisoSessao.set('E-mail atualizado. Entre novamente usando o novo endereço.');
     }
   }
 
@@ -68,15 +69,14 @@ export class LoginComponent implements OnInit {
         this.isLoading.set(false);
         if (err.status === 0) {
           this.errorMessage.set(
-            'Não foi possível conectar ao servidor. Verifique se a API está no ar.');
+            'Não foi possível conectar ao servidor. Verifique se a API está no ar.',
+          );
         } else {
-
           this.errorMessage.set(mensagemDoErro(err, 'E-mail ou senha inválidos.'));
         }
       },
     });
   }
-
 
   usarDemo(email: string): void {
     this.loginForm.patchValue({ email, senha: '123456' });
