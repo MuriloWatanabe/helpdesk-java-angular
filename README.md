@@ -244,8 +244,9 @@ Filtros aceitos em `GET /v1/chamados` (todos opcionais, resolvidos no banco):
 
 | Método | Endpoint | Acesso | Descrição |
 |---|---|---|---|
-| GET | `/v1/usuarios` | Técnico/Admin | Lista com filtros `perfil`, `ativo`, `q` |
-| GET | `/v1/usuarios/{id}` | Técnico/Admin | Busca por ID |
+| GET | `/v1/usuarios` | Admin | Lista administrativa com filtros `perfil`, `ativo`, `q` |
+| GET | `/v1/usuarios/{id}` | Admin | Busca administrativa por ID |
+| GET | `/v1/usuarios/diretorio` | Técnico/Admin | Diretório ativo com dados mínimos para atribuição de chamados |
 | POST | `/v1/usuarios` | Admin | Cria usuário |
 | PUT | `/v1/usuarios/{id}` | Admin | Atualiza usuário |
 | PATCH | `/v1/usuarios/{id}/perfis` | Admin | Altera perfis de acesso |

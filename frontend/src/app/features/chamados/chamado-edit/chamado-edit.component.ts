@@ -6,7 +6,7 @@ import { ChamadoService } from '../../../core/services/chamado.service';
 import { UsuarioService } from '../../../core/services/usuario.service';
 import { ToastService, mensagemDoErro } from '../../../core/services/toast.service';
 import { Chamado } from '../../../core/models/chamado.model';
-import { Opcao, Usuario } from '../../../core/models/usuario.model';
+import { Opcao, UsuarioDiretorio } from '../../../core/models/usuario.model';
 
 @Component({
   selector: 'app-chamado-edit',
@@ -30,8 +30,8 @@ export class ChamadoEditComponent implements OnInit {
   salvando = signal(false);
   erro = signal('');
 
-  clientes = signal<Usuario[]>([]);
-  tecnicos = signal<Usuario[]>([]);
+  clientes = signal<UsuarioDiretorio[]>([]);
+  tecnicos = signal<UsuarioDiretorio[]>([]);
   prioridades = signal<Opcao[]>([]);
   categorias = signal<Opcao[]>([]);
 
@@ -59,7 +59,7 @@ export class ChamadoEditComponent implements OnInit {
       },
     });
 
-    this.usuarioService.listar({ ativo: true }).subscribe({
+    this.usuarioService.listarDiretorio().subscribe({
       next: (usuarios) => {
         this.clientes.set(usuarios.filter((u) => u.perfis.includes('ROLE_CLIENTE')));
         this.tecnicos.set(

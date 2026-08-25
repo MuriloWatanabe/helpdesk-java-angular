@@ -4,6 +4,7 @@ import com.murilo.helpdesk.dto.request.AlterarSenhaRequest;
 import com.murilo.helpdesk.dto.request.AtualizarPerfilRequest;
 import com.murilo.helpdesk.dto.request.UsuarioRequest;
 import com.murilo.helpdesk.dto.response.UsuarioResponse;
+import com.murilo.helpdesk.dto.response.UsuarioDiretorioResponse;
 import com.murilo.helpdesk.exception.BusinessException;
 import com.murilo.helpdesk.exception.OperacaoNaoPermitidaException;
 import com.murilo.helpdesk.exception.ResourceNotFoundException;
@@ -72,6 +73,23 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public List<UsuarioResponse> findAll() {
         return listar(null, null, null);
+    }
+
+    /**
+     * Diretório enxuto para os atendentes selecionarem clientes e responsáveis.
+     * Não expõe telefone, cargo, situação administrativa nem datas de acesso.
+     */
+    @Transactional(readOnly = true)
+    public List<UsuarioDiretorioResponse> listarDiretorioAtivo() {
+        return usuarioRepository.findAll().stream()
+                .filter(u -> !Boolean.FALSE.equals(u.getAtivo()))
+                .sorted(Comparator.comparing(Usuario::getNome, String.CASE_INSENSITIVE_ORDER))
+                .map(u -> new UsuarioDiretorioResponse(
+                        u.getId(),
+                        u.getNome(),
+                        u.getEmail(),
+                        u.getPerfis().stream().map(Perfil::getDescricao).collect(java.util.stream.Collectors.toSet())))
+                .toList();
     }
 
 

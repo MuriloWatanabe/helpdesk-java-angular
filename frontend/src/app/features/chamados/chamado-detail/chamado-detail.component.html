@@ -420,9 +420,9 @@
                   <button
                     class="btn-secondary"
                     type="button"
-                    [disabled]="processando()"
+                    [disabled]="processando() || !tecnicoFoiAlterado"
                     (click)="alterarTecnico()"
-                  >Salvar</button>
+                  >Transferir</button>
                 </div>
               }
             } @else {

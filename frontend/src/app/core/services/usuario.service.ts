@@ -6,6 +6,7 @@ import {
   CriarUsuarioRequest,
   Metadados,
   Usuario,
+  UsuarioDiretorio,
 } from '../models/usuario.model';
 import { environment } from '../../../environments/environment';
 
@@ -29,6 +30,10 @@ export class UsuarioService {
       params = params.set('q', filtros.q);
     }
     return this.http.get<Usuario[]>(this.url, { params });
+  }
+
+  listarDiretorio(): Observable<UsuarioDiretorio[]> {
+    return this.http.get<UsuarioDiretorio[]>(`${this.url}/diretorio`);
   }
 
   buscarPorId(id: number): Observable<Usuario> {

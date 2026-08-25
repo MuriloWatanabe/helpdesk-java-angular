@@ -2,6 +2,7 @@ package com.murilo.helpdesk.controller;
 
 import com.murilo.helpdesk.dto.request.UsuarioRequest;
 import com.murilo.helpdesk.dto.response.UsuarioResponse;
+import com.murilo.helpdesk.dto.response.UsuarioDiretorioResponse;
 import com.murilo.helpdesk.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,7 +29,7 @@ public class UsuarioController {
 
     @GetMapping
     @Operation(summary = "Listar usuários com filtros opcionais")
-    @PreAuthorize("hasAnyRole('ADMIN','TECNICO')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UsuarioResponse>> listar(
             @RequestParam(required = false) Integer perfil,
             @RequestParam(required = false) Boolean ativo,
@@ -38,9 +39,16 @@ public class UsuarioController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Buscar usuário por ID")
-    @PreAuthorize("hasAnyRole('ADMIN','TECNICO')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UsuarioResponse> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(usuarioService.findByIdAsResponse(id));
+    }
+
+    @GetMapping("/diretorio")
+    @Operation(summary = "Listar diretório operacional ativo")
+    @PreAuthorize("hasAnyRole('ADMIN','TECNICO')")
+    public ResponseEntity<List<UsuarioDiretorioResponse>> listarDiretorio() {
+        return ResponseEntity.ok(usuarioService.listarDiretorioAtivo());
     }
 
     @PostMapping

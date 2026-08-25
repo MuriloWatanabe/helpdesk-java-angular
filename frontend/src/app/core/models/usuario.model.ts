@@ -12,6 +12,13 @@ export interface Usuario {
   ultimoAcesso?: string | null;
 }
 
+export interface UsuarioDiretorio {
+  id: number;
+  nome: string;
+  email: string;
+  perfis: string[];
+}
+
 export const PerfilCodigo = {
   ADMIN: 0,
   CLIENTE: 1,

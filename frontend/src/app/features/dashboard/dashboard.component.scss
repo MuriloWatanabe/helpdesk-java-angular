@@ -122,6 +122,22 @@
   &.stat-purple { border-top-color: #7c3aed; }
 }
 
+.stat-link {
+  display: block;
+  color: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.09);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.25);
+    outline-offset: 2px;
+  }
+}
+
 .stat-card-header {
   display: flex;
   align-items: center;
@@ -492,6 +508,13 @@
   font-weight: 600;
 
   &:hover { background: #c2410c; }
+}
+
+.alerta-acoes {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .stat-card.critico {

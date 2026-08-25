@@ -90,6 +90,22 @@ class UsuarioServiceTest {
         assertThat(clientes).extracting("nome").containsExactly("Bruno", "Zeca");
     }
 
+    @Test
+    @DisplayName("diretório — retorna somente ativos, ordenados e com dados mínimos")
+    void diretorioRetornaSomenteAtivos() {
+        var inativo = usuario(1L, "Zeca", "zeca@test.com", Perfil.CLIENTE);
+        inativo.setAtivo(false);
+        when(usuarioRepository.findAll()).thenReturn(List.of(
+                inativo,
+                usuario(2L, "Carlos", "carlos@test.com", Perfil.TECNICO),
+                usuario(3L, "Ana", "ana@test.com", Perfil.CLIENTE)));
+
+        var diretorio = usuarioService.listarDiretorioAtivo();
+
+        assertThat(diretorio).extracting("nome").containsExactly("Ana", "Carlos");
+        assertThat(diretorio.getFirst().perfis()).containsExactly("ROLE_CLIENTE");
+    }
+
 
     @Test
     @DisplayName("create — dados válidos são persistidos com a senha codificada")

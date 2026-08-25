@@ -51,13 +51,26 @@
                 }
               </span>
             </div>
-            <a class="alerta-acao" routerLink="/fila">Ver fila</a>
+            <div class="alerta-acoes">
+              @if (s.totalSlaVencido > 0) {
+                <a class="alerta-acao" routerLink="/chamados"
+                   [queryParams]="filtrosDoEscopo({ slaVencido: true })">
+                  Ver vencidos
+                </a>
+              }
+              @if (s.totalSemTecnico > 0) {
+                <a class="alerta-acao" routerLink="/chamados" [queryParams]="{ semTecnico: true }">
+                  Ver sem técnico
+                </a>
+              }
+            </div>
           </div>
         }
 
 
         <section class="stats-section" aria-label="Indicadores">
-          <article class="stat-card">
+          <a class="stat-card stat-link" routerLink="/chamados"
+             [queryParams]="filtrosDoEscopo({ apenasPendentes: true })">
             <div class="stat-card-header">
               <span class="stat-title">Em aberto</span>
             </div>
@@ -65,7 +78,7 @@
             <span class="stat-subtitle">
               {{ s.totalAbertos }} novos · {{ s.totalEmAndamento }} em andamento
             </span>
-          </article>
+          </a>
 
           <article class="stat-card">
             <div class="stat-card-header">
@@ -82,13 +95,14 @@
           </article>
 
           @if (isAtendente()) {
-            <article class="stat-card" [class.critico]="s.totalSlaVencido > 0">
+            <a class="stat-card stat-link" [class.critico]="s.totalSlaVencido > 0"
+               routerLink="/chamados" [queryParams]="filtrosDoEscopo({ slaVencido: true })">
               <div class="stat-card-header">
                 <span class="stat-title">Prazo estourado</span>
               </div>
               <p class="stat-value">{{ s.totalSlaVencido }}</p>
               <span class="stat-subtitle">{{ s.totalSlaEmRisco }} vencem nas próximas 8h</span>
-            </article>
+            </a>
 
             <article class="stat-card">
               <div class="stat-card-header">
@@ -156,7 +170,9 @@
             @if (isAtendente()) {
               <article class="chart-card">
                 <div class="card-header">
-                  <h2 class="card-title">Aberturas nos últimos 14 dias</h2>
+                  <h2 class="card-title">
+                    {{ s.escopo === 'TECNICO' ? 'Sua carteira nos últimos 14 dias' : 'Aberturas nos últimos 14 dias' }}
+                  </h2>
                 </div>
                 <div class="chart-wrapper">
                   <canvas #graficoEvolucao aria-label="Chamados abertos por dia"></canvas>
@@ -197,7 +213,9 @@
               <h2 class="card-title">
                 @if (isCliente()) { Seus chamados recentes } @else { Chamados recentes }
               </h2>
-              <a routerLink="/chamados" class="ver-todos">Ver todos →</a>
+              <a [routerLink]="s.escopo === 'TECNICO' ? '/meus-chamados' : '/chamados'" class="ver-todos">
+                Ver todos →
+              </a>
             </div>
 
             @if (s.chamadosRecentes.length === 0) {

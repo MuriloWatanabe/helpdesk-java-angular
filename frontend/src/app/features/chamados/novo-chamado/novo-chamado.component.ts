@@ -6,7 +6,7 @@ import { ChamadoService } from '../../../core/services/chamado.service';
 import { UsuarioService } from '../../../core/services/usuario.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService, mensagemDoErro } from '../../../core/services/toast.service';
-import { Opcao, Usuario } from '../../../core/models/usuario.model';
+import { Opcao, UsuarioDiretorio } from '../../../core/models/usuario.model';
 import { PrioridadeChamado } from '../../../core/models/chamado.model';
 
 @Component({
@@ -29,8 +29,8 @@ export class NovoChamadoComponent implements OnInit {
   loading = signal(false);
   erro = signal('');
 
-  clientes = signal<Usuario[]>([]);
-  tecnicos = signal<Usuario[]>([]);
+  clientes = signal<UsuarioDiretorio[]>([]);
+  tecnicos = signal<UsuarioDiretorio[]>([]);
   prioridades = signal<Opcao[]>([]);
   categorias = signal<Opcao[]>([]);
 
@@ -60,7 +60,7 @@ export class NovoChamadoComponent implements OnInit {
       this.form.get('clienteId')?.setValidators(Validators.required);
       this.form.get('clienteId')?.updateValueAndValidity();
 
-      this.usuarioService.listar({ ativo: true }).subscribe({
+      this.usuarioService.listarDiretorio().subscribe({
         next: (usuarios) => {
           this.clientes.set(usuarios.filter((u) => u.perfis.includes('ROLE_CLIENTE')));
           this.tecnicos.set(

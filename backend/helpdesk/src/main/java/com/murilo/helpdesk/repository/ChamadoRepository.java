@@ -47,8 +47,14 @@ public interface ChamadoRepository
     @Query("SELECT c.prioridade, COUNT(c) FROM Chamado c GROUP BY c.prioridade")
     List<Object[]> contarPorPrioridade();
 
+    @Query("SELECT c.prioridade, COUNT(c) FROM Chamado c WHERE c.tecnico.id = :tecnicoId GROUP BY c.prioridade")
+    List<Object[]> contarPorPrioridadeDoTecnico(@Param("tecnicoId") Long tecnicoId);
+
     @Query("SELECT c.categoria, COUNT(c) FROM Chamado c GROUP BY c.categoria")
     List<Object[]> contarPorCategoria();
+
+    @Query("SELECT c.categoria, COUNT(c) FROM Chamado c WHERE c.tecnico.id = :tecnicoId GROUP BY c.categoria")
+    List<Object[]> contarPorCategoriaDoTecnico(@Param("tecnicoId") Long tecnicoId);
 
     @Query("""
            SELECT c.tecnico.id, c.tecnico.nome, COUNT(c)
@@ -63,6 +69,10 @@ public interface ChamadoRepository
     @Query("SELECT c.dataAbertura FROM Chamado c WHERE c.dataAbertura >= :inicio")
     List<LocalDateTime> buscarAberturasDesde(@Param("inicio") LocalDateTime inicio);
 
+    @Query("SELECT c.dataAbertura FROM Chamado c WHERE c.tecnico.id = :tecnicoId AND c.dataAbertura >= :inicio")
+    List<LocalDateTime> buscarAberturasDesdePorTecnico(@Param("inicio") LocalDateTime inicio,
+                                                       @Param("tecnicoId") Long tecnicoId);
+
 
     @Query("""
            SELECT COUNT(c) FROM Chamado c
@@ -72,6 +82,17 @@ public interface ChamadoRepository
            """)
     long contarSlaVencido(@Param("agora") LocalDateTime agora,
                           @Param("statusAtivos") Collection<Integer> statusAtivos);
+
+    @Query("""
+           SELECT COUNT(c) FROM Chamado c
+           WHERE c.tecnico.id = :tecnicoId
+             AND c.prazoSla IS NOT NULL
+             AND c.prazoSla < :agora
+             AND c.status IN :statusAtivos
+           """)
+    long contarSlaVencidoPorTecnico(@Param("tecnicoId") Long tecnicoId,
+                                    @Param("agora") LocalDateTime agora,
+                                    @Param("statusAtivos") Collection<Integer> statusAtivos);
 
 
     @Query("""
@@ -84,8 +105,26 @@ public interface ChamadoRepository
                           @Param("limite") LocalDateTime limite,
                           @Param("statusAtivos") Collection<Integer> statusAtivos);
 
+    @Query("""
+           SELECT COUNT(c) FROM Chamado c
+           WHERE c.tecnico.id = :tecnicoId
+             AND c.prazoSla IS NOT NULL
+             AND c.prazoSla BETWEEN :agora AND :limite
+             AND c.status IN :statusAtivos
+           """)
+    long contarSlaEmRiscoPorTecnico(@Param("tecnicoId") Long tecnicoId,
+                                    @Param("agora") LocalDateTime agora,
+                                    @Param("limite") LocalDateTime limite,
+                                    @Param("statusAtivos") Collection<Integer> statusAtivos);
+
     @Query("SELECT c.dataAbertura, c.dataFechamento FROM Chamado c WHERE c.dataFechamento IS NOT NULL")
     List<Object[]> buscarDatasDeResolucao();
+
+    @Query("""
+           SELECT c.dataAbertura, c.dataFechamento FROM Chamado c
+           WHERE c.tecnico.id = :tecnicoId AND c.dataFechamento IS NOT NULL
+           """)
+    List<Object[]> buscarDatasDeResolucaoPorTecnico(@Param("tecnicoId") Long tecnicoId);
 
     long countByDataAberturaGreaterThanEqual(LocalDateTime inicio);
 }

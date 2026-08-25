@@ -96,16 +96,23 @@ public class DashboardService {
                 porStatus.getOrDefault(Status.ENCERRADO.getCodigo(), 0L),
                 porStatus.getOrDefault(Status.CANCELADO.getCodigo(), 0L),
 
-                chamadoRepository.contarSlaVencido(agora, ativos),
-                chamadoRepository.contarSlaEmRisco(agora, agora.plusHours(HORAS_ALERTA_SLA), ativos),
+                chamadoRepository.contarSlaVencidoPorTecnico(usuario.getId(), agora, ativos),
+                chamadoRepository.contarSlaEmRiscoPorTecnico(
+                        usuario.getId(), agora, agora.plusHours(HORAS_ALERTA_SLA), ativos),
                 contarSemTecnico(),
-                tempoMedioResolucaoHoras(),
+                tempoMedioResolucaoHoras(
+                        chamadoRepository.buscarDatasDeResolucaoPorTecnico(usuario.getId())),
                 avaliacaoRepository.calcularNotaMediaPorTecnico(usuario.getId()),
-                avaliacaoRepository.count(),
-                contagensPorPrioridade(chamadoRepository.contarPorPrioridade()),
-                contagensPorCategoria(chamadoRepository.contarPorCategoria()),
-                contagensPorTecnico(),
-                serieDeAberturas(),
+                avaliacaoRepository.contarPorTecnico(usuario.getId()),
+                contagensPorPrioridade(
+                        chamadoRepository.contarPorPrioridadeDoTecnico(usuario.getId())),
+                contagensPorCategoria(
+                        chamadoRepository.contarPorCategoriaDoTecnico(usuario.getId())),
+                List.of(),
+                serieDeAberturas(
+                        chamadoRepository.buscarAberturasDesdePorTecnico(
+                                LocalDate.now().minusDays(DIAS_SERIE - 1L).atStartOfDay(),
+                                usuario.getId())),
                 chamadosRecentes(usuario, null, usuario.getId()));
     }
 
@@ -152,7 +159,10 @@ public class DashboardService {
 
 
     private Double tempoMedioResolucaoHoras() {
-        List<Object[]> datas = chamadoRepository.buscarDatasDeResolucao();
+        return tempoMedioResolucaoHoras(chamadoRepository.buscarDatasDeResolucao());
+    }
+
+    private Double tempoMedioResolucaoHoras(List<Object[]> datas) {
         if (datas.isEmpty()) return null;
 
         long somaMinutos = 0;
@@ -174,11 +184,18 @@ public class DashboardService {
         LocalDate hoje = LocalDate.now();
         LocalDate inicio = hoje.minusDays(DIAS_SERIE - 1L);
 
+        return serieDeAberturas(chamadoRepository.buscarAberturasDesde(inicio.atStartOfDay()));
+    }
+
+    private List<SerieDiariaResponse> serieDeAberturas(List<LocalDateTime> aberturas) {
+        LocalDate hoje = LocalDate.now();
+        LocalDate inicio = hoje.minusDays(DIAS_SERIE - 1L);
+
         Map<LocalDate, Long> contagem = new TreeMap<>();
         for (int i = 0; i < DIAS_SERIE; i++) {
             contagem.put(inicio.plusDays(i), 0L);
         }
-        for (LocalDateTime abertura : chamadoRepository.buscarAberturasDesde(inicio.atStartOfDay())) {
+        for (LocalDateTime abertura : aberturas) {
             LocalDate dia = abertura.toLocalDate();
             contagem.computeIfPresent(dia, (k, v) -> v + 1);
         }

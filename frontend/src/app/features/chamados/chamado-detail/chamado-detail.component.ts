@@ -17,7 +17,7 @@ import {
   STATUS_ENUM_NOME,
   StatusChamado,
 } from '../../../core/models/chamado.model';
-import { Opcao, Usuario } from '../../../core/models/usuario.model';
+import { Opcao, UsuarioDiretorio } from '../../../core/models/usuario.model';
 import {
   classePrioridade,
   classeStatus,
@@ -71,7 +71,7 @@ export class ChamadoDetailComponent implements OnInit {
   enviandoAnexo = signal(false);
 
   processando = signal(false);
-  tecnicos = signal<Usuario[]>([]);
+  tecnicos = signal<UsuarioDiretorio[]>([]);
   tecnicoSelecionadoId: number | null = null;
   statusOpcoes = signal<Opcao[]>([]);
 
@@ -114,6 +114,10 @@ export class ChamadoDetailComponent implements OnInit {
     return [...lista, { id: atual.id, nome: atual.nome }];
   });
 
+  get tecnicoFoiAlterado(): boolean {
+    return (this.chamado()?.tecnico?.id ?? null) !== this.tecnicoSelecionadoId;
+  }
+
   readonly ehMeuChamado = computed(() => this.chamado()?.cliente?.id === this.meuId);
 
   readonly podeAvaliar = computed(() => {
@@ -139,7 +143,7 @@ export class ChamadoDetailComponent implements OnInit {
     });
 
     if (this.isAtendente()) {
-      this.usuarioService.listar({ ativo: true }).subscribe({
+      this.usuarioService.listarDiretorio().subscribe({
         next: (lista) =>
           this.tecnicos.set(
             lista.filter(
@@ -375,9 +379,24 @@ export class ChamadoDetailComponent implements OnInit {
     });
   }
 
-  alterarTecnico(): void {
+  async alterarTecnico(): Promise<void> {
     const atual = this.chamado();
-    if (!atual || this.processando()) return;
+    if (!atual || this.processando() || !this.tecnicoFoiAlterado) return;
+
+    const novoResponsavel = this.tecnicosDisponiveis().find(
+      (tecnico) => tecnico.id === this.tecnicoSelecionadoId,
+    );
+    const confirmado = await this.confirmService.perguntar({
+      titulo: novoResponsavel ? 'Transferir chamado?' : 'Remover responsável?',
+      mensagem: novoResponsavel
+        ? `${atual.tecnico?.nome ?? 'A fila'} será substituído por ${novoResponsavel.nome}. A transferência ficará registrada no histórico.`
+        : `${atual.tecnico?.nome ?? 'O técnico atual'} deixará de ser responsável e o chamado voltará para a fila.`,
+      confirmar: novoResponsavel ? 'Transferir' : 'Remover',
+    });
+    if (!confirmado) {
+      this.tecnicoSelecionadoId = atual.tecnico?.id ?? null;
+      return;
+    }
 
     this.processando.set(true);
     this.chamadoService.atribuirTecnico(atual.id, this.tecnicoSelecionadoId).subscribe({
@@ -385,7 +404,11 @@ export class ChamadoDetailComponent implements OnInit {
         this.chamado.set(atualizado);
         this.tecnicoSelecionadoId = atualizado.tecnico?.id ?? null;
         this.processando.set(false);
-        this.toast.sucesso('Responsável atualizado.');
+        this.toast.sucesso(
+          atualizado.tecnico
+            ? `Chamado transferido para ${atualizado.tecnico.nome}.`
+            : 'Chamado devolvido para a fila.',
+        );
         this.carregarRelacionados(atualizado.id);
       },
       error: (err) => {

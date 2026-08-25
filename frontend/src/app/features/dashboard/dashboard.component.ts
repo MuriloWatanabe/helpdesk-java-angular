@@ -184,6 +184,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return total === 0 ? 0 : Math.round((valor / total) * 100);
   }
 
+  filtrosDoEscopo(filtros: Record<string, string | number | boolean>): Record<string, string | number | boolean> {
+    const s = this.stats();
+    const usuarioId = this.usuario()?.id;
+    if (s?.escopo === 'TECNICO' && usuarioId) {
+      return { ...filtros, tecnicoId: usuarioId };
+    }
+    return filtros;
+  }
+
   get tempoMedioTexto(): string {
     const horas = this.stats()?.tempoMedioResolucaoHoras;
     if (horas === null || horas === undefined) return '—';

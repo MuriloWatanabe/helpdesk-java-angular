@@ -10,7 +10,7 @@ import { UsuarioService } from '../../../core/services/usuario.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Chamado, ChamadoFiltro } from '../../../core/models/chamado.model';
-import { Opcao, Usuario } from '../../../core/models/usuario.model';
+import { Opcao, UsuarioDiretorio } from '../../../core/models/usuario.model';
 import { classeStatus, classePrioridade, textoSla } from '../chamado-ui';
 
 type Modo = 'todos' | 'fila' | 'meus';
@@ -49,11 +49,12 @@ export class ChamadosListComponent implements OnInit {
   filtroTecnico: number | null = null;
   soSlaVencido = false;
   soSemTecnico = false;
+  soPendentes = false;
 
   statusOpcoes = signal<Opcao[]>([]);
   prioridadeOpcoes = signal<Opcao[]>([]);
   categoriaOpcoes = signal<Opcao[]>([]);
-  tecnicos = signal<Usuario[]>([]);
+  tecnicos = signal<UsuarioDiretorio[]>([]);
 
   modo: Modo = 'todos';
   mostrarFiltrosAvancados = false;
@@ -68,6 +69,7 @@ export class ChamadosListComponent implements OnInit {
   ngOnInit(): void {
     this.modo = (this.route.snapshot.data['modo'] as Modo) ?? 'todos';
     this.aplicarPreDefinicoesDoModo();
+    this.aplicarFiltrosDaUrl();
 
     this.buscaSubject
       .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
@@ -103,6 +105,32 @@ export class ChamadosListComponent implements OnInit {
     }
   }
 
+  private aplicarFiltrosDaUrl(): void {
+    const params = this.route.snapshot.queryParamMap;
+    this.filtroStatus = this.numeroDoParametro(params.get('status'));
+    this.filtroPrioridade = this.numeroDoParametro(params.get('prioridade'));
+    this.filtroCategoria = this.numeroDoParametro(params.get('categoria'));
+    this.soSlaVencido = params.get('slaVencido') === 'true';
+    this.soSemTecnico = this.soSemTecnico || params.get('semTecnico') === 'true';
+    this.soPendentes = params.get('apenasPendentes') === 'true';
+
+    if (this.isAtendente()) {
+      this.filtroTecnico = this.numeroDoParametro(params.get('tecnicoId')) ?? this.filtroTecnico;
+    }
+    this.mostrarFiltrosAvancados = this.mostrarFiltrosAvancados || !!(
+      this.filtroPrioridade !== null ||
+      this.filtroCategoria !== null ||
+      this.soSlaVencido ||
+      this.soSemTecnico
+    );
+  }
+
+  private numeroDoParametro(valor: string | null): number | null {
+    if (valor === null || valor.trim() === '') return null;
+    const numero = Number(valor);
+    return Number.isInteger(numero) && numero >= 0 ? numero : null;
+  }
+
   private carregarOpcoes(): void {
     this.usuarioService.metadados().subscribe({
       next: (meta) => {
@@ -113,7 +141,7 @@ export class ChamadosListComponent implements OnInit {
     });
 
     if (this.isAtendente()) {
-      this.usuarioService.listar({ ativo: true }).subscribe({
+      this.usuarioService.listarDiretorio().subscribe({
         next: (lista) =>
           this.tecnicos.set(
             lista.filter(
@@ -155,6 +183,7 @@ export class ChamadosListComponent implements OnInit {
       tecnicoId: this.filtroTecnico,
       semTecnico: this.soSemTecnico || undefined,
       slaVencido: this.soSlaVencido || undefined,
+      apenasPendentes: this.soPendentes || undefined,
     };
   }
 
@@ -180,6 +209,7 @@ export class ChamadosListComponent implements OnInit {
     this.filtroCategoria = null;
     this.soSlaVencido = false;
     this.soSemTecnico = this.modo === 'fila';
+    this.soPendentes = false;
     this.filtroTecnico = this.modo === 'meus' ? this.filtroTecnico : null;
     this.filtrar();
   }
@@ -192,6 +222,7 @@ export class ChamadosListComponent implements OnInit {
       this.filtroCategoria !== null ||
       (this.filtroTecnico !== null && this.modo !== 'meus') ||
       this.soSlaVencido ||
+      this.soPendentes ||
       (this.soSemTecnico && this.modo !== 'fila')
     );
   }
