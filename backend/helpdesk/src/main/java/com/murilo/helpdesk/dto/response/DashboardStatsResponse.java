@@ -1,8 +1,11 @@
 package com.murilo.helpdesk.dto.response;
 
+import lombok.Builder;
+
 import java.util.List;
 
 
+@Builder
 public record DashboardStatsResponse(
         String escopo,
 

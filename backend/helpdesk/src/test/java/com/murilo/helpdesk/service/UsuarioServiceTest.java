@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.HashSet;
@@ -78,16 +79,18 @@ class UsuarioServiceTest {
     }
 
     @Test
-    @DisplayName("listar — filtra por perfil e ordena por nome")
-    void listarFiltraPorPerfil() {
-        when(usuarioRepository.findAll()).thenReturn(List.of(
-                usuario(1L, "Zeca", "zeca@test.com", Perfil.CLIENTE),
-                usuario(2L, "Ana", "ana@test.com", Perfil.TECNICO),
-                usuario(3L, "Bruno", "bruno@test.com", Perfil.CLIENTE)));
+    @DisplayName("listar — delega o filtro por perfil ao repositório (via Specification) e mapeia o resultado")
+    void listarDelegaParaRepositorio() {
+        // a filtragem/ordenação em si agora acontece no banco via UsuarioSpecs;
+        // aqui simulamos o que o banco já devolveria filtrado e ordenado
+        when(usuarioRepository.findAll(any(Specification.class))).thenReturn(List.of(
+                usuario(3L, "Bruno", "bruno@test.com", Perfil.CLIENTE),
+                usuario(1L, "Zeca", "zeca@test.com", Perfil.CLIENTE)));
 
         var clientes = usuarioService.listar(Perfil.CLIENTE.getCodigo(), null, null);
 
         assertThat(clientes).extracting("nome").containsExactly("Bruno", "Zeca");
+        verify(usuarioRepository).findAll(any(Specification.class));
     }
 
     @Test
@@ -186,7 +189,7 @@ class UsuarioServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("Desative a conta");
 
-        verify(usuarioRepository, never()).delete(any());
+        verify(usuarioRepository, never()).delete(any(Usuario.class));
     }
 
     @Test
@@ -227,7 +230,9 @@ class UsuarioServiceTest {
         when(usuarioRepository.findByEmail("root@test.com")).thenReturn(Optional.of(outroAdmin));
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(admin));
 
-        when(usuarioRepository.findAll()).thenReturn(List.of(admin));
+        // banco não encontra nenhum outro admin ativo além do id 1 (alvo)
+        when(usuarioRepository.existsByPerfisContainsAndAtivoTrueAndIdNot(
+                Perfil.ADMIN.getCodigo(), 1L)).thenReturn(false);
 
         assertThatThrownBy(() -> usuarioService.alterarSituacao(1L, false, "root@test.com"))
                 .isInstanceOf(BusinessException.class)

@@ -58,26 +58,28 @@ public class DashboardService {
         LocalDateTime agora = LocalDateTime.now();
         List<Integer> ativos = List.of(Status.ABERTO.getCodigo(), Status.EM_ANDAMENTO.getCodigo());
 
-        return new DashboardStatsResponse(
-                "GLOBAL",
-                total(porStatus),
-                porStatus.getOrDefault(Status.ABERTO.getCodigo(), 0L),
-                porStatus.getOrDefault(Status.EM_ANDAMENTO.getCodigo(), 0L),
-                porStatus.getOrDefault(Status.AGUARDANDO_CLIENTE.getCodigo(), 0L),
-                porStatus.getOrDefault(Status.RESOLVIDO.getCodigo(), 0L),
-                porStatus.getOrDefault(Status.ENCERRADO.getCodigo(), 0L),
-                porStatus.getOrDefault(Status.CANCELADO.getCodigo(), 0L),
-                chamadoRepository.contarSlaVencido(agora, ativos),
-                chamadoRepository.contarSlaEmRisco(agora, agora.plusHours(HORAS_ALERTA_SLA), ativos),
-                contarSemTecnico(),
-                tempoMedioResolucaoHoras(),
-                avaliacaoRepository.calcularNotaMedia(),
-                avaliacaoRepository.count(),
-                contagensPorPrioridade(chamadoRepository.contarPorPrioridade()),
-                contagensPorCategoria(chamadoRepository.contarPorCategoria()),
-                contagensPorTecnico(),
-                serieDeAberturas(),
-                chamadosRecentes(usuario, null, null));
+        return DashboardStatsResponse.builder()
+                .escopo("GLOBAL")
+                .totalChamados(total(porStatus))
+                .totalAbertos(porStatus.getOrDefault(Status.ABERTO.getCodigo(), 0L))
+                .totalEmAndamento(porStatus.getOrDefault(Status.EM_ANDAMENTO.getCodigo(), 0L))
+                .totalAguardandoCliente(porStatus.getOrDefault(Status.AGUARDANDO_CLIENTE.getCodigo(), 0L))
+                .totalResolvidos(porStatus.getOrDefault(Status.RESOLVIDO.getCodigo(), 0L))
+                .totalEncerrados(porStatus.getOrDefault(Status.ENCERRADO.getCodigo(), 0L))
+                .totalCancelados(porStatus.getOrDefault(Status.CANCELADO.getCodigo(), 0L))
+                .totalSlaVencido(chamadoRepository.contarSlaVencido(agora, ativos))
+                .totalSlaEmRisco(
+                        chamadoRepository.contarSlaEmRisco(agora, agora.plusHours(HORAS_ALERTA_SLA), ativos))
+                .totalSemTecnico(contarSemTecnico())
+                .tempoMedioResolucaoHoras(tempoMedioResolucaoHoras())
+                .notaMediaAtendimento(avaliacaoRepository.calcularNotaMedia())
+                .totalAvaliacoes(avaliacaoRepository.count())
+                .porPrioridade(contagensPorPrioridade(chamadoRepository.contarPorPrioridade()))
+                .porCategoria(contagensPorCategoria(chamadoRepository.contarPorCategoria()))
+                .porTecnico(contagensPorTecnico())
+                .aberturasPorDia(serieDeAberturas())
+                .chamadosRecentes(chamadosRecentes(usuario, null, null))
+                .build();
     }
 
     private DashboardStatsResponse statsDoTecnico(Usuario usuario) {
@@ -86,59 +88,59 @@ public class DashboardService {
         LocalDateTime agora = LocalDateTime.now();
         List<Integer> ativos = List.of(Status.ABERTO.getCodigo(), Status.EM_ANDAMENTO.getCodigo());
 
-        return new DashboardStatsResponse(
-                "TECNICO",
-                total(porStatus),
-                porStatus.getOrDefault(Status.ABERTO.getCodigo(), 0L),
-                porStatus.getOrDefault(Status.EM_ANDAMENTO.getCodigo(), 0L),
-                porStatus.getOrDefault(Status.AGUARDANDO_CLIENTE.getCodigo(), 0L),
-                porStatus.getOrDefault(Status.RESOLVIDO.getCodigo(), 0L),
-                porStatus.getOrDefault(Status.ENCERRADO.getCodigo(), 0L),
-                porStatus.getOrDefault(Status.CANCELADO.getCodigo(), 0L),
-
-                chamadoRepository.contarSlaVencidoPorTecnico(usuario.getId(), agora, ativos),
-                chamadoRepository.contarSlaEmRiscoPorTecnico(
-                        usuario.getId(), agora, agora.plusHours(HORAS_ALERTA_SLA), ativos),
-                contarSemTecnico(),
-                tempoMedioResolucaoHoras(
-                        chamadoRepository.buscarDatasDeResolucaoPorTecnico(usuario.getId())),
-                avaliacaoRepository.calcularNotaMediaPorTecnico(usuario.getId()),
-                avaliacaoRepository.contarPorTecnico(usuario.getId()),
-                contagensPorPrioridade(
-                        chamadoRepository.contarPorPrioridadeDoTecnico(usuario.getId())),
-                contagensPorCategoria(
-                        chamadoRepository.contarPorCategoriaDoTecnico(usuario.getId())),
-                List.of(),
-                serieDeAberturas(
+        return DashboardStatsResponse.builder()
+                .escopo("TECNICO")
+                .totalChamados(total(porStatus))
+                .totalAbertos(porStatus.getOrDefault(Status.ABERTO.getCodigo(), 0L))
+                .totalEmAndamento(porStatus.getOrDefault(Status.EM_ANDAMENTO.getCodigo(), 0L))
+                .totalAguardandoCliente(porStatus.getOrDefault(Status.AGUARDANDO_CLIENTE.getCodigo(), 0L))
+                .totalResolvidos(porStatus.getOrDefault(Status.RESOLVIDO.getCodigo(), 0L))
+                .totalEncerrados(porStatus.getOrDefault(Status.ENCERRADO.getCodigo(), 0L))
+                .totalCancelados(porStatus.getOrDefault(Status.CANCELADO.getCodigo(), 0L))
+                .totalSlaVencido(
+                        chamadoRepository.contarSlaVencidoPorTecnico(usuario.getId(), agora, ativos))
+                .totalSlaEmRisco(chamadoRepository.contarSlaEmRiscoPorTecnico(
+                        usuario.getId(), agora, agora.plusHours(HORAS_ALERTA_SLA), ativos))
+                .totalSemTecnico(contarSemTecnico())
+                .tempoMedioResolucaoHoras(tempoMedioResolucaoHoras(
+                        chamadoRepository.buscarDatasDeResolucaoPorTecnico(usuario.getId())))
+                .notaMediaAtendimento(avaliacaoRepository.calcularNotaMediaPorTecnico(usuario.getId()))
+                .totalAvaliacoes(avaliacaoRepository.contarPorTecnico(usuario.getId()))
+                .porPrioridade(contagensPorPrioridade(
+                        chamadoRepository.contarPorPrioridadeDoTecnico(usuario.getId())))
+                .porCategoria(contagensPorCategoria(
+                        chamadoRepository.contarPorCategoriaDoTecnico(usuario.getId())))
+                .porTecnico(List.of())
+                .aberturasPorDia(serieDeAberturas(
                         chamadoRepository.buscarAberturasDesdePorTecnico(
                                 LocalDate.now().minusDays(DIAS_SERIE - 1L).atStartOfDay(),
-                                usuario.getId())),
-                chamadosRecentes(usuario, null, usuario.getId()));
+                                usuario.getId())))
+                .chamadosRecentes(chamadosRecentes(usuario, null, usuario.getId()))
+                .build();
     }
 
     private DashboardStatsResponse statsDoCliente(Usuario usuario) {
         Map<Integer, Long> porStatus = mapear(
                 chamadoRepository.contarPorStatusDoCliente(usuario.getId()));
 
-        return new DashboardStatsResponse(
-                "CLIENTE",
-                total(porStatus),
-                porStatus.getOrDefault(Status.ABERTO.getCodigo(), 0L),
-                porStatus.getOrDefault(Status.EM_ANDAMENTO.getCodigo(), 0L),
-                porStatus.getOrDefault(Status.AGUARDANDO_CLIENTE.getCodigo(), 0L),
-                porStatus.getOrDefault(Status.RESOLVIDO.getCodigo(), 0L),
-                porStatus.getOrDefault(Status.ENCERRADO.getCodigo(), 0L),
-                porStatus.getOrDefault(Status.CANCELADO.getCodigo(), 0L),
-
-                0L, 0L, 0L,
-                null,
-                null,
-                0L,
-                List.of(),
-                List.of(),
-                List.of(),
-                List.of(),
-                chamadosRecentes(usuario, usuario.getId(), null));
+        return DashboardStatsResponse.builder()
+                .escopo("CLIENTE")
+                .totalChamados(total(porStatus))
+                .totalAbertos(porStatus.getOrDefault(Status.ABERTO.getCodigo(), 0L))
+                .totalEmAndamento(porStatus.getOrDefault(Status.EM_ANDAMENTO.getCodigo(), 0L))
+                .totalAguardandoCliente(porStatus.getOrDefault(Status.AGUARDANDO_CLIENTE.getCodigo(), 0L))
+                .totalResolvidos(porStatus.getOrDefault(Status.RESOLVIDO.getCodigo(), 0L))
+                .totalEncerrados(porStatus.getOrDefault(Status.ENCERRADO.getCodigo(), 0L))
+                .totalCancelados(porStatus.getOrDefault(Status.CANCELADO.getCodigo(), 0L))
+                // totalSlaVencido/totalSlaEmRisco/totalSemTecnico, tempoMedioResolucaoHoras,
+                // notaMediaAtendimento, totalAvaliacoes e as listas ficam nos valores-padrão
+                // (0 / null / lista vazia) — não fazem sentido no escopo do cliente.
+                .porPrioridade(List.of())
+                .porCategoria(List.of())
+                .porTecnico(List.of())
+                .aberturasPorDia(List.of())
+                .chamadosRecentes(chamadosRecentes(usuario, usuario.getId(), null))
+                .build();
     }
 
 

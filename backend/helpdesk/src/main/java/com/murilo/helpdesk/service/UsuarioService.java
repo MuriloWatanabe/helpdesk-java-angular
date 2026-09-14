@@ -12,6 +12,7 @@ import com.murilo.helpdesk.model.Usuario;
 import com.murilo.helpdesk.model.enums.Perfil;
 import com.murilo.helpdesk.repository.ChamadoRepository;
 import com.murilo.helpdesk.repository.UsuarioRepository;
+import com.murilo.helpdesk.repository.spec.UsuarioSpecs;
 import com.murilo.helpdesk.util.Mapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,15 +58,10 @@ public class UsuarioService {
 
     @Transactional(readOnly = true)
     public List<UsuarioResponse> listar(Integer perfil, Boolean ativo, String busca) {
-        String termo = busca == null ? null : busca.trim().toLowerCase();
+        var spec = UsuarioSpecs.montar(perfil, ativo, busca)
+                .and((root, q, cb) -> { q.orderBy(cb.asc(cb.lower(root.get("nome")))); return null; });
 
-        return usuarioRepository.findAll().stream()
-                .filter(u -> perfil == null || u.getPerfisCodigos().contains(perfil))
-                .filter(u -> ativo == null || ativo.equals(!Boolean.FALSE.equals(u.getAtivo())))
-                .filter(u -> termo == null || termo.isEmpty()
-                        || u.getNome().toLowerCase().contains(termo)
-                        || u.getEmail().toLowerCase().contains(termo))
-                .sorted(Comparator.comparing(Usuario::getNome, String.CASE_INSENSITIVE_ORDER))
+        return usuarioRepository.findAll(spec).stream()
                 .map(Mapper::toUsuarioResponse)
                 .toList();
     }
@@ -277,10 +273,8 @@ public class UsuarioService {
     }
 
     private void garantirOutroAdminAtivo(Long idIgnorado) {
-        boolean existeOutro = usuarioRepository.findAll().stream()
-                .anyMatch(u -> !u.getId().equals(idIgnorado)
-                        && u.ehAdmin()
-                        && !Boolean.FALSE.equals(u.getAtivo()));
+        boolean existeOutro = usuarioRepository.existsByPerfisContainsAndAtivoTrueAndIdNot(
+                Perfil.ADMIN.getCodigo(), idIgnorado);
 
         if (!existeOutro) {
             throw new BusinessException(
