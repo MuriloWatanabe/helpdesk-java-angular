@@ -22,8 +22,11 @@ public class JsonAuthenticationEntryPoint implements AuthenticationEntryPoint {
                          HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
 
-        errorWriter.escrever(response, HttpStatus.UNAUTHORIZED,
-                "Sessão expirada ou inexistente. Faça login novamente.",
-                request.getRequestURI());
+        Object motivo = request.getAttribute(JwtAuthenticationFilter.ATRIBUTO_ERRO);
+        String mensagem = motivo instanceof String texto
+                ? texto
+                : "Sessão expirada ou inexistente. Faça login novamente.";
+
+        errorWriter.escrever(response, HttpStatus.UNAUTHORIZED, mensagem, request.getRequestURI());
     }
 }

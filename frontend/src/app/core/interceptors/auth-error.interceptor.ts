@@ -1,23 +1,19 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
 
 export const authErrorInterceptor: HttpInterceptorFn = (req, next) => {
-  const router = inject(Router);
   const authService = inject(AuthService);
   const toast = inject(ToastService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
-        if (!req.url.includes('/v1/auth/login') && authService.getToken()) {
-          authService.logout();
-          router.navigate(['/login'], {
-            queryParams: { retorno: router.url, expirado: '1' },
-          });
+        // Só encerra a sessão se a requisição foi autenticada e o servidor recusou o token.
+        if (req.headers.has('Authorization')) {
+          authService.encerrarSessao();
         }
       } else if (error.status === 403) {
         toast.erro(error.error?.message ?? 'Você não tem permissão para executar esta ação.');

@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
 import { AuthService } from './auth.service';
 
 function tokenComExpiracao(segundosDesdeEpoch: number | null): string {
@@ -8,12 +9,22 @@ function tokenComExpiracao(segundosDesdeEpoch: number | null): string {
   return `cabecalho.${base64}.assinatura`;
 }
 
+const PROVIDERS = [provideHttpClient(), provideRouter([{ path: 'login', children: [] }])];
+
+const USUARIO = JSON.stringify({ id: 1, nome: 'Teste', email: 't@t.com', perfis: ['ROLE_CLIENTE'] });
+
 describe('AuthService', () => {
   let service: AuthService;
 
+  function recriarServico(): void {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: PROVIDERS });
+    service = TestBed.inject(AuthService);
+  }
+
   beforeEach(() => {
     localStorage.clear();
-    TestBed.configureTestingModule({ providers: [provideHttpClient()] });
+    TestBed.configureTestingModule({ providers: PROVIDERS });
     service = TestBed.inject(AuthService);
   });
 
@@ -27,8 +38,18 @@ describe('AuthService', () => {
     it('retorna verdadeiro para token dentro da validade', () => {
       const daquiUmaHora = Math.floor(Date.now() / 1000) + 3600;
       localStorage.setItem('helpdesk_token', tokenComExpiracao(daquiUmaHora));
+      localStorage.setItem('helpdesk_user', USUARIO);
+      recriarServico();
 
       expect(service.isLoggedIn()).toBe(true);
+    });
+
+    it('rejeita token válido quando os dados do usuário não estão salvos', () => {
+      const daquiUmaHora = Math.floor(Date.now() / 1000) + 3600;
+      localStorage.setItem('helpdesk_token', tokenComExpiracao(daquiUmaHora));
+
+      expect(service.isLoggedIn()).toBe(false);
+      expect(localStorage.getItem('helpdesk_token')).toBeNull();
     });
 
     it('rejeita token expirado e limpa a sessão', () => {
@@ -42,6 +63,8 @@ describe('AuthService', () => {
 
     it('aceita token sem campo exp, deixando a decisão para o servidor', () => {
       localStorage.setItem('helpdesk_token', tokenComExpiracao(null));
+      localStorage.setItem('helpdesk_user', USUARIO);
+      recriarServico();
 
       expect(service.isLoggedIn()).toBe(true);
     });
@@ -55,15 +78,37 @@ describe('AuthService', () => {
     });
   });
 
+  describe('expiração da sessão', () => {
+    afterEach(() => vi.useRealTimers());
+
+    it('encerra a sessão automaticamente quando o token expira', () => {
+      vi.useFakeTimers();
+      const daquiUmMinuto = Math.floor(Date.now() / 1000) + 60;
+      localStorage.setItem('helpdesk_token', tokenComExpiracao(daquiUmMinuto));
+      localStorage.setItem('helpdesk_user', USUARIO);
+      recriarServico();
+
+      expect(service.isLoggedIn()).toBe(true);
+
+      vi.advanceTimersByTime(61_000);
+
+      expect(localStorage.getItem('helpdesk_token')).toBeNull();
+      expect(service.getUsuarioAtual()).toBeNull();
+    });
+
+    it('encerrarSessao sem token não faz nada', () => {
+      expect(() => service.encerrarSessao()).not.toThrow();
+      expect(service.getUsuarioAtual()).toBeNull();
+    });
+  });
+
   describe('perfis', () => {
     function logar(perfis: string[]): void {
       localStorage.setItem(
         'helpdesk_user',
         JSON.stringify({ id: 1, nome: 'Teste', email: 't@t.com', perfis }),
       );
-      TestBed.resetTestingModule();
-      TestBed.configureTestingModule({ providers: [provideHttpClient()] });
-      service = TestBed.inject(AuthService);
+      recriarServico();
     }
 
     it('identifica administrador como atendente', () => {

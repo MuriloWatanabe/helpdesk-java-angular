@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { DatePipe, NgClass } from '@angular/common';
 import { FormControl, FormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { SidebarComponent } from '../../layout/sidebar/sidebar.component';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService, mensagemDoErro } from '../../core/services/toast.service';
@@ -17,7 +17,6 @@ import { Usuario } from '../../core/models/usuario.model';
 export class PerfilComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly toast = inject(ToastService);
-  private readonly router = inject(Router);
 
   usuario = signal<Usuario | null>(null);
   carregando = signal(true);
@@ -97,7 +96,6 @@ export class PerfilComponent implements OnInit {
       return;
     }
 
-    const emailAnterior = this.usuario()?.email.trim().toLowerCase();
     this.salvandoDados.set(true);
     this.authService
       .atualizarMeuPerfil({
@@ -110,12 +108,6 @@ export class PerfilComponent implements OnInit {
         next: (atualizado) => {
           this.usuario.set(atualizado);
           this.salvandoDados.set(false);
-          if (atualizado.email.trim().toLowerCase() !== emailAnterior) {
-            this.authService.logout();
-            this.router.navigate(['/login'], { queryParams: { emailAlterado: '1' } });
-            return;
-          }
-
           this.editNome = atualizado.nome;
           this.editEmail = atualizado.email;
           this.editTelefone = atualizado.telefone ?? '';

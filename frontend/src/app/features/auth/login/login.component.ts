@@ -43,8 +43,6 @@ export class LoginComponent implements OnInit {
     }
     if (params.get('expirado') === '1') {
       this.avisoSessao.set('Sua sessão expirou. Entre novamente para continuar.');
-    } else if (params.get('emailAlterado') === '1') {
-      this.avisoSessao.set('E-mail atualizado. Entre novamente usando o novo endereço.');
     }
   }
 

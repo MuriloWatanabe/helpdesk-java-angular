@@ -1,6 +1,6 @@
 package com.murilo.helpdesk.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Set;
 
 public record LoginResponse(
@@ -11,5 +11,5 @@ public record LoginResponse(
         String email,
         Set<String> perfis,
 
-        LocalDateTime expiraEm
+        Instant expiraEm
 ) {}
