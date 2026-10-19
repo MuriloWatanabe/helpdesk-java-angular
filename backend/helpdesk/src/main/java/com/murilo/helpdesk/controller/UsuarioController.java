@@ -66,16 +66,18 @@ public class UsuarioController {
     @Operation(summary = "Atualizar usuário")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UsuarioResponse> atualizar(@PathVariable Long id,
-                                                     @Valid @RequestBody UsuarioRequest request) {
-        return ResponseEntity.ok(usuarioService.update(id, request));
+                                                     @Valid @RequestBody UsuarioRequest request,
+                                                     Authentication auth) {
+        return ResponseEntity.ok(usuarioService.update(id, request, auth.getName()));
     }
 
     @PatchMapping("/{id}/perfis")
     @Operation(summary = "Atualizar perfis de acesso")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UsuarioResponse> atualizarPerfis(@PathVariable Long id,
-                                                           @RequestBody Set<Integer> perfis) {
-        return ResponseEntity.ok(usuarioService.updatePerfis(id, perfis));
+                                                           @RequestBody Set<Integer> perfis,
+                                                           Authentication auth) {
+        return ResponseEntity.ok(usuarioService.updatePerfis(id, perfis, auth.getName()));
     }
 
 

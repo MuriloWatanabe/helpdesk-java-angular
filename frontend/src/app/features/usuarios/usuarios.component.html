@@ -218,7 +218,7 @@
                 id="email"
                 class="form-control"
                 type="email"
-                maxlength="254"
+                maxlength="100"
                 autocomplete="email"
                 formControlName="email"
                 [class.invalido]="hasError('email')"
@@ -276,12 +276,13 @@
                 id="senha"
                 class="form-control"
                 type="password"
+                maxlength="72"
                 autocomplete="new-password"
                 formControlName="senha"
                 [class.invalido]="hasError('senha')"
               />
               @if (hasError('senha')) {
-                <span class="field-error">A senha deve ter no mínimo 6 caracteres.</span>
+                <span class="field-error">A senha deve ter entre 6 e 72 caracteres.</span>
               }
             </div>
 
@@ -292,7 +293,13 @@
                   <input type="checkbox" formControlName="perfilAdmin" />
                   <span>
                     <span class="check-label">Administrador</span>
-                    <span class="check-desc">Acesso total, incluindo gestão de usuários</span>
+                    <span class="check-desc">
+                      @if (editandoASiMesmo) {
+                        Você não pode remover o próprio perfil de administrador
+                      } @else {
+                        Acesso total, incluindo gestão de usuários
+                      }
+                    </span>
                   </span>
                 </label>
                 <label class="check-item">
@@ -317,9 +324,13 @@
                 <input type="checkbox" formControlName="ativo" />
                 <span>
                   <span class="check-label">Usuário ativo</span>
-                  <span class="check-desc"
-                    >Desmarque para bloquear o acesso sem perder o histórico</span
-                  >
+                  <span class="check-desc">
+                    @if (editandoASiMesmo) {
+                      Você não pode desativar a própria conta
+                    } @else {
+                      Desmarque para bloquear o acesso sem perder o histórico
+                    }
+                  </span>
                 </span>
               </label>
             </div>

@@ -108,10 +108,15 @@ export class UsuariosComponent implements OnInit {
         usuario?.nome ?? '',
         [Validators.required, Validators.minLength(3), Validators.maxLength(100)],
       ],
-      email: [usuario?.email ?? '', [Validators.required, Validators.email]],
+      email: [
+        usuario?.email ?? '',
+        [Validators.required, Validators.email, Validators.maxLength(100)],
+      ],
       senha: [
         '',
-        usuario ? [Validators.minLength(6)] : [Validators.required, Validators.minLength(6)],
+        usuario
+          ? [Validators.minLength(6), Validators.maxLength(72)]
+          : [Validators.required, Validators.minLength(6), Validators.maxLength(72)],
       ],
       telefone: [usuario?.telefone ?? '', Validators.maxLength(20)],
       cargo: [usuario?.cargo ?? '', Validators.maxLength(100)],
@@ -120,10 +125,21 @@ export class UsuariosComponent implements OnInit {
       perfilTecnico: [codigos.includes(PerfilCodigo.TECNICO)],
       perfilCliente: [codigos.includes(PerfilCodigo.CLIENTE)],
     });
+
+    // O backend recusa que o administrador se desative ou remova o próprio perfil ADMIN.
+    if (usuario && usuario.id === this.meuId) {
+      this.form.get('ativo')?.disable();
+      this.form.get('perfilAdmin')?.disable();
+    }
+  }
+
+  get editandoASiMesmo(): boolean {
+    return this.editingId !== null && this.editingId === this.meuId;
   }
 
   private perfisSelecionados(): number[] {
-    const v = this.form.value;
+    // getRawValue inclui os controles desabilitados (ativo/perfilAdmin ao editar a si mesmo)
+    const v = this.form.getRawValue();
     const perfis: number[] = [];
     if (v.perfilAdmin) perfis.push(PerfilCodigo.ADMIN);
     if (v.perfilCliente) perfis.push(PerfilCodigo.CLIENTE);
@@ -159,7 +175,8 @@ export class UsuariosComponent implements OnInit {
     this.formLoading.set(true);
     this.formErro.set('');
 
-    const { nome, email, senha, telefone, cargo, ativo } = this.form.value;
+    const { nome, email, senha, telefone, cargo, ativo } = this.form.getRawValue();
+    const editouASiMesmo = this.editandoASiMesmo;
     const payload = {
       nome,
       email,
@@ -180,6 +197,10 @@ export class UsuariosComponent implements OnInit {
         this.formLoading.set(false);
         this.fecharForm();
         this.carregarUsuarios();
+        // Mantém nome/e-mail da barra lateral em dia quando o admin edita os próprios dados.
+        if (editouASiMesmo) {
+          this.authService.carregarMeuPerfil().subscribe();
+        }
       },
       error: (err) => {
         this.formErro.set(mensagemDoErro(err, 'Não foi possível salvar o usuário.'));

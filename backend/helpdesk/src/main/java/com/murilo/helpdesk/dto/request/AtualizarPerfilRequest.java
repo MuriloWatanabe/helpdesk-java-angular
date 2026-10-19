@@ -12,6 +12,7 @@ public record AtualizarPerfilRequest(
 
         @NotBlank(message = "Informe o e-mail")
         @Email(message = "Informe um e-mail válido")
+        @Size(max = 100, message = "O e-mail deve ter no máximo 100 caracteres")
         String email,
 
         @Size(max = 20, message = "Telefone deve ter no máximo 20 caracteres")
