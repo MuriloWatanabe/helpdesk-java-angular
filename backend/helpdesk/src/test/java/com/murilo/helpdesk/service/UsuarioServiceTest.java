@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -27,12 +28,15 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("UsuarioService — testes unitários")
 class UsuarioServiceTest {
+
+    private static final Sort POR_NOME = Sort.by(Sort.Order.asc("nome").ignoreCase());
 
     @Mock private UsuarioRepository usuarioRepository;
     @Mock private ChamadoRepository chamadoRepository;
@@ -83,30 +87,29 @@ class UsuarioServiceTest {
     void listarDelegaParaRepositorio() {
         // a filtragem/ordenação em si agora acontece no banco via UsuarioSpecs;
         // aqui simulamos o que o banco já devolveria filtrado e ordenado
-        when(usuarioRepository.findAll(any(Specification.class))).thenReturn(List.of(
+        when(usuarioRepository.findAll(any(Specification.class), any(Sort.class))).thenReturn(List.of(
                 usuario(3L, "Bruno", "bruno@test.com", Perfil.CLIENTE),
                 usuario(1L, "Zeca", "zeca@test.com", Perfil.CLIENTE)));
 
         var clientes = usuarioService.listar(Perfil.CLIENTE.getCodigo(), null, null);
 
         assertThat(clientes).extracting("nome").containsExactly("Bruno", "Zeca");
-        verify(usuarioRepository).findAll(any(Specification.class));
+        verify(usuarioRepository).findAll(any(Specification.class), eq(POR_NOME));
     }
 
     @Test
-    @DisplayName("diretório — retorna somente ativos, ordenados e com dados mínimos")
-    void diretorioRetornaSomenteAtivos() {
-        var inativo = usuario(1L, "Zeca", "zeca@test.com", Perfil.CLIENTE);
-        inativo.setAtivo(false);
-        when(usuarioRepository.findAll()).thenReturn(List.of(
-                inativo,
-                usuario(2L, "Carlos", "carlos@test.com", Perfil.TECNICO),
-                usuario(3L, "Ana", "ana@test.com", Perfil.CLIENTE)));
+    @DisplayName("diretório — consulta o banco ordenando por nome e devolve dados mínimos")
+    void diretorioRetornaDadosMinimos() {
+        when(usuarioRepository.findAll(any(Specification.class), any(Sort.class))).thenReturn(List.of(
+                usuario(3L, "Ana", "ana@test.com", Perfil.CLIENTE),
+                usuario(2L, "Carlos", "carlos@test.com", Perfil.TECNICO)));
 
         var diretorio = usuarioService.listarDiretorioAtivo();
 
         assertThat(diretorio).extracting("nome").containsExactly("Ana", "Carlos");
         assertThat(diretorio.getFirst().perfis()).containsExactly("ROLE_CLIENTE");
+        verify(usuarioRepository).findAll(any(Specification.class), eq(POR_NOME));
+        verify(usuarioRepository, never()).findAll();
     }
 
 
@@ -169,9 +172,52 @@ class UsuarioServiceTest {
     @Test
     @DisplayName("updatePerfis — conjunto vazio é rejeitado")
     void updatePerfisVazio() {
-        assertThatThrownBy(() -> usuarioService.updatePerfis(1L, Set.of()))
+        assertThatThrownBy(() -> usuarioService.updatePerfis(1L, Set.of(), "admin@test.com"))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("ao menos um perfil");
+    }
+
+    @Test
+    @DisplayName("update — administrador não desativa a própria conta pela edição")
+    void updateNaoDesativaPropriaConta() {
+        var admin = usuario(1L, "Admin", "admin@test.com", Perfil.ADMIN);
+        when(usuarioRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(admin));
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(admin));
+
+        var req = new UsuarioRequest("Admin", "admin@test.com", null, null, null, false,
+                Set.of(Perfil.ADMIN.getCodigo()));
+
+        assertThatThrownBy(() -> usuarioService.update(1L, req, "admin@test.com"))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("desativar a própria conta");
+        verify(usuarioRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("updatePerfis — administrador não remove o próprio perfil ADMIN")
+    void updatePerfisNaoRemovePropriaAdmin() {
+        var admin = usuario(1L, "Admin", "admin@test.com", Perfil.ADMIN);
+        when(usuarioRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(admin));
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(admin));
+
+        assertThatThrownBy(() -> usuarioService.updatePerfis(
+                1L, Set.of(Perfil.TECNICO.getCodigo()), "admin@test.com"))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("próprio perfil de administrador");
+        verify(usuarioRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("create — senha acima de 72 bytes (limite do BCrypt) é rejeitada sem chamar o encoder")
+    void createSenhaAcimaDoLimiteDoBcrypt() {
+        // 40 caracteres acentuados = 80 bytes em UTF-8: passa no @Size(max = 72), mas não no BCrypt
+        var req = request("Maria", "maria@test.com", "ç".repeat(40), Set.of(Perfil.CLIENTE.getCodigo()));
+        when(usuarioRepository.existsByEmail("maria@test.com")).thenReturn(false);
+
+        assertThatThrownBy(() -> usuarioService.create(req))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("72 caracteres");
+        verify(passwordEncoder, never()).encode(anyString());
     }
 
 

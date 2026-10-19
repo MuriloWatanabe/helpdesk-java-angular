@@ -16,12 +16,13 @@ import com.murilo.helpdesk.repository.spec.UsuarioSpecs;
 import com.murilo.helpdesk.util.Mapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -31,6 +32,8 @@ import java.util.Set;
 public class UsuarioService {
 
     private static final String EMAIL_DUPLICADO = "Já existe um usuário com este e-mail.";
+    private static final int TAMANHO_MAXIMO_SENHA_BYTES = 72;
+    private static final Sort POR_NOME = Sort.by(Sort.Order.asc("nome").ignoreCase());
 
     private final UsuarioRepository usuarioRepository;
     private final ChamadoRepository chamadoRepository;
@@ -58,10 +61,7 @@ public class UsuarioService {
 
     @Transactional(readOnly = true)
     public List<UsuarioResponse> listar(Integer perfil, Boolean ativo, String busca) {
-        var spec = UsuarioSpecs.montar(perfil, ativo, busca)
-                .and((root, q, cb) -> { q.orderBy(cb.asc(cb.lower(root.get("nome")))); return null; });
-
-        return usuarioRepository.findAll(spec).stream()
+        return usuarioRepository.findAll(UsuarioSpecs.montar(perfil, ativo, busca), POR_NOME).stream()
                 .map(Mapper::toUsuarioResponse)
                 .toList();
     }
@@ -77,9 +77,7 @@ public class UsuarioService {
      */
     @Transactional(readOnly = true)
     public List<UsuarioDiretorioResponse> listarDiretorioAtivo() {
-        return usuarioRepository.findAll().stream()
-                .filter(u -> !Boolean.FALSE.equals(u.getAtivo()))
-                .sorted(Comparator.comparing(Usuario::getNome, String.CASE_INSENSITIVE_ORDER))
+        return usuarioRepository.findAll(UsuarioSpecs.montar(null, true, null), POR_NOME).stream()
                 .map(u -> new UsuarioDiretorioResponse(
                         u.getId(),
                         u.getNome(),
@@ -104,7 +102,7 @@ public class UsuarioService {
         Usuario usuario = new Usuario();
         usuario.setNome(request.nome().trim());
         usuario.setEmail(email);
-        usuario.setSenha(passwordEncoder.encode(request.senha()));
+        usuario.setSenha(codificarSenha(request.senha()));
         usuario.setTelefone(request.telefone());
         usuario.setCargo(request.cargo());
         usuario.setAtivo(request.ativo() == null || request.ativo());
@@ -115,7 +113,8 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioResponse update(Long id, UsuarioRequest request) {
+    public UsuarioResponse update(Long id, UsuarioRequest request, String emailSolicitante) {
+        Usuario solicitante = findByEmail(emailSolicitante);
         Usuario existente = findById(id);
         String email = normalizarEmail(request.email());
 
@@ -124,6 +123,12 @@ public class UsuarioService {
         }
         validarPerfis(request.perfis());
 
+        if (existente.getId().equals(solicitante.getId())) {
+            if (Boolean.FALSE.equals(request.ativo())) {
+                throw new BusinessException("Você não pode desativar a própria conta.");
+            }
+            impedirAutoRemocaoDeAdmin(existente, request.perfis());
+        }
 
         if (existente.ehAdmin() && !request.perfis().contains(Perfil.ADMIN.getCodigo())) {
             garantirOutroAdminAtivo(existente.getId());
@@ -143,17 +148,21 @@ public class UsuarioService {
         }
 
         if (request.senha() != null && !request.senha().isBlank()) {
-            existente.setSenha(passwordEncoder.encode(request.senha()));
+            existente.setSenha(codificarSenha(request.senha()));
         }
 
         return Mapper.toUsuarioResponse(usuarioRepository.save(existente));
     }
 
     @Transactional
-    public UsuarioResponse updatePerfis(Long id, Set<Integer> novosPerfis) {
+    public UsuarioResponse updatePerfis(Long id, Set<Integer> novosPerfis, String emailSolicitante) {
         validarPerfis(novosPerfis);
+        Usuario solicitante = findByEmail(emailSolicitante);
         Usuario usuario = findById(id);
 
+        if (usuario.getId().equals(solicitante.getId())) {
+            impedirAutoRemocaoDeAdmin(usuario, novosPerfis);
+        }
         if (usuario.ehAdmin() && !novosPerfis.contains(Perfil.ADMIN.getCodigo())) {
             garantirOutroAdminAtivo(usuario.getId());
         }
@@ -204,17 +213,6 @@ public class UsuarioService {
 
 
     @Transactional
-    public void delete(Long id) {
-        Usuario alvo = findById(id);
-        if (chamadoRepository.existsByClienteIdOrTecnicoId(id, id)) {
-            throw BusinessException.conflito(
-                    "Este usuário possui chamados vinculados e não pode ser excluído.");
-        }
-        usuarioRepository.delete(alvo);
-    }
-
-
-    @Transactional
     public UsuarioResponse atualizarMeuPerfil(String emailAtual, AtualizarPerfilRequest request) {
         Usuario usuario = findByEmail(emailAtual);
         String novoEmail = normalizarEmail(request.email());
@@ -242,7 +240,7 @@ public class UsuarioService {
             throw new BusinessException("A nova senha deve ser diferente da atual.");
         }
 
-        usuario.setSenha(passwordEncoder.encode(request.novaSenha()));
+        usuario.setSenha(codificarSenha(request.novaSenha()));
         usuarioRepository.save(usuario);
         log.info("Senha alterada para {}", usuario.getEmail());
     }
@@ -272,6 +270,21 @@ public class UsuarioService {
         }
     }
 
+    // Evita que o administrador perca o acesso à própria tela no meio da edição.
+    private void impedirAutoRemocaoDeAdmin(Usuario usuario, Set<Integer> novosPerfis) {
+        if (usuario.ehAdmin() && !novosPerfis.contains(Perfil.ADMIN.getCodigo())) {
+            throw new BusinessException("Você não pode remover o próprio perfil de administrador.");
+        }
+    }
+
+    // O BCrypt só aceita até 72 bytes; acima disso encode() lança IllegalArgumentException (500).
+    private String codificarSenha(String senha) {
+        if (senha.getBytes(StandardCharsets.UTF_8).length > TAMANHO_MAXIMO_SENHA_BYTES) {
+            throw new BusinessException("A senha deve ter no máximo 72 caracteres.");
+        }
+        return passwordEncoder.encode(senha);
+    }
+
     private void garantirOutroAdminAtivo(Long idIgnorado) {
         boolean existeOutro = usuarioRepository.existsByPerfisContainsAndAtivoTrueAndIdNot(
                 Perfil.ADMIN.getCodigo(), idIgnorado);
@@ -286,7 +299,7 @@ public class UsuarioService {
 
     @Transactional
     public void definirSenha(Usuario usuario, String novaSenha) {
-        usuario.setSenha(passwordEncoder.encode(novaSenha));
+        usuario.setSenha(codificarSenha(novaSenha));
         usuarioRepository.save(usuario);
     }
 

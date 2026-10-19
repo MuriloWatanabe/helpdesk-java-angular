@@ -35,7 +35,7 @@ export class RedefinirSenhaComponent implements OnInit {
 
   form: FormGroup = this.fb.group(
     {
-      novaSenha: ['', [Validators.required, Validators.minLength(6)]],
+      novaSenha: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(72)]],
       confirmacao: ['', [Validators.required]],
     },
     { validators: senhasIguais },

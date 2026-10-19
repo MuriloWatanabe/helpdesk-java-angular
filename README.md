@@ -725,7 +725,7 @@ npm run test:ci
 
 | Item | Situação |
 |---|---|
-| Envio de e-mail | Não há servidor SMTP configurado. O link de redefinição vai para o log da aplicação e, em desenvolvimento, também na resposta (`app.reset-senha.expor-link`). Desligue em produção. |
+| Envio de e-mail | Não há servidor SMTP configurado. O link de redefinição vai para o log da aplicação. Para exibi-lo também na resposta da API (e na tela "Esqueci minha senha"), defina `RESET_EXPOR_LINK=true` — apenas em desenvolvimento: com isso ligado, qualquer pessoa consegue redefinir a senha de qualquer conta. Desligado por padrão. |
 | Departamentos | A entidade e a massa de dados existem e os usuários são vinculados a um departamento, mas não há tela de manutenção nem roteamento de chamados por departamento. |
 | Armazenamento de anexos | Os arquivos ficam em disco local (volume `uploads_data`). Para vários nós, trocar por um storage compartilhado (S3 ou equivalente). |
 | Notificações | Não há aviso por e-mail ou push quando o chamado muda de status; o acompanhamento é pelo painel. |

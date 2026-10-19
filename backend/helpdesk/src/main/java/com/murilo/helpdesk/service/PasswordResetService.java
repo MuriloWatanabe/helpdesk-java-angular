@@ -28,7 +28,8 @@ public class PasswordResetService {
     private final PasswordResetTokenRepository tokenRepository;
     private final UsuarioService usuarioService;
 
-    @Value("${app.reset-senha.expor-link:true}")
+    // Só para desenvolvimento: devolver o link na resposta permite redefinir a senha de qualquer conta.
+    @Value("${app.reset-senha.expor-link:false}")
     private boolean exporLink;
 
     @Value("${app.front-url:http://localhost:4200}")
