@@ -7,19 +7,20 @@
   text-align: center;
   padding: 40px 20px;
   gap: 6px;
+  background: var(--color-background);
 }
 
 .erro-codigo {
-  font-size: 68px;
+  font-size: clamp(72px, 13vw, 150px);
   font-weight: 800;
   line-height: 1;
-  color: var(--color-primary);
-  opacity: 0.22;
-  letter-spacing: -2px;
+  color: var(--color-ink);
+  opacity: 0.1;
+  letter-spacing: -0.08em;
 }
 
 .erro-titulo {
-  font-size: 22px;
+  font-size: 30px;
   font-weight: 700;
   color: var(--color-text-primary);
   margin-top: 4px;

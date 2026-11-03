@@ -2,6 +2,7 @@ import { Chamado } from '../../core/models/chamado.model';
 import {
   classePrioridade,
   classeStatus,
+  etapasProgresso,
   iniciais,
   textoSla,
   transicoesDoCliente,
@@ -105,6 +106,43 @@ describe('chamado-ui', () => {
     it('devolve interrogação para valores vazios', () => {
       expect(iniciais('')).toBe('?');
       expect(iniciais(undefined)).toBe('?');
+    });
+  });
+  describe('etapasProgresso', () => {
+    const estados = (status: number) => etapasProgresso(status).map((e) => `${e.rotulo}:${e.estado}`);
+
+    it('segue a ordem real do fluxo, com Resolvido antes de Encerrado', () => {
+      expect(etapasProgresso(0).map((e) => e.rotulo)).toEqual([
+        'Aberto', 'Em andamento', 'Aguardando cliente', 'Resolvido', 'Encerrado',
+      ]);
+    });
+
+    it('marca RESOLVIDO (4) como etapa atual, aguardando confirmação', () => {
+      expect(estados(4)).toEqual([
+        'Aberto:completa', 'Em andamento:completa', 'Aguardando cliente:completa',
+        'Resolvido:atual', 'Encerrado:pendente',
+      ]);
+    });
+
+    it('marca ENCERRADO (2) como última etapa atual e as anteriores completas', () => {
+      expect(estados(2)).toEqual([
+        'Aberto:completa', 'Em andamento:completa', 'Aguardando cliente:completa',
+        'Resolvido:completa', 'Encerrado:atual',
+      ]);
+    });
+
+    it('marca ABERTO, EM_ANDAMENTO e AGUARDANDO_CLIENTE na posição correta', () => {
+      expect(estados(0)[0]).toBe('Aberto:atual');
+      expect(estados(0).slice(1).every((e) => e.endsWith(':pendente'))).toBe(true);
+      expect(estados(1)).toEqual([
+        'Aberto:completa', 'Em andamento:atual', 'Aguardando cliente:pendente',
+        'Resolvido:pendente', 'Encerrado:pendente',
+      ]);
+      expect(estados(3)[2]).toBe('Aguardando cliente:atual');
+    });
+
+    it('deixa todas as etapas pendentes para chamado cancelado', () => {
+      expect(estados(5).every((e) => e.endsWith(':pendente'))).toBe(true);
     });
   });
 });

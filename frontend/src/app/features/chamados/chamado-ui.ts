@@ -1,4 +1,4 @@
-import { Chamado } from '../../core/models/chamado.model';
+import { Chamado, StatusChamado } from '../../core/models/chamado.model';
 
 
 const CLASSES_STATUS: Record<number, string> = {
@@ -75,4 +75,28 @@ export function iniciais(nome?: string | null): string {
     .map((p) => p[0])
     .join('')
     .toUpperCase();
+}
+
+
+export type EstadoEtapa = 'completa' | 'atual' | 'pendente';
+
+export interface EtapaProgresso {
+  rotulo: string;
+  estado: EstadoEtapa;
+}
+
+const ETAPAS_FLUXO: { rotulo: string; status: number }[] = [
+  { rotulo: 'Aberto', status: StatusChamado.ABERTO },
+  { rotulo: 'Em andamento', status: StatusChamado.EM_ANDAMENTO },
+  { rotulo: 'Aguardando cliente', status: StatusChamado.AGUARDANDO_CLIENTE },
+  { rotulo: 'Resolvido', status: StatusChamado.RESOLVIDO },
+  { rotulo: 'Encerrado', status: StatusChamado.ENCERRADO },
+];
+
+export function etapasProgresso(status: number): EtapaProgresso[] {
+  const atual = ETAPAS_FLUXO.findIndex((etapa) => etapa.status === status);
+  return ETAPAS_FLUXO.map((etapa, indice) => ({
+    rotulo: etapa.rotulo,
+    estado: atual < 0 || indice > atual ? 'pendente' : indice === atual ? 'atual' : 'completa',
+  }));
 }

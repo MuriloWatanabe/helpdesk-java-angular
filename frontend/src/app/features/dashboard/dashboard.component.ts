@@ -9,7 +9,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Chart } from 'chart.js/auto';
 import { SidebarComponent } from '../../layout/sidebar/sidebar.component';
@@ -21,7 +21,7 @@ import { classePrioridade, classeStatus, textoSla } from '../chamados/chamado-ui
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterModule, DatePipe, DecimalPipe, SidebarComponent],
+  imports: [RouterModule, DecimalPipe, SidebarComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
@@ -57,12 +57,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!s) return [];
 
     const partes = [
-      { rotulo: 'Abertos', valor: s.totalAbertos, cor: '#2563eb' },
-      { rotulo: 'Em andamento', valor: s.totalEmAndamento, cor: '#d97706' },
-      { rotulo: 'Aguardando cliente', valor: s.totalAguardandoCliente, cor: '#7c3aed' },
-      { rotulo: 'Resolvidos', valor: s.totalResolvidos, cor: '#059669' },
-      { rotulo: 'Encerrados', valor: s.totalEncerrados, cor: '#475569' },
-      { rotulo: 'Cancelados', valor: s.totalCancelados, cor: '#94a3b8' },
+      { rotulo: 'Abertos', valor: s.totalAbertos, cor: '#171a1c' },
+      { rotulo: 'Em andamento', valor: s.totalEmAndamento, cor: '#168979' },
+      { rotulo: 'Aguardando cliente', valor: s.totalAguardandoCliente, cor: '#c68a19' },
+      { rotulo: 'Resolvidos', valor: s.totalResolvidos, cor: '#54a899' },
+      { rotulo: 'Encerrados', valor: s.totalEncerrados, cor: '#62696b' },
+      { rotulo: 'Cancelados', valor: s.totalCancelados, cor: '#a1a5a3' },
     ].filter((p) => p.valor > 0);
 
     const total = partes.reduce((soma, p) => soma + p.valor, 0);
@@ -147,13 +147,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           {
             label: 'Chamados abertos',
             data: dados.aberturasPorDia.map((p) => p.total),
-            borderColor: '#1d4ed8',
-            backgroundColor: 'rgba(29, 78, 216, 0.12)',
+            borderColor: '#168979',
+            backgroundColor: 'rgba(22, 137, 121, 0.10)',
             borderWidth: 2,
             fill: true,
             tension: 0.32,
             pointRadius: 2.5,
-            pointBackgroundColor: '#1d4ed8',
+            pointBackgroundColor: '#168979',
           },
         ],
       },
@@ -162,11 +162,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
-          x: { grid: { display: false }, ticks: { font: { size: 10.5 }, color: '#64748b' } },
+          x: { grid: { display: false }, ticks: { font: { size: 10.5 }, color: '#777d7c' } },
           y: {
             beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 11 }, color: '#64748b', stepSize: 1, precision: 0 },
+            grid: { color: 'rgba(23,26,28,0.06)' },
+            ticks: { font: { size: 11 }, color: '#777d7c', stepSize: 1, precision: 0 },
           },
         },
       },

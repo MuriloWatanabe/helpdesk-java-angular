@@ -21,6 +21,7 @@ import { Opcao, UsuarioDiretorio } from '../../../core/models/usuario.model';
 import {
   classePrioridade,
   classeStatus,
+  etapasProgresso,
   iniciais,
   textoSla,
   transicoesDoCliente,
@@ -76,6 +77,7 @@ export class ChamadoDetailComponent implements OnInit {
   statusOpcoes = signal<Opcao[]>([]);
 
   readonly aspectosDisponiveis = ASPECTOS_AVALIACAO;
+  readonly etapasProgresso = etapasProgresso;
   notaEscolhida = 0;
   comentarioAvaliacao = '';
   aspectosEscolhidos = new Set<string>();

@@ -1,179 +1,167 @@
 .sidebar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
   width: var(--sidebar-width);
   min-width: var(--sidebar-width);
   height: 100vh;
-  background-color: var(--color-sidebar-bg);
-  display: flex;
-  flex-direction: column;
-  position: sticky;
-  top: 0;
   overflow-y: auto;
-  z-index: 100;
+  color: #edf0ed;
+  background: var(--color-sidebar-bg);
+  scrollbar-width: thin;
+  scrollbar-color: #333a3d transparent;
 }
 
 .sidebar-header {
-  padding: 24px 20px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-height: 108px;
+  padding: 28px 24px 24px;
 }
 
 .sidebar-logo {
-  display: flex;
-  align-items: center;
-
-  app-logo {
-    font-size: 18px;
-  }
+  display: inline-flex;
 }
 
 .sidebar-nav {
   flex: 1;
-  padding: 12px 0;
+  padding: 4px 14px 24px;
   overflow-y: auto;
 }
 
 .nav-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+  display: grid;
+  gap: 3px;
 }
 
 .nav-section {
-  margin-top: 20px;
-  padding-top: 8px;
+  margin-top: 22px;
 }
 
 .nav-section-label {
   display: block;
-  padding: 0 20px 8px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  color: rgba(255, 255, 255, 0.35);
+  padding: 0 10px 8px;
+  color: #626a6b;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
 }
 
 .nav-item {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 20px;
-  color: rgba(255, 255, 255, 0.65);
-  font-size: 14px;
-  font-weight: 500;
-  border-left: 3px solid transparent;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-  cursor: pointer;
+  min-height: 42px;
+  padding: 10px 14px;
+  border-radius: 3px;
+  color: #92999a;
+  font-size: 13.5px;
+  font-weight: 550;
+  transition: color 0.15s, background 0.15s;
+
+  &::before {
+    position: absolute;
+    top: 10px;
+    bottom: 10px;
+    left: 0;
+    width: 3px;
+    border-radius: 2px;
+    background: transparent;
+    content: '';
+  }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.07);
-    color: rgba(255, 255, 255, 0.9);
+    color: #f1f2ef;
+    background: #1d2225;
   }
 
   &.active {
-    background: rgba(96, 165, 250, 0.15);
-    color: #ffffff;
-    border-left-color: #60a5fa;
+    color: #f7f8f5;
+    background: var(--color-sidebar-active);
 
-    .nav-icon {
-      color: #60a5fa;
+    &::before {
+      background: var(--color-sidebar-active-border);
     }
   }
 
-
   &.destaque .nav-label {
-    color: #93c5fd;
-    font-weight: 600;
+    color: inherit;
+    font-weight: inherit;
   }
 }
 
 .nav-icon {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  color: inherit;
+  display: none;
 }
 
 .nav-label {
-  white-space: nowrap;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sidebar-footer {
-  padding: 16px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display: grid;
+  gap: 14px;
+  padding: 22px 20px 24px;
+  border-top: 1px solid #262c2f;
+  background: #14181b;
 }
 
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
+.user-info,
+.user-details {
   min-width: 0;
-}
-
-.user-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 700;
-  color: #ffffff;
-  flex-shrink: 0;
 }
 
 .user-details {
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  gap: 2px;
+}
+
+.user-name,
+.user-role {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .user-name {
+  color: #f0f2ef;
   font-size: 13px;
-  font-weight: 600;
-  color: #ffffff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 650;
 }
 
 .user-role {
+  color: #727a7b;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.45);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .logout-btn {
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.4);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 6px;
-  border-radius: 6px;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: color 0.15s, background 0.15s;
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid #292f32;
+  border-radius: 3px;
+  color: #bec3c2;
+  background: #202528;
+  font-size: 12px;
+  font-weight: 650;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
 
   &:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-color: #3a4245;
+    background: #292f32;
   }
 }
-
 
 .menu-toggle,
 .menu-fechar {
@@ -182,49 +170,53 @@
 
 @media (max-width: 900px) {
   .menu-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     position: fixed;
     top: 14px;
     left: 14px;
     z-index: 120;
-    width: 40px;
-    height: 40px;
-    border-radius: 9px;
-    background: var(--color-sidebar-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: 1px solid #2d3437;
+    border-radius: 3px;
     color: #fff;
-    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.22);
+    background: var(--color-sidebar-bg);
+    box-shadow: 0 5px 18px rgba(23, 26, 28, 0.2);
   }
 
   .menu-fechar {
     display: block;
+    padding: 0 4px;
+    color: #8d9595;
     background: transparent;
-    color: rgba(255, 255, 255, 0.6);
     font-size: 26px;
     line-height: 1;
-    padding: 0 4px;
 
-    &:hover { color: #fff; }
+    &:hover {
+      color: #fff;
+    }
   }
 
   .menu-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.5);
-    border: none;
     z-index: 110;
+    border: 0;
+    background: rgba(13, 16, 18, 0.58);
+    backdrop-filter: blur(2px);
   }
 
   .sidebar {
     position: fixed;
     top: 0;
     left: 0;
-    height: 100vh;
+    z-index: 115;
+    height: 100dvh;
+    box-shadow: 8px 0 28px rgba(8, 10, 11, 0.26);
     transform: translateX(-100%);
     transition: transform 0.22s ease-out;
-    z-index: 115;
-    box-shadow: 4px 0 20px rgba(15, 23, 42, 0.2);
 
     &.aberta {
       transform: translateX(0);
@@ -233,5 +225,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sidebar { transition: none; }
+  .sidebar {
+    transition: none;
+  }
 }
