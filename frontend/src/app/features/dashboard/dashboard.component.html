@@ -2,279 +2,231 @@
   <app-sidebar />
 
   <main class="dashboard-main">
-    <header class="dashboard-header">
-      <div class="header-left">
-        <h1 class="page-title">Olá, {{ primeiroNome() }}</h1>
-        <p class="page-subtitle">
-          @if (isCliente()) {
-            Acompanhe aqui o andamento das suas solicitações.
-          } @else {
-            Visão geral do atendimento e dos prazos.
-          }
-        </p>
-      </div>
-      <div class="header-right">
-        <button class="btn-secondary" type="button" (click)="atualizar()">Atualizar</button>
-        <a routerLink="/chamados/novo" class="btn-novo-chamado">+ Abrir chamado</a>
-      </div>
-    </header>
+    <div class="dashboard-container">
+      <header class="dashboard-header">
+        <div>
+          <p class="eyebrow">Painel de atendimento</p>
+          <h1>Olá, {{ primeiroNome() }}</h1>
+          <p class="dashboard-subtitle">
+            @if (isCliente()) {
+              Acompanhe suas solicitações e os próximos passos.
+            } @else {
+              Visão da equipe de suporte e das prioridades de hoje.
+            }
+          </p>
+        </div>
+        <div class="header-actions">
+          <button class="btn-atualizar" type="button" (click)="atualizar()">Atualizar</button>
+          <a routerLink="/chamados/novo" class="btn-novo-chamado">Abrir chamado</a>
+        </div>
+      </header>
 
-    @if (loading()) {
-      <div class="loading-state">
-        <div class="spinner"></div>
-        <p>Carregando indicadores...</p>
-      </div>
-    }
+      @if (loading()) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Carregando indicadores...</p>
+        </div>
+      }
 
-    @if (erro()) {
-      <div class="alert-error" role="alert">
-        Não foi possível carregar os indicadores. Verifique se a API está no ar.
-        <button class="btn-link-retry" type="button" (click)="atualizar()">Tentar novamente</button>
-      </div>
-    }
+      @if (erro()) {
+        <div class="alert-error" role="alert">
+          Não foi possível carregar os indicadores. Verifique se a API está no ar.
+          <button class="btn-link-retry" type="button" (click)="atualizar()">Tentar novamente</button>
+        </div>
+      }
 
-    @if (!loading() && stats(); as s) {
-      <div class="dashboard-content">
-
-
-        @if (isAtendente() && (s.totalSlaVencido > 0 || s.totalSemTecnico > 0)) {
-          <div class="alerta-operacao">
-            <div class="alerta-icone" aria-hidden="true">!</div>
-            <div class="alerta-texto">
-              <strong>Precisa de atenção agora</strong>
-              <span>
+      @if (!loading() && stats(); as s) {
+        <div class="dashboard-content">
+          @if (isAtendente() && (s.totalSlaVencido > 0 || s.totalSemTecnico > 0)) {
+            <section class="alerta-operacao" aria-label="Itens que precisam de atenção">
+              <div>
+                <span class="alerta-label">Atenção necessária</span>
+                <strong>
+                  {{ s.totalSlaVencido }} prazo(s) vencido(s) e
+                  {{ s.totalSemTecnico }} chamado(s) sem responsável.
+                </strong>
+              </div>
+              <div class="alerta-acoes">
                 @if (s.totalSlaVencido > 0) {
-                  {{ s.totalSlaVencido }} chamado(s) com prazo estourado.
+                  <a routerLink="/chamados" [queryParams]="filtrosDoEscopo({ slaVencido: true })">
+                    Ver vencidos
+                  </a>
                 }
                 @if (s.totalSemTecnico > 0) {
-                  {{ s.totalSemTecnico }} aguardando atribuição.
+                  <a routerLink="/chamados" [queryParams]="{ semTecnico: true }">Ver fila</a>
                 }
-              </span>
-            </div>
-            <div class="alerta-acoes">
-              @if (s.totalSlaVencido > 0) {
-                <a class="alerta-acao" routerLink="/chamados"
-                   [queryParams]="filtrosDoEscopo({ slaVencido: true })">
-                  Ver vencidos
-                </a>
-              }
-              @if (s.totalSemTecnico > 0) {
-                <a class="alerta-acao" routerLink="/chamados" [queryParams]="{ semTecnico: true }">
-                  Ver sem técnico
-                </a>
-              }
-            </div>
-          </div>
-        }
-
-
-        <section class="stats-section" aria-label="Indicadores">
-          <a class="stat-card stat-link" routerLink="/chamados"
-             [queryParams]="filtrosDoEscopo({ apenasPendentes: true })">
-            <div class="stat-card-header">
-              <span class="stat-title">Em aberto</span>
-            </div>
-            <p class="stat-value">{{ emAberto() }}</p>
-            <span class="stat-subtitle">
-              {{ s.totalAbertos }} novos · {{ s.totalEmAndamento }} em andamento
-            </span>
-          </a>
-
-          <article class="stat-card">
-            <div class="stat-card-header">
-              <span class="stat-title">Resolvidos</span>
-            </div>
-            <p class="stat-value">{{ s.totalResolvidos + s.totalEncerrados }}</p>
-            <span class="stat-subtitle">
-              @if (s.totalResolvidos > 0) {
-                {{ s.totalResolvidos }} aguardando confirmação
-              } @else {
-                Nenhum aguardando confirmação
-              }
-            </span>
-          </article>
-
-          @if (isAtendente()) {
-            <a class="stat-card stat-link" [class.critico]="s.totalSlaVencido > 0"
-               routerLink="/chamados" [queryParams]="filtrosDoEscopo({ slaVencido: true })">
-              <div class="stat-card-header">
-                <span class="stat-title">Prazo estourado</span>
               </div>
-              <p class="stat-value">{{ s.totalSlaVencido }}</p>
-              <span class="stat-subtitle">{{ s.totalSlaEmRisco }} vencem nas próximas 8h</span>
-            </a>
-
-            <article class="stat-card">
-              <div class="stat-card-header">
-                <span class="stat-title">Tempo médio</span>
-              </div>
-              <p class="stat-value">{{ tempoMedioTexto }}</p>
-              <span class="stat-subtitle">Da abertura até o fechamento</span>
-            </article>
-
-            <article class="stat-card">
-              <div class="stat-card-header">
-                <span class="stat-title">Satisfação</span>
-              </div>
-              <p class="stat-value">
-                @if (s.notaMediaAtendimento !== null) {
-                  {{ s.notaMediaAtendimento | number: '1.1-1' }}<span class="stat-sufixo">/5</span>
-                } @else { — }
-              </p>
-              <span class="stat-subtitle">{{ s.totalAvaliacoes }} avaliação(ões)</span>
-            </article>
-          } @else {
-            <article class="stat-card">
-              <div class="stat-card-header">
-                <span class="stat-title">Total de chamados</span>
-              </div>
-              <p class="stat-value">{{ s.totalChamados }}</p>
-              <span class="stat-subtitle">Desde o início do seu cadastro</span>
-            </article>
+            </section>
           }
-        </section>
 
-
-        @if (s.totalChamados > 0) {
-          <section class="charts-section">
-            <article class="chart-card">
-              <div class="card-header">
-                <h2 class="card-title">Situação dos chamados</h2>
-                <span class="card-subtitle">{{ totalSituacoes() }} no total</span>
-              </div>
-
-
-              <div class="situacao-barra" aria-hidden="true">
-                @for (p of situacoes(); track p.rotulo) {
-                  <span
-                    class="situacao-parte"
-                    [style.flex-grow]="p.valor"
-                    [style.background-color]="p.cor"
-                    [title]="p.rotulo + ': ' + p.valor + ' (' + p.pct + '%)'"
-                  ></span>
-                }
-              </div>
-
-              <ul class="situacao-lista">
-                @for (p of situacoes(); track p.rotulo) {
-                  <li class="situacao-item">
-                    <span class="situacao-chip" [style.background-color]="p.cor" aria-hidden="true"></span>
-                    <span class="situacao-nome">{{ p.rotulo }}</span>
-                    <span class="situacao-valor">{{ p.valor }}</span>
-                    <span class="situacao-pct">{{ p.pct }}%</span>
-                  </li>
-                }
-              </ul>
-            </article>
-
+          <section class="stats-section" aria-label="Indicadores principais">
             @if (isAtendente()) {
-              <article class="chart-card">
-                <div class="card-header">
-                  <h2 class="card-title">
-                    {{ s.escopo === 'TECNICO' ? 'Sua carteira nos últimos 14 dias' : 'Aberturas nos últimos 14 dias' }}
-                  </h2>
+              <a class="stat-card danger" routerLink="/chamados" [queryParams]="{ semTecnico: true }">
+                <strong>{{ s.totalSemTecnico }}</strong>
+                <span>Na fila, sem técnico</span>
+              </a>
+              <a class="stat-card" routerLink="/chamados" [queryParams]="filtrosDoEscopo({ status: 1 })">
+                <strong>{{ s.totalEmAndamento }}</strong>
+                <span>Em andamento</span>
+              </a>
+              <a class="stat-card danger" routerLink="/chamados" [queryParams]="filtrosDoEscopo({ slaVencido: true })">
+                <strong>{{ s.totalSlaVencido }}</strong>
+                <div class="stat-copy">
+                  <span>Com prazo vencido</span>
+                  <span class="stat-subtitle">{{ s.totalSlaEmRisco }} vencem nas próximas 8h</span>
                 </div>
-                <div class="chart-wrapper">
-                  <canvas #graficoEvolucao aria-label="Chamados abertos por dia"></canvas>
+              </a>
+              <a class="stat-card" routerLink="/chamados" [queryParams]="filtrosDoEscopo({ apenasPendentes: true })">
+                <strong>{{ emAberto() }}</strong>
+                <span>Pendentes no total</span>
+              </a>
+            } @else {
+              <a class="stat-card" routerLink="/chamados" [queryParams]="{ apenasPendentes: true }">
+                <strong>{{ emAberto() }}</strong>
+                <div class="stat-copy">
+                  <span>Em aberto</span>
+                  <span class="stat-subtitle">{{ s.totalAbertos }} novos · {{ s.totalEmAndamento }} em andamento</span>
                 </div>
-              </article>
+              </a>
+              <a class="stat-card" routerLink="/chamados" [queryParams]="{ status: 3 }">
+                <strong>{{ s.totalAguardandoCliente }}</strong>
+                <div class="stat-copy">
+                  <span>Aguardando você</span>
+                  <span class="stat-subtitle">Precisam da sua resposta</span>
+                </div>
+              </a>
+              <a class="stat-card" routerLink="/chamados" [queryParams]="{ status: 4 }">
+                <strong>{{ s.totalResolvidos }}</strong>
+                <div class="stat-copy">
+                  <span>Resolvidos</span>
+                  <span class="stat-subtitle">aguardando confirmação</span>
+                </div>
+              </a>
+              <a class="stat-card" routerLink="/chamados">
+                <strong>{{ s.totalChamados }}</strong>
+                <span>Chamados no total</span>
+              </a>
             }
           </section>
 
-          @if (isAtendente() && s.porCategoria.length > 0) {
-            <section class="categories-section">
-              <article class="chart-card">
-                <div class="card-header">
-                  <h2 class="card-title">Principais categorias</h2>
-                  <span class="card-subtitle">Onde os problemas se concentram</span>
+          <section class="overview-grid">
+            <article class="panel recent-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="panel-kicker">Atividade</p>
+                  <h2>@if (isCliente()) { Meus chamados recentes } @else { Mais recentes }</h2>
                 </div>
-                <ul class="categories-list">
-                  @for (cat of s.porCategoria.slice(0, 6); track cat.rotulo) {
-                    <li class="category-item">
-                      <div class="category-header">
-                        <span class="category-name">{{ cat.rotulo }}</span>
-                        <span class="category-pct">{{ cat.total }} ({{ percentual(cat.total) }}%)</span>
-                      </div>
-                      <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" [style.width.%]="percentual(cat.total)"></div>
-                      </div>
+                <a [routerLink]="s.escopo === 'TECNICO' ? '/meus-chamados' : '/chamados'">Ver todos</a>
+              </div>
+
+              @if (s.chamadosRecentes.length === 0) {
+                <div class="empty-state compact">
+                  <p>Nenhum chamado por aqui ainda</p>
+                  <span>Os chamados recentes aparecerão neste espaço.</span>
+                  <a routerLink="/chamados/novo" class="btn-primary">Abrir chamado</a>
+                </div>
+              } @else {
+                <ul class="recent-list">
+                  @for (c of s.chamadosRecentes.slice(0, 6); track c.id) {
+                    <li>
+                      <a [routerLink]="['/chamados', c.id]" class="recent-link">
+                        <div class="recent-copy">
+                          <strong>{{ c.titulo }}</strong>
+                          <span>
+                            {{ c.numero || ('#' + c.id) }}
+                            @if (!isCliente()) { · {{ c.cliente.nome }} }
+                          </span>
+                        </div>
+                        <div class="recent-tags">
+                          <span class="badge" [class]="classePrioridade(c.prioridade)">{{ c.prioridadeLabel }}</span>
+                          <span class="badge" [class]="classeStatus(c.status)">{{ c.statusLabel }}</span>
+                          @if (textoSla(c); as sla) {
+                            <span class="recent-sla" [class.vencido]="c.slaVencido">{{ sla }}</span>
+                          }
+                        </div>
+                      </a>
                     </li>
                   }
                 </ul>
-              </article>
+              }
+            </article>
+
+            <article class="panel status-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="panel-kicker">Distribuição</p>
+                  <h2>Por status</h2>
+                </div>
+                <span>{{ totalSituacoes() }} no total</span>
+              </div>
+
+              <ul class="status-list">
+                @for (p of situacoes(); track p.rotulo) {
+                  <li>
+                    <span class="status-name">{{ p.rotulo }}</span>
+                    <div class="status-track" aria-hidden="true">
+                      <i [style.width.%]="p.pct" [style.background-color]="p.cor"></i>
+                    </div>
+                    <strong>{{ p.valor }}</strong>
+                  </li>
+                }
+              </ul>
+
+              @if (isAtendente()) {
+                <div class="status-summary">
+                  <span>Tempo médio <strong>{{ tempoMedioTexto }}</strong></span>
+                  <span>
+                    Avaliação
+                    <strong>
+                      @if (s.notaMediaAtendimento !== null) {
+                        {{ s.notaMediaAtendimento | number: '1.1-1' }}/5
+                      } @else { — }
+                    </strong>
+                    <small>{{ s.totalAvaliacoes }} avaliação(ões)</small>
+                  </span>
+                </div>
+              }
+            </article>
+          </section>
+
+          @if (isAtendente() && (s.aberturasPorDia.length > 0 || s.porCategoria.length > 0)) {
+            <section class="insights-grid">
+              @if (s.aberturasPorDia.length > 0) {
+                <article class="panel insight-panel">
+                  <div class="panel-heading">
+                    <div>
+                      <p class="panel-kicker">Últimos 14 dias</p>
+                      <h2>{{ s.escopo === 'TECNICO' ? 'Sua carteira' : 'Novos chamados' }}</h2>
+                    </div>
+                  </div>
+                  <div class="chart-wrapper">
+                    <canvas #graficoEvolucao aria-label="Chamados abertos por dia"></canvas>
+                  </div>
+                </article>
+              }
+
+              @if (s.porCategoria.length > 0) {
+                <article class="panel categories-panel">
+                  <div class="panel-heading">
+                    <div>
+                      <p class="panel-kicker">Concentração</p>
+                      <h2>Principais categorias</h2>
+                    </div>
+                  </div>
+                  <ul class="categories-list">
+                    @for (cat of s.porCategoria.slice(0, 6); track cat.rotulo) {
+                      <li>
+                        <div><span>{{ cat.rotulo }}</span><strong>{{ cat.total }}</strong></div>
+                        <div class="category-track"><i [style.width.%]="percentual(cat.total)"></i></div>
+                      </li>
+                    }
+                  </ul>
+                </article>
+              }
             </section>
           }
-        }
-
-
-        <section class="table-section">
-          <article class="table-card">
-            <div class="card-header">
-              <h2 class="card-title">
-                @if (isCliente()) { Seus chamados recentes } @else { Chamados recentes }
-              </h2>
-              <a [routerLink]="s.escopo === 'TECNICO' ? '/meus-chamados' : '/chamados'" class="ver-todos">
-                Ver todos →
-              </a>
-            </div>
-
-            @if (s.chamadosRecentes.length === 0) {
-              <div class="empty-state">
-                <p>Nenhum chamado por aqui ainda</p>
-                <span>
-                  @if (isCliente()) {
-                    Precisa de ajuda com algo? Abra seu primeiro chamado.
-                  } @else {
-                    Assim que um chamado for aberto, ele aparece nesta lista.
-                  }
-                </span>
-                <a routerLink="/chamados/novo" class="btn-primary">Abrir chamado</a>
-              </div>
-            } @else {
-              <div class="table-wrapper">
-                <table class="chamados-table">
-                  <thead>
-                    <tr>
-                      <th>Protocolo</th>
-                      <th>Título</th>
-                      @if (!isCliente()) { <th>Cliente</th> }
-                      <th>Prioridade</th>
-                      <th>Status</th>
-                      <th>Prazo</th>
-                      <th>Abertura</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (c of s.chamadosRecentes; track c.id) {
-                      <tr class="row-clicavel" [routerLink]="['/chamados', c.id]">
-                        <td class="protocolo">{{ c.numero || ('#' + c.id) }}</td>
-                        <td class="col-titulo">{{ c.titulo }}</td>
-                        @if (!isCliente()) { <td>{{ c.cliente.nome }}</td> }
-                        <td>
-                          <span class="badge" [class]="classePrioridade(c.prioridade)">
-                            {{ c.prioridadeLabel }}
-                          </span>
-                        </td>
-                        <td>
-                          <span class="badge" [class]="classeStatus(c.status)">
-                            {{ c.statusLabel }}
-                          </span>
-                        </td>
-                        <td>
-                          @if (textoSla(c); as sla) {
-                            <span class="sla" [class.sla-vencido]="c.slaVencido">{{ sla }}</span>
-                          } @else { — }
-                        </td>
-                        <td>{{ c.dataAbertura | date: 'dd/MM/yyyy' }}</td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            }
-          </article>
-        </section>
-      </div>
-    }
+        </div>
+      }
+    </div>
   </main>
 </div>

@@ -36,9 +36,6 @@ public class OpenApiConfig {
                                 1. Execute POST /v1/auth/login com e-mail e senha.
                                 2. Copie o campo `token` da resposta.
                                 3. Clique em **Authorize** e cole apenas o token (sem o prefixo Bearer).
-
-                                Usuários de demonstração (senha: 123456):
-                                admin@helpdesk.com · tecnico@helpdesk.com · cliente@helpdesk.com
                                 """)
                         .contact(new Contact().name("Murilo")))
                 .addServersItem(new Server()

@@ -45,19 +45,34 @@
       </header>
 
 
-      <div class="titulo-row">
-        <h1 class="titulo">{{ c.titulo }}</h1>
-        <div class="badges-row">
-          <span class="badge" [class]="classeStatus(c.status)">{{ c.statusLabel }}</span>
-          <span class="badge" [class]="classePrioridade(c.prioridade)">{{ c.prioridadeLabel }}</span>
-          @if (c.categoriaLabel) {
-            <span class="badge badge-categoria">{{ c.categoriaLabel }}</span>
-          }
-          @if (c.slaVencido) {
-            <span class="badge badge-sla-vencido">Prazo estourado</span>
-          }
+      <section class="ticket-overview">
+        <div class="titulo-row">
+          <h1 class="titulo">{{ c.titulo }}</h1>
+          <div class="badges-row">
+            <span class="badge" [class]="classeStatus(c.status)">{{ c.statusLabel }}</span>
+            <span class="badge" [class]="classePrioridade(c.prioridade)">{{ c.prioridadeLabel }}</span>
+            @if (c.categoriaLabel) {
+              <span class="badge badge-categoria">{{ c.categoriaLabel }}</span>
+            }
+            @if (c.slaVencido) {
+              <span class="badge badge-sla-vencido">Prazo estourado</span>
+            }
+          </div>
         </div>
-      </div>
+
+        <ol class="status-progress" aria-label="Andamento do chamado">
+          @for (etapa of etapasProgresso(c.status); track etapa.rotulo) {
+            <li
+              class="progress-step"
+              [class.current]="etapa.estado === 'atual'"
+              [class.complete]="etapa.estado === 'completa'"
+              [attr.aria-current]="etapa.estado === 'atual' ? 'step' : null"
+            >
+              <i aria-hidden="true"></i><span>{{ etapa.rotulo }}</span>
+            </li>
+          }
+        </ol>
+      </section>
 
       <div class="detail-grid">
 

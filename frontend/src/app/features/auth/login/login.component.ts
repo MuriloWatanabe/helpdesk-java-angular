@@ -76,10 +76,6 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  usarDemo(email: string): void {
-    this.loginForm.patchValue({ email, senha: '123456' });
-  }
-
   get emailControl() {
     return this.loginForm.get('email');
   }

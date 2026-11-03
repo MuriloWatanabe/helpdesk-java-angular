@@ -53,6 +53,18 @@ class OpenApiDocsTest {
     }
 
     @Test
+    @DisplayName("documentação não publica credenciais das contas de demonstração")
+    void apiDocs_semCredenciaisDemonstrativas() throws Exception {
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.info.description", not(containsString("admin@helpdesk.com"))))
+                .andExpect(jsonPath("$.info.description", not(containsString("tecnico@helpdesk.com"))))
+                .andExpect(jsonPath("$.info.description", not(containsString("cliente@helpdesk.com"))))
+                .andExpect(jsonPath("$.info.description", not(containsString("123456"))))
+                .andExpect(jsonPath("$.info.description", not(containsString("Usuários de demonstração"))));
+    }
+
+    @Test
     @DisplayName("paginação aparece como page/size/sort e não como objeto JSON")
     void pageable_expandido() throws Exception {
         mvc.perform(get("/v3/api-docs"))

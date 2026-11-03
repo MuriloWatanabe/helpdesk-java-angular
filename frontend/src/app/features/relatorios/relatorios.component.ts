@@ -93,7 +93,7 @@ export class RelatoriosComponent implements OnInit, AfterViewInit, OnDestroy {
               label: 'Chamados',
               data: dados.porPrioridade.map((p) => p.total),
 
-              backgroundColor: ['#059669', '#d97706', '#dc2626', '#991b1b'],
+              backgroundColor: ['#168979', '#c68a19', '#bd302d', '#6e2525'],
               borderRadius: 5,
             },
           ],
@@ -103,11 +103,11 @@ export class RelatoriosComponent implements OnInit, AfterViewInit, OnDestroy {
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 11.5 } } },
+            x: { grid: { display: false }, ticks: { color: '#777d7c', font: { size: 11.5 } } },
             y: {
               beginAtZero: true,
               grid: { color: 'rgba(0,0,0,0.05)' },
-              ticks: { color: '#64748b', font: { size: 11 }, stepSize: 1, precision: 0 },
+              ticks: { color: '#777d7c', font: { size: 11 }, stepSize: 1, precision: 0 },
             },
           },
         },
@@ -124,7 +124,7 @@ export class RelatoriosComponent implements OnInit, AfterViewInit, OnDestroy {
             {
               label: 'Chamados',
               data: dados.porCategoria.map((c) => c.total),
-              backgroundColor: '#1d4ed8',
+              backgroundColor: '#168979',
               borderRadius: 5,
             },
           ],
@@ -138,9 +138,9 @@ export class RelatoriosComponent implements OnInit, AfterViewInit, OnDestroy {
             x: {
               beginAtZero: true,
               grid: { color: 'rgba(0,0,0,0.05)' },
-              ticks: { color: '#64748b', font: { size: 11 }, stepSize: 1, precision: 0 },
+              ticks: { color: '#777d7c', font: { size: 11 }, stepSize: 1, precision: 0 },
             },
-            y: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 11.5 } } },
+            y: { grid: { display: false }, ticks: { color: '#777d7c', font: { size: 11.5 } } },
           },
         },
       });

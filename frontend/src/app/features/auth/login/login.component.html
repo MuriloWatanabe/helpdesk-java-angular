@@ -1,99 +1,102 @@
-<div class="login-container">
-  <div class="circles" aria-hidden="true">
-    <div class="circle circle-1"></div>
-    <div class="circle circle-2"></div>
-  </div>
-
-  <div class="login-card">
-    <div class="logo">
-      <app-logo />
+<main class="auth-shell">
+  <section class="auth-hero" aria-label="Apresentação do Help Desk">
+    <div class="hero-brand">
+      <app-logo tema="escuro" />
     </div>
-    <p class="subtitle">Sistema de chamados internos</p>
 
-    @if (avisoSessao()) {
-      <div class="aviso-msg" role="status">{{ avisoSessao() }}</div>
-    }
+    <div class="hero-content">
+      <p class="hero-eyebrow">Atendimento organizado de ponta a ponta</p>
+      <h1>Nenhum chamado fica sem dono.</h1>
+      <p class="hero-description">
+        Abra, acompanhe e resolva chamados de rede, computadores, sistemas e acessos,
+        com prazo calculado pela prioridade.
+      </p>
 
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label for="email">E-mail corporativo</label>
-        <input
-          id="email"
-          type="email"
-          autocomplete="username"
-          formControlName="email"
-          placeholder="seu@empresa.com.br"
-          [class.input-error]="emailControl?.invalid && emailControl?.touched"
-        />
-        @if (emailControl?.invalid && emailControl?.touched) {
-          <span class="field-error">
-            @if (emailControl?.errors?.['required']) { Informe seu e-mail. }
-            @else if (emailControl?.errors?.['email']) { Informe um e-mail válido. }
-          </span>
-        }
+      <div class="hero-flow" aria-label="Etapas do atendimento">
+        <div class="flow-row active"><span>Aberto</span><i></i></div>
+        <div class="flow-row active"><span>Em andamento</span><i></i></div>
+        <div class="flow-row"><span>Aguardando cliente</span><i></i></div>
+        <div class="flow-row"><span>Resolvido</span><i></i></div>
+        <div class="flow-row"><span>Encerrado</span><i></i></div>
+      </div>
+    </div>
+
+    <p class="hero-footnote">Suporte com histórico, prioridade e responsabilidade.</p>
+  </section>
+
+  <section class="auth-form-panel">
+    <div class="auth-form-wrap">
+      <div class="form-heading">
+        <span class="mobile-brand"><app-logo /></span>
+        <p class="form-kicker">Acesso ao sistema</p>
+        <h2>Entrar</h2>
+        <p>Use seu e-mail corporativo para continuar.</p>
       </div>
 
-      <div class="form-group">
-        <label for="senha">Senha</label>
-        <div class="senha-wrap">
-          <input
-            id="senha"
-            [type]="mostrarSenha ? 'text' : 'password'"
-            autocomplete="current-password"
-            formControlName="senha"
-            placeholder="••••••••"
-            [class.input-error]="senhaControl?.invalid && senhaControl?.touched"
-          />
-          <button
-            type="button"
-            class="btn-ver-senha"
-            [attr.aria-label]="mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'"
-            (click)="mostrarSenha = !mostrarSenha"
-          >
-            {{ mostrarSenha ? 'Ocultar' : 'Mostrar' }}
-          </button>
-        </div>
-        @if (senhaControl?.invalid && senhaControl?.touched) {
-          <span class="field-error">
-            @if (senhaControl?.errors?.['required']) { Informe sua senha. }
-            @else if (senhaControl?.errors?.['minlength']) { A senha tem no mínimo 6 caracteres. }
-          </span>
-        }
-      </div>
-
-      <div class="forgot">
-        <a routerLink="/esqueci-senha">Esqueci minha senha</a>
-      </div>
-
-      <button type="submit" class="btn-entrar" [disabled]="isLoading()">
-        @if (isLoading()) { Entrando... } @else { Entrar }
-      </button>
-
-      @if (errorMessage()) {
-        <div class="error-msg" role="alert">{{ errorMessage() }}</div>
+      @if (avisoSessao()) {
+        <div class="aviso-msg" role="status">{{ avisoSessao() }}</div>
       }
-    </form>
 
-    <div class="divider"><span>acesso de demonstração</span></div>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input
+            id="email"
+            type="email"
+            autocomplete="username"
+            formControlName="email"
+            placeholder="nome@empresa.com.br"
+            [class.input-error]="emailControl?.invalid && emailControl?.touched"
+          />
+          @if (emailControl?.invalid && emailControl?.touched) {
+            <span class="field-error">
+              @if (emailControl?.errors?.['required']) { Informe seu e-mail. }
+              @else if (emailControl?.errors?.['email']) { Informe um e-mail válido. }
+            </span>
+          }
+        </div>
 
+        <div class="form-group">
+          <label for="senha">Senha</label>
+          <div class="senha-wrap">
+            <input
+              id="senha"
+              [type]="mostrarSenha ? 'text' : 'password'"
+              autocomplete="current-password"
+              formControlName="senha"
+              placeholder="••••••••"
+              [class.input-error]="senhaControl?.invalid && senhaControl?.touched"
+            />
+            <button
+              type="button"
+              class="btn-ver-senha"
+              [attr.aria-label]="mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'"
+              (click)="mostrarSenha = !mostrarSenha"
+            >
+              {{ mostrarSenha ? 'Ocultar' : 'Mostrar' }}
+            </button>
+          </div>
+          @if (senhaControl?.invalid && senhaControl?.touched) {
+            <span class="field-error">
+              @if (senhaControl?.errors?.['required']) { Informe sua senha. }
+              @else if (senhaControl?.errors?.['minlength']) { A senha tem no mínimo 6 caracteres. }
+            </span>
+          }
+        </div>
 
-    <div class="demo-grid">
-      <button type="button" class="demo-btn" (click)="usarDemo('admin@helpdesk.com')">
-        <strong>Administrador</strong>
-        <span>admin&#64;helpdesk.com</span>
-      </button>
-      <button type="button" class="demo-btn" (click)="usarDemo('tecnico@helpdesk.com')">
-        <strong>Técnico</strong>
-        <span>tecnico&#64;helpdesk.com</span>
-      </button>
-      <button type="button" class="demo-btn" (click)="usarDemo('cliente@helpdesk.com')">
-        <strong>Cliente</strong>
-        <span>cliente&#64;helpdesk.com</span>
-      </button>
+        <button type="submit" class="btn-entrar" [disabled]="isLoading()">
+          @if (isLoading()) { Entrando... } @else { Entrar }
+        </button>
+
+        @if (errorMessage()) {
+          <div class="error-msg" role="alert">{{ errorMessage() }}</div>
+        }
+      </form>
+
+      <div class="auth-links">
+        <a routerLink="/esqueci-senha">Esqueci minha senha</a>
+        <a routerLink="/register">Criar conta</a>
+      </div>
     </div>
-
-    <div class="register-link">
-      Não tem conta? <a routerLink="/register">Cadastre-se</a>
-    </div>
-  </div>
-</div>
+  </section>
+</main>
