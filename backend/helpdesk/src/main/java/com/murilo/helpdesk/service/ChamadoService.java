@@ -9,7 +9,6 @@ import com.murilo.helpdesk.exception.ResourceNotFoundException;
 import com.murilo.helpdesk.model.Chamado;
 import com.murilo.helpdesk.model.Usuario;
 import com.murilo.helpdesk.model.enums.Categoria;
-import com.murilo.helpdesk.model.enums.Perfil;
 import com.murilo.helpdesk.model.enums.Prioridade;
 import com.murilo.helpdesk.model.enums.Status;
 import com.murilo.helpdesk.repository.AnexoRepository;
@@ -402,8 +401,4 @@ public class ChamadoService {
                 anexoRepository.countByChamadoId(id));
     }
 
-
-    public boolean ehCliente(Usuario usuario) {
-        return usuario.temPerfil(Perfil.CLIENTE);
-    }
 }
