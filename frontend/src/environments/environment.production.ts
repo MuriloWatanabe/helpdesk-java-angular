@@ -2,5 +2,5 @@
 
 export const environment = {
   production: true,
-  apiUrl: '/api',
+  apiUrl: 'https://helpdesk-java-angular.onrender.com/api',
 };
